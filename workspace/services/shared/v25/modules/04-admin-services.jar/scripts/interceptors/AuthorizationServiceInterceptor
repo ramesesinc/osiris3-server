@@ -1,0 +1,33 @@
+import com.rameses.annotations.*;
+
+
+public class AuthorizationServiceInterceptor 
+{
+	
+	
+	@Env
+	def env;
+
+	@After(pattern="AuthorizationService.checkPermission.*") 
+	public void afterCheckPermission( evt )  {
+		def params = evt.args[0];
+		print "check permissions for " + params;
+	
+		/*
+		def params = evt.args[0];
+		def idarr = env.SESSIONID.split('!!');
+		env.putAll([sessionid: idarr[0], userid: idarr[1]]);
+		def result = svc.getUserJobposition( [jobid: params.jobid] );
+		evt.result.allowed = false;
+		if( result.permissions ) {
+			for( it in result.permissions ) {
+				if( it.matches(params.key) ) {
+					evt.result.allowed = true;
+					break;
+				}
+			}
+		}
+		*/
+	}
+	
+}

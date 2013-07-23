@@ -1,0 +1,69 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+
+/**
+   This handles all support data for the rules
+**/
+class RuleSupportService {
+
+	@Cache
+	def cache;
+
+	@Context
+	def appContext;
+	
+	@ProxyMethod
+	public List getFacts( Map params ) {
+		String ruleset = params.ruleset;
+		String id = "rulefacts:"+ruleset;
+		def facts = cache.get(id);		
+		if(!facts) {
+			facts = [];
+			appContext.scanFiles( "rulesets/"+ruleset+"/schema/facts", { m->
+				String s = StreamUtil.toString( m.url.openStream() );
+				def x = com.rameses.osiris3.server.JsonUtil.toObject( s );
+				facts<< x;
+			} as ScanFileFilter , ".*\\.fact");	
+			facts.sort{(!it.index) ?0: it.index};	
+			cache.put( id, facts, -1 );
+		}
+		return facts;
+	}
+	
+	
+	@ProxyMethod
+	public def getActions( Map params ) {
+		String ruleset = params.ruleset;
+		String id = "ruleactions:"+ruleset;
+		def actions = cache.get(id);		
+		if(!actions) {
+			actions = [];
+			appContext.scanFiles( "rulesets/"+ruleset+"/schema/actions", { m->
+				String s = StreamUtil.toString( m.url.openStream() );
+				def x = com.rameses.osiris3.server.JsonUtil.toObject( s );
+				actions << x;
+			} as ScanFileFilter , ".*\\.action");	
+			actions.sort{(!it.index) ?0: it.index};			
+			cache.put( id, actions, -1 );
+		}
+		return actions;
+	}
+	
+	@ProxyMethod
+	public List getAgendaGroups( Map params ) {
+		String ruleset = params.ruleset;
+		String id = "rulegroups:"+ruleset;
+		List groups = cache.get(id);
+		if(!groups) {
+			Map g = appContext.findProperties( "rulesets/"+ruleset+"/agendagroups");
+			groups = g.entrySet().collect{[name:it.key, caption:it.value ]};	
+			cache.put(id, groups, -1 );
+		}
+		return groups;
+	}	
+	
+}
+

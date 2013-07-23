@@ -1,0 +1,30 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+
+class FundListService {
+	@PersistenceContext('main')
+	def em
+	
+	@ProxyMethod
+	public List getList( params ) {
+		params.searchtext = (params.searchtext ? params.searchtext+'%' : '%')
+		params.fund = params.searchtext
+		params.fundname = params.searchtext
+		def result = em.sqlContext.createNamedQuery('fund:getList')
+					.setParameters(params)
+					.setFirstResult( params._start )
+					.setMaxResults(params._limit)
+					.resultList 
+		return result
+	}
+	
+	/*@ProxyMethod
+	public List getFundsWithBankAccount() {
+		def result = em.sqlContext.createNamedQuery('fund:getFundsWithBankAccount')
+					.resultList
+		result.each{
+			it.bankacctrequired = (it.bankacctrequired == 1 )
+		}
+		return result
+	}*/
+}

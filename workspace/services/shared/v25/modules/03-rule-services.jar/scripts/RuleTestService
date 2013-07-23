@@ -1,0 +1,41 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+
+
+class RuleTestService {
+
+	@Service("RuleBuilderService")
+	def ruleBuilder;
+	
+	@Resource('RuleService')
+	def ruleSvc; 
+	
+	
+	@ProxyMethod
+	public def deploy( rule ) {
+		String ruletext = ruleBuilder.buildRuleText(rule);	
+			
+		if( !ruletext ) 
+			throw new Exception('Rule text must be implemented.');
+
+		println ruletext;
+		
+		try 
+		{
+			ruleSvc.addRulePackage( rule.ruleset, new java.io.StringReader(ruletext) );
+			println "Rule was successfully deployed";
+		}
+		catch(e) {
+			println "\n---- debug ---------"
+			println ruletext
+			println "--------------------"
+			throw e;
+		}
+		return rule 
+	}
+	
+}
+

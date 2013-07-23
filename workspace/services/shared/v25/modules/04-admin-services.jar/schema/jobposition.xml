@@ -1,0 +1,21 @@
+<schema>
+
+	<element name="jobposition" tablename="jobposition" >
+		<field name="objid" primary="true"/>
+		<field name="code" required="true"/>
+		<field name="title" required="true"/>
+		<field name="jobgroup"/>
+		<field name="orgunitid" required="true"/>
+		<field name="assigneeid"/>
+		<field name="jobstatus"/>
+    </element>
+	
+	<element name="role" tablename="jobposition_role">
+		<field name="jobpositionid" primary="true"/>
+		<field name="role" primary="true"/>
+		<field name="domain" primary="true"/>
+		<field name="sysrole"/>
+		<field name="disallowed"/>
+	</element>
+	
+</schema>

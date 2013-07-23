@@ -1,0 +1,80 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+
+public class DesktopLoginInterceptor {
+
+	@Env
+	def env;
+	
+	@PersistenceContext("main")
+	def em;
+	
+	@Service("OrgunitService")
+	def orgSvc;
+	
+	@Service("JobPositionService")
+	def jobSvc;
+	
+	@Before(pattern="LoginService.login.*", eval="env.CLIENTTYPE=='desktop'")
+	public void validateTerminal( evt ) {
+		if(!env.TERMINALID) return;
+		def term = em.read( "terminal", [terminalid: env.TERMINALID] );
+		if(!term || term.macaddress != env.MACADDRESS)
+			throw new Warning("INVALID_MACHINE_REGISTERED");
+	}
+	
+	@After(pattern="LoginService.login.*", eval="env.CLIENTTYPE=='desktop'")
+	public void loadProfile( evt ) {
+	
+		def profile = evt.result;
+
+		//set env value
+		env.userid = profile.objid;
+		env.sessionid = profile.sessionid;
+		
+		def jobtitle;
+		def jobpositions = jobSvc.getJobPositionsByUser( [assigneeid: profile.objid ] )
+		if( jobpositions ) {
+			jobtitle = jobpositions[0].title 
+		}
+		
+		
+		def client = orgSvc.readByCode( env.CLIENTCODE );
+		
+		//retrieve sys role permissions
+		def permissionMap = [:];
+		def _perms = jobSvc.getUserPermissions( [assigneeid: profile.objid ] );
+		_perms.each {
+			def srole = it.sysrole;
+			def domain  = it.domain;
+			if(domain) srole = domain + "." + srole;
+			permissionMap.put( srole, (it.excluded?it.excluded:"") + ((it.excluded && it.disallowed)?"|":"") + (it.disallowed?it.disallowed:""));
+		}
+		permissionMap.ALLOWED = "system.*";
+		
+		profile.env = [
+			userid              : profile.objid,
+			USERID              : profile.objid,
+			USERTYPE            : profile.usertype,
+			LOGINID             : profile.uid, 
+			CHANGE_PWD_ON_LOGIN : profile.changepwdonlogin,
+			FIRSTNAME           : profile.firstname,
+			LASTNAME            : profile.lastname,
+			USER				: profile.uid.toUpperCase(),
+			USERNAME            : profile.lastname + ', ' + profile.firstname + (profile.middlename? ' ' + profile.middlename : ''),
+			USERFORMALNAME      : profile.firstname + (profile.middlename? ' ' + profile.middlename : '') + ' ' + profile.lastname,
+			JOBTITLE			: jobtitle,
+			CLIENT				: client,
+			ROLES				: permissionMap
+		];
+		
+		//load permissions
+		/*
+		profile.permissions = [];
+		profile.permissions.add(".*");
+		profile.permissions.add("system.*");
+		*/
+	}
+	
+}

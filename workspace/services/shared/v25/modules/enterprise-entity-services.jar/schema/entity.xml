@@ -1,0 +1,33 @@
+<schema>
+	<element name="entity" tablename="entity">
+		<field name="objid" primary="true"/>
+		<field name="entityno" required="true"/>
+		<field name="name" required="true"/>
+		<field name="address" required="true"/>
+		<field name="mailingaddress" />
+		<field name="type" required="true"/>
+		<field name="remarks" />
+	</element>
+	
+	<element name="juridical" tablename="entityjuridical">
+		<field name="tin" />
+		<field name="dtregistered" />
+		<field name="orgtype" /> <!-- SINGLEPROPERTORSHIP, CORPORATION, etc -->
+		<field name="nature" /> <!-- RETAILER, WHOLESALER -->
+	</element>
+	
+	<element name="multiple" tablename="entitymultiple">
+		<field name="fullname" />
+	</element>
+	
+	<element name="member" tablename="entitymember">
+		<field name="objid" primary="true"/>
+		<field name="entityid" required="true"/>
+		<field name="itemno" type="integer" />
+		<field name="prefix" />
+		<field name="entityid" required="true"/>
+		<field name="taxpayername"  required="true"/>
+		<field name="taxpayeraddress"  required="true"/>
+		<field name="suffix" />
+	</element>
+</schema>

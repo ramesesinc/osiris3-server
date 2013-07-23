@@ -1,0 +1,53 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+
+class ItemAcctListService {
+	@PersistenceContext('main')
+	def em
+	
+	@ProxyMethod
+	public List getList( params ) {
+		params.searchtext = (params.searchtext? params.searchtext+'%' : '%')
+		params.acctno = params.searchtext
+		params.accttitle = params.searchtext
+		
+		def result = em.sqlContext.createNamedQuery('itemacct:getList')
+					.setParameters(params)
+					.setFirstResult( params._start )
+					.setMaxResults(params._limit)
+					.resultList 
+					
+		return result
+	}
+	
+	@ProxyMethod
+	public List getFundList() {
+		return em.sqlContext.createNamedQuery('itemacct:getFundList').resultList;
+	}
+	
+	@ProxyMethod
+	public def getSystemTypeList() {
+		return [
+			'ADVANCE_PAYMENT', 'BUSINESS_TAX',  'FEE',
+			'INTEREST', 'OTHER_FEE', 
+			'REG_FEE', 'SURCHARGE', 'TAX', 'TAX_CREDIT', 
+            'RPT_BASIC','RPT_BASICPREV','RPT_BASICPRIOR', 
+            'RPT_BASICINT', 'RPT_BASICPREVINT', 'RPT_BASICPRIORINT', 'RPT_BASICADVANCE',
+            'RPT_SEF', 'RPT_SEFPREV', 'RPT_SEFPRIOR', 
+            'RPT_SEFINT', 'RPT_SEFPREVINT', 'RPT_SEFPRIORINT', 'RPT_SEFADVANCE', 
+		];
+	}
+	
+	@ProxyMethod
+	public def getItemAccountList( params ){
+		params.searchtext = (params.searchtext? params.searchtext+'%':'%')
+		params.accttitle = params.searchtext
+		
+		def result = em.sqlContext.createNamedQuery('itemacct:getItemAccountList')
+					.setParameters(params)
+					.setFirstResult( params._start )
+					.setMaxResults(params._limit)
+					.resultList
+		return result
+	}
+}

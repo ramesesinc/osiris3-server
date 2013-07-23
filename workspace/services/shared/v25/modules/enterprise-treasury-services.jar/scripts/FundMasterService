@@ -1,0 +1,100 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+
+class FundMasterService {
+	@PersistenceContext('main')
+	def em
+	
+	def SCHEMA_NAME = 'fund'
+	def STATE_DRAFT = 'DRAFT'
+	def STATE_APPROVED = 'APPROVED'
+	
+	@ProxyMethod
+	public def init( ){
+		def general = [
+			objid : 'GENERAL',
+			state : 'APPROVED',
+			fund : 'GENERAL',
+			fundname : 'GENERAL'
+		];
+		
+		def trust = [
+			objid : 'TRUST',
+			state : 'APPROVED',
+			fund : 'TRUST',
+			fundname : 'TRUST'
+		];
+		
+		def sef = [
+			objid : 'SEF',
+			state : 'APPROVED',
+			fund : 'SEF',
+			fundname : 'SEF'
+		];
+		
+		em.create( SCHEMA_NAME, general );
+		em.create( SCHEMA_NAME, trust );
+		em.create( SCHEMA_NAME, sef );
+	}
+	
+	@ProxyMethod
+	public def create( entity ) {
+		if( entity.parentid == entity.fund )
+			entity.fundname = entity.parentid;
+		else
+			entity.fundname = entity.parentid + "-" + entity.fund;
+			
+		validate( entity );		
+		em.create( SCHEMA_NAME, entity )
+		return entity
+	}
+	
+	private void validate( entity ){
+		checkDuplicates( entity );
+		em.validate(SCHEMA_NAME, entity);
+	}
+	
+	private void checkDuplicates( entity ){
+		def data = em.sqlContext.createNamedQuery( 'fund:checkDuplicateFund' )
+			.setParameter( 'objid', entity.objid )
+			.setParameter( 'fund', entity.fund )
+			.singleResult;
+		if( data.count > 0 ) throw new Exception( "Fund $entity.fundname already exists." );
+	}
+	
+	@ProxyMethod
+	public def open( entity ) {
+		entity = em.read(SCHEMA_NAME, entity)
+		
+		if( !entity ) throw new Exception('Fund does not exists or has already been deleted.')
+		return entity
+	}
+	
+	@ProxyMethod
+	public def update( entity ) {
+		def old = open(entity)
+		
+		if( old.state == STATE_APPROVED)
+		throw new Exception('Fund has already been approved.')
+		
+		validate( entity )
+		em.update( SCHEMA_NAME, entity )
+		return entity
+	}
+	
+	@ProxyMethod
+	public def approve( entity ) {
+		def old = open(entity)
+		
+		if( old.state == STATE_APPROVED )
+		throw new Exception('Fund has already been approved.')
+
+		entity.state = STATE_APPROVED
+		return update( entity )
+	}
+	
+	@ProxyMethod
+	public void delete( entity ) {
+		em.delete(SCHEMA_NAME, entity)
+	}
+}

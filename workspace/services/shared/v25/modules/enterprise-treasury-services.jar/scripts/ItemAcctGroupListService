@@ -1,0 +1,17 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+
+class ItemAcctGroupListService {
+	@PersistenceContext('main')
+	def em
+	
+	@ProxyMethod
+	public List getList( params ) {
+		if( params )
+			return em.sqlContext.createNamedQuery('itemacctgroup:getList')
+					.setFirstResult( params._start )
+					.setMaxResults( params._limit )
+					.resultList 
+		return em.sqlContext.createNamedQuery('itemacctgroup:getList').resultList 
+	}
+}
