@@ -1,0 +1,83 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+class AdminUserService
+{
+	@PersistenceContext('admin') 
+	def em;
+
+	@Service('Var')
+	def var;
+
+	@Service('DateService')
+	def dateSvc;
+
+	@ProxyMethod
+	public Map getInfo( username ) 
+	{
+		def qry = em.sqlContext.createNamedQuery('loginaccount:getInfo');
+		return qry.setParameters([ uid: username ]).singleResult; 
+	}
+
+	@ProxyMethod 
+	public Map authenticate( username, password ) 
+	{
+		def info = getInfo( username );
+		if (!info || password != info.pwd)  
+			throw new Exception("Access denied. Please check your username and password"); 
+
+		return info;
+	}
+
+ 	@ProxyMethod 
+	public void incrementLoginCount( username, pwdlogincount ) 
+	{
+		def qry = em.sqlContext.createNamedExecutor('loginaccount:incrementLoginCount');
+		qry.setParameters([uid: username, pwdlogincount: pwdlogincount]).execute();  
+	} 
+
+	@ProxyMethod
+	public void changePassword(Map params) 
+	{
+		//initial validation for double checking
+		if (!params.username) throw new Exception('Please specify username');
+		if (!params.newpassword) throw new Exception('Please specify newpassword');
+		if (!params.oldpassword) throw new Exception('Please specify oldpassword');
+
+		def pwd_change_cycle = 3;
+		try { pwd_change_cycle = var.pwd_change_cycle.toInteger(); } catch(e) {;} 
+
+		def pwd_change_date_interval = var.pwd_change_date_interval; 
+		if (!pwd_change_date_interval) pwd_change_date_interval = '1M'; 
+
+		//initiate lock
+		def newlockid = 'LOCK'+new java.rmi.server.UID();
+		em.sqlContext.createNamedExecutor('loginaccount:updateLock').setParameters([
+			uid: 	params.username, 
+			lockid: newlockid 
+		]).execute(); 
+
+		//get account info
+		def info = getInfo( params.username ); 
+		if (!info || info.pwd != params.oldpassword)  
+			throw new Exception('Invalid username and password'); 
+
+		//check against used passwords
+		def pwds = (info.usedpwds? info.usedpwds.split(',').toList(): []);
+		if (pwds.isEmpty() && info.pwd != null) pwds.add(info.pwd); 
+
+		while (pwds.size() > pwd_change_cycle) pwds.remove(0); 
+
+		if (pwds.contains(params.newpassword)) 
+			throw new Exception('You have already used this password before. Please specify another password.'); 
+
+		pwds.add(params.newpassword); 
+		if (pwds.size() > pwd_change_cycle) pwds.remove(0); 
+
+		info.pwdexpirydate = DateUtil.add(dateSvc.serverDate, pwd_change_date_interval);
+		info.pwdlogincount = 0;
+		info.pwd = params.newpassword; 
+		info.usedpwds = pwds.join(','); 
+		em.update('loginaccount:changePassword', info); 
+	} 	
+}

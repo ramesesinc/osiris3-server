@@ -1,0 +1,25 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+class WebSessionService
+{
+	@Service('AdminSessionService')
+	def svc;
+
+	@After(pattern="SessionService.createSession", eval="env.CLIENTTYPE=='web'") 
+	public void createSession( evt ) {
+		def userInfo = evt.args[0];
+		def USERID 	 = userInfo.env.USERID;
+		def USERNAME = userInfo.env.USER;
+		def sessInfo = svc.createSession(USERID, USERNAME, 'web'); 
+		userInfo.env.SESSIONID = sessInfo.sessionid; 
+	}
+	
+	@After(pattern="SessionService.getSession", eval="env.CLIENTTYPE=='web'") 
+	public void loadSession( evt ) {
+		def sessionid = evt.args[0];
+		def sessInfo = svc.getSession( sessionid ); 
+		if (sessInfo) evt.result.putAll(sessInfo); 
+	} 
+}  
+

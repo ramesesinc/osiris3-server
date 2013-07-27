@@ -134,13 +134,6 @@ class DateService {
 		return DateUtil.add( parse('yyyy-MM-dd', dt) , timeInterval );	 
 	}
 
-	@ProxyMethod
-	public def laterThanCurrentDate( dt ) {
-		dt = parse('yyyy-MM-dd', dt)
-		def cdt = findNextDate('1d')
-		return (dt > cdt )
-			
-	}
 
 	@ProxyMethod(local=true)
 	public def getMonths() {

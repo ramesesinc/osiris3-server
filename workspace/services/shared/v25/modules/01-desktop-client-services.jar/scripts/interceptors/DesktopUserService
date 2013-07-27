@@ -1,0 +1,17 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+class DesktopUserService
+{
+	@Service('BasicUserServiceImpl')
+	def svc;
+
+	@After(pattern="UserService.getInfo", eval="env.CLIENTTYPE=='desktop'") 
+	public void loadUserInfo( evt ) {
+		def username = evt.args[0]; 
+		def resmap = svc.getInfo( username ); 
+		evt.result.putAll(resmap);
+	}
+	
+}    	
+

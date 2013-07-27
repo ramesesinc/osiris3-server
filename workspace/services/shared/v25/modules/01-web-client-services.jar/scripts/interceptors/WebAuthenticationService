@@ -1,0 +1,18 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+class WebAuthenticationService
+{
+	@Service('BasicAuthenticationServiceImpl') 
+	def svc;
+
+	@After(pattern="AuthenticationService.authenticate", eval="env.CLIENTTYPE=='web'") 
+	public void authenticate( evt ) 
+	{
+		def username = evt.args[0];
+		def password = evt.args[1];
+		def resmap = svc.authenticate(username, password);
+		evt.result.putAll(resmap);
+		evt.result.HANDLER = this;
+	} 
+}

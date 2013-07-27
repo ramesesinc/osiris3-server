@@ -1,0 +1,94 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+class UserAccountService 
+{	
+    @PersistenceContext("main")
+    def em;
+    	
+	@ProxyMethod
+	public def getAccount( params ) { 
+		return em.read('loginaccount', params);
+	}
+	
+	@ProxyMethod
+	public def update( params ) 
+	{
+		return em.update('loginaccount', params);
+	}
+	
+	@ProxyMethod
+	public void removeAccount( params ) { 
+		em.delete('loginaccount', params);
+	} 
+	
+	
+
+	@ProxyMethod 
+	public boolean verifyPassword( params ) 
+	{
+		if ( !params.uid ) throw new Exception('Please specify uid'); 
+		if ( !params.pwd ) throw new Exception('Please specify pwd');
+
+		def encpwd = params.pwd;
+		def encrypted = params.pwd.toString().matches('[0-9a-fA-F]{1,}'); 
+		if (!encrypted) encpwd = Encoder.MD5.encode(params.pwd, params.uid);  
+
+		def qry = em.sqlContext.createNamedQuery('loginaccount:getInfo');
+		def acct = qry.setParameters( params ).singleResult; 
+		if (!acct) throw new Exception("'"+ params.uid +"' user account does not exist");
+
+
+	}
+
+
+	@ProxyMethod
+	public Map createLoginAccount( params ) 
+	{
+		if ( !params.uid ) throw new Exception('Please specify uid');
+		if ( !params.pwd ) throw new Exception('Please specify pwd');
+		if ( !params.confirmpwd ) throw new Exception('Please specify confirmpwd');
+
+		def confirmpwd = params.remove('confirmpwd');
+		if ( params.pwd != confirmpwd ) 
+			throw new Exception('Password and Confirm password must be the same'); 
+
+		def qry = em.sqlContext.createNamedQuery('loginaccount:getInfo'); 
+		def acct = qry.setParameters( params ).singleResult; 
+		if (acct) throw new Exception("'"+ params.uid +"' user account already exist"); 
+
+		def encpwd = params.pwd;
+		def encrypted = (params.pwd.toString().matches('[0-9a-fA-F]{1,}') && params.pwd.length()==32);  
+		println 'encrypted-> '+encrypted;
+		if (!encrypted) encpwd = Encoder.MD5.encode(params.pwd, params.uid);  
+
+		params.pwd = encpwd; 
+		params.remove('confirmpwd'); 
+		return em.create( "loginaccount", params );
+	}
+
+
+	@ProxyMethod
+	public void changePassword( credential ) 
+	{		
+		def acct = em.sqlContext.createQuery('select * from useraccount where uid=$P{username}').setParameters(credential).singleResult;
+		
+		if(!acct) {
+			throw new Exception("Login account not found.");
+		}
+		
+		credential.oldpassword = Encoder.MD5.encode(credential.oldpassword, credential.username);		
+		if(acct.pwd != credential.oldpassword) {
+			throw new Exception("Invalid current password provided.");
+		}
+		
+		credential.newpassword = Encoder.MD5.encode(credential.newpassword, credential.username);
+		if(acct.pwd == credential.newpassword) {
+			throw new Exception("New password must not be the same as old password");
+		}
+		
+		em.sqlContext.createExecutor('update useraccount set pwd = $P{newpassword} where uid=$P{username}')
+		  .setParameters(credential)
+		  .execute();
+	}	
+}

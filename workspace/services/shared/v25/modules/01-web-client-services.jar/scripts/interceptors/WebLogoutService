@@ -1,0 +1,20 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+class WebLogoutService
+{
+	@Service('DateService')
+	def dateSvc;
+
+	@Service('AdminSessionService')
+	def svc;
+
+	@After(pattern="LogoutService.logout", eval="env.CLIENTTYPE=='web'") 
+	public void logout( evt ) 
+	{
+		def map = evt.args[0];
+		if (!map.SESSIONID) throw new Exception('Please specify SESSIONID'); 
+
+		svc.closeSession( map.SESSIONID );
+	} 
+}
