@@ -1,0 +1,17 @@
+<schema>
+	<element name="bankaccount" tablename="bankaccount">
+		<field name="objid" primary="true"/>
+		<field name="state" required="true"/>
+		<field name="name" required="true"/>
+		<field name="accttype" required="true"/>
+		<field name="acctno" required="true"/>
+		<field name="fundid" required="true"/>
+		<field name="bankid" required="true"/>
+		<field name="cashreport"/>
+		<field name="cashbreakdownreport"/>
+		<field name="checkreport"/>
+		<field name="currency" required="true"/>
+	</element>
+</schema>
+
+

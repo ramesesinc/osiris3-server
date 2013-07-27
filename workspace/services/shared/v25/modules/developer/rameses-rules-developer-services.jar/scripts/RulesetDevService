@@ -1,0 +1,44 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class RulesetDevService {
+
+	@PersistenceContext("system")
+	def em;
+
+	private static String OBJNAME = "ruleset";
+	
+	
+	@ProxyMethod
+	public def getColumns( def p ) {
+		return [
+			[name:'name', caption:'Name'],
+			[name:'title', caption:'Title'],
+		]	
+	}	
+	
+	@ProxyMethod
+	public def getList( def p ) {
+		return em.sqlContext.createNamedQuery("ruledev:getRulesets").resultList;	
+	}	
+	
+	@ProxyMethod
+	public def create( def p ) {
+		em.create("ruledev:"+OBJNAME, p);
+	}
+	
+	@ProxyMethod
+	public def open( def p ) {
+		em.update("ruledev:"+OBJNAME, p);
+	}
+
+	@ProxyMethod
+	public def removeEntity( def p ) {
+		em.delete("ruledev:"+OBJNAME, p);
+	}
+
+	
+	
+	
+}

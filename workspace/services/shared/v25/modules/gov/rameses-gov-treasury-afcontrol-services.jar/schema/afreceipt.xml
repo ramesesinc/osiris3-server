@@ -1,0 +1,28 @@
+<schema>
+	<element name="afreceipt" tablename="afreceipt">
+		<field name="objid" primary="true"/>	
+		<field name="state" required="true"/>
+		<field name="txndate" required="true"/>
+		<field name="txntype" required="true"/>
+		<field name="reqid" required="true"/>
+		<field name="issuer" required="true"/>
+		<field name="issueto" required="true"/>
+		<field name="createdby" />
+		<complex name="items" ref="item"  type="list" />
+	</element>
+
+	<element name="item" tablename="afreceiptitem">
+		<field name="objid" primary="true"/>
+		<field name="receiptid" />
+		<field name="af" required="true"/>
+		<field name="qty"  type="integer"/>
+		<field name="startseries" type="integer"/>
+		<field name="endseries"  type="integer"/>
+		<field name="prefix" />
+		<field name="suffix" />
+		<field name="startstub"  type="integer"/>
+		<field name="endstub"  type="integer"/>
+		<field name="controlid"/>
+	</element>
+	
+</schema>

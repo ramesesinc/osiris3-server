@@ -1,0 +1,53 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+
+class BankMasterService {
+
+	@PersistenceContext('main')
+	def em
+	
+	
+	def SCHEMA_NAME = 'bank'
+	def STATE_DRAFT = 'DRAFT'
+	def STATE_APPROVED = 'APPROVED'
+	
+	@ProxyMethod
+	public def create( entity ) {
+		em.validate(SCHEMA_NAME, entity);
+		em.create( SCHEMA_NAME, entity );
+		return entity
+	}
+	
+	@ProxyMethod
+	public def open( entity ) {
+		entity = em.read(SCHEMA_NAME, entity)
+		if( !entity ) throw new Exception('Bank does not exist.')
+		return entity
+	}
+	
+	@ProxyMethod
+	public def update( entity ) {
+		def old = open(entity)
+		if( old.state == STATE_APPROVED)
+			throw new Exception('Bank has already been approved.')
+		
+		em.validate(SCHEMA_NAME, entity);
+		em.update( SCHEMA_NAME, entity );
+		return entity
+	}
+	
+	@ProxyMethod
+	public def approve( entity ) {
+		def old = open(entity)
+		if( old.state == STATE_APPROVED )
+			throw new Exception('Bank has already been approved.')
+		entity.state = STATE_APPROVED
+		return update( entity )
+	}
+	
+	@ProxyMethod
+	public def delete( entity ) {
+		em.delete( SCHEMA_NAME, entity );
+	}	
+	
+}

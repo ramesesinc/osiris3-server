@@ -1,0 +1,31 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+
+class FundListService {
+
+	@PersistenceContext('main')
+	def em
+
+	@ProxyMethod
+	public def getColumns(def m){
+		return [
+			[name:"fundname", caption:"Fund Name"],
+			[name:"fund", caption:"Sub Fund?", type: 'checkbox', checkedValue:1, uncheckedValue:0],
+			[name:"parentfund", caption:"Parent Fund"],
+		];
+	}
+	
+	@ProxyMethod
+	public List getList( params ) {
+		params.searchtext = (params.searchtext ? params.searchtext+'%' : '%')
+		params.fund = params.searchtext
+		params.fundname = params.searchtext
+		def result = em.sqlContext.createNamedQuery('fund:getList')
+					.setParameters(params)
+					.setFirstResult( params._start )
+					.setMaxResults(params._limit)
+					.resultList 
+		return result
+	}
+	
+}

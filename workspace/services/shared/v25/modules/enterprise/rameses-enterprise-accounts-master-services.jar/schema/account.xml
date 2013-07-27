@@ -1,0 +1,12 @@
+<schema>
+
+	<element name="account" tablename="account">
+		<field name="objid" primary="true"/>	
+		<field name="code" required="true"/>
+		<field name="title" required="true"/>
+		<field name="parentid" />
+		<field name="accttype" />
+	</element>
+
+	
+</schema>

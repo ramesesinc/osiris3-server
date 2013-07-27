@@ -1,0 +1,9 @@
+<schema>
+	<element name="itemeacctgroup" tablename="itemaccountgroup" >
+		<field name="objid" primary="true"/>
+		<field name="state" required="true"/>
+		<field name="name" required="true"/>
+		<field name="remarks"/>
+	</element>
+</schema>
+

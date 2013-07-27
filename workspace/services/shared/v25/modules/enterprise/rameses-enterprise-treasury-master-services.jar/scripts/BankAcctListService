@@ -1,0 +1,40 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+
+class BankAcctListService {
+
+	@PersistenceContext('main')
+	def em
+	
+	@ProxyMethod
+	public def getColumns(def m) {
+		return [
+			[name:"state", caption:"State"],
+			[name:"acctno", caption:"Account No."],
+			[name:"fund", caption:"Fund"],
+			[name:"bank_code", caption:"Bank Code"],
+			[name:"bank_name", caption:"Bank Name"],
+			[name:"branchname", caption:"Branch Name"],
+		];
+	}
+	
+	@ProxyMethod
+	public List getList( params ) {
+		params.searchtext = (params.searchtext? params.searchtext+'%':'%')
+		params.acctno = params.searchtext
+		params.bank_code = params.searchtext
+		params.bank_name = params.searchtext
+		
+		def result = em.sqlContext.createNamedQuery('bankacct:getList')
+					.setParameters(params)
+					.setFirstResult( params._start )
+					.setMaxResults(params._limit)
+					.resultList
+		return result
+	}
+	
+	@ProxyMethod
+	public List getAccountTypeList() {
+		return ["CHECKING", "SAVINGS", "TIME DEPOSIT", "HYSA"]
+	}
+}

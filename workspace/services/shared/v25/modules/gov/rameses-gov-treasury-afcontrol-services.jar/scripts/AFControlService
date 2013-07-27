@@ -1,0 +1,168 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFControlService {
+
+	@PersistenceContext("main")
+	def em;
+	
+	@Service("DateService")
+	def dateSvc;
+	
+	@Service("SequenceService")
+	def seqSvc;
+	
+	@Service("AFInventoryService")
+	def afInventorySvc;
+	
+	@Env
+	def env;
+
+	@ProxyMethod
+	public def postReceipt(def receipt) { 
+		receipt.items.each { x->
+			int stub = x.startstub;
+			int qty = x.qty;
+			int startseries = x.startseries;
+			int endseries = x.endseries;
+			int unitqty = (endseries - startseries +1 ) / qty;
+			(1 .. qty).each { c->
+				endseries = startseries + unitqty-1; 
+				def ac = [:];
+				ac.objid = (x.prefix?x.prefix:'')+startseries+(x.suffix?x.suffix:'');
+				ac.mode = "ONLINE";
+				ac.state = "OPEN";
+				ac.af = x.af;
+				ac.collector = receipt.issueto;
+				ac.startseries = startseries;
+				ac.currentseries = startseries;
+				ac.endseries = endseries;
+				ac.beginseries = startseries;
+				ac.stub = stub;
+				ac.active = 0;
+				ac.prefix = x.prefix
+				ac.suffix = x.suffix;
+				ac.refid = receipt.objid;
+				em.create("afcontrol", ac );
+				startseries = endseries+1;
+				stub += 1;
+			}
+		}
+	}
+
+	@ProxyMethod
+	public boolean checkConflictSeries(def c)  {
+		//check first for conflicts
+		def builder = new StringBuilder();
+		if( c.prefix ) {
+			builder.append( ''' AND prefix=$P{prefix} ''' ); 
+		}
+		else {
+			builder.append( " AND prefix IS NULL ");
+		}
+		if( c.suffix ) {
+			builder.append( ''' AND suffix=$P{suffix} ''' ); 
+		}
+		else {
+			builder.append( " AND suffix IS NULL ");
+		}
+		def qry = em.sqlContext.createNamedQuery("afcontrol:checkConflictSeries");
+		def test = qry.setVars([filter:builder.toString()]).setParameters(c).singleResult;
+		if(test)
+			return true;
+		else
+			return false;
+	}
+	
+	@ProxyMethod
+	public def postBeginBalance(def c) {
+		boolean test = checkConflictSeries(c);	
+		if(test)
+			throw new Exception("Conflict in existing series");
+
+		//rebuild the request so we can reuse 	
+		c.objid = "BAL" + seqSvc.getNextFormattedSeries("AFCBB");
+		c.txndate = dateSvc.serverDate;
+		c.createdby = env.USER;	
+		em.create("afcontrol:beginbalance", c);
+		def req = [objid:c.objid, issueto:c.collector, items:[]];
+		req.items << c;
+		postReceipt(req);	
+	}
+	
+	
+	@ProxyMethod
+	public def cancelSeries(def c) {
+		if(!c.currentseries) throw new Exception("Provide currentseries");
+		def qry = em.sqlContext.createNamedQuery("afcontrol:checkConflictCancelledSeries");
+		def test = qry.setParameters(c).singleResult;
+		if(test) throw new Exception("Series conflict. Series already cancelled");
+		c.objid = "AFCTRLC"+ new UID();
+		c.issuedby = env.USER;
+		c.txndate = dateSvc.serverDate;
+		
+		//update the existing serial number if current series is the same
+		em.create("afcontrol:cancelled", c );
+		updateCurrentSeries([currentseries:c.currentseries, controlid:c.controlid]);
+	}
+	
+	@ProxyMethod
+	public void activateControl(def c) {
+		String sql = "activateCollectorControl";
+		if( c.assignee && c.assignee!=c.collector) {
+			sql = "activateAssigneeControl";
+		}
+		def qry = em.sqlContext.createNamedExecutor("afcontrol:"+sql);
+		qry.setParameters(c).execute();
+	}
+	
+	
+	@ProxyMethod
+	public void changeMode(def c) {
+		def qry = em.sqlContext.createNamedExecutor("afcontrol:updateMode");	
+		qry.setParameters(c).execute();
+	}
+	
+	@ProxyMethod
+	public void transferCollector(def c, transferto) {
+		def m = [:];
+		m.objid = "AFCTRLHIST"+new UID();
+		m.txndate = dateSvc.serverDate;
+		m.collector = c.collector;
+		m.startseries = c.beginseries;
+		m.endseries = c.currentseries;
+		m.controlid = c.objid;
+		em.create("afcontrol:transferhistory", m);	
+		def exc = em.sqlContext.createNamedExecutor("afcontrol:transferCollector");
+		exc.setParameters( [collector:transferto, objid:c.objid]).execute();
+	}
+	
+	/***
+	*  locate first if there are cancelled series and locate next available series 
+	*/
+	@ProxyMethod
+	public void updateCurrentSeries(def c) {
+		if( !c.currentseries ) throw new Exception("provide nextseries");
+		if( !c.controlid ) throw new Exception("provide controlid");
+		def qry = em.sqlContext.createNamedQuery("afcontrol:getCancelledForUpdateSeries");
+		def cancelled = qry.setParameters(c).resultList;
+		int currentseries = c.currentseries;
+		for(o in cancelled) {
+			if(o.startseries!=currentseries)break;
+			currentseries = o.endseries+1;
+		}
+		def ex = em.sqlContext.createNamedExecutor("afcontrol:updateCurrentSeries");
+		ex.setParameters([controlid:c.controlid, currentseries:currentseries]).execute();
+	}
+	
+	@ProxyMethod
+	public def open(def c) {
+		def afcontrol = em.read("afcontrol", c );
+		def qry = em.sqlContext.createNamedQuery("afcontrol:getCancelledSeries");	
+		afcontrol.cancelledItems = qry.setParameter("controlid", afcontrol.objid ).resultList;
+		return afcontrol;	
+	}
+	
+	
+}

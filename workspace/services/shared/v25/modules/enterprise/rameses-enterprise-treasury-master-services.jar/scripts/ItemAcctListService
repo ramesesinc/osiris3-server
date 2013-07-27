@@ -1,0 +1,33 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+
+class ItemAcctListService {
+
+	@PersistenceContext('main')
+	def em
+	
+	@ProxyMethod
+	public def getColumns(def g){
+		return [
+			[name:'code', caption:'Code', width:100],
+			[name:'accttitle', caption:'Account Title', width:800],
+			[name:'state', caption:'State', width:120],
+		];
+	}
+	
+	@ProxyMethod
+	public List getList( params ) {
+		params.searchtext = (params.searchtext? params.searchtext+'%' : '%')
+		params.acctno = params.searchtext
+		params.accttitle = params.searchtext
+		
+		def result = em.sqlContext.createNamedQuery('itemacct:getList')
+					.setParameters(params)
+					.setFirstResult( params._start )
+					.setMaxResults(params._limit)
+					.resultList 
+					
+		return result
+	}
+	
+}

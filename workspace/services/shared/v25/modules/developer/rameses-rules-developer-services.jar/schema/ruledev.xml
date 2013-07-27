@@ -1,0 +1,53 @@
+<schema>
+
+	<element name="ruleset" tablename="sys_ruleset">
+		<field name="name" primary="true"/>	
+		<field name="title" />
+		<field name="description" />
+		<field name="category" />
+	</element>
+
+	<element name="agendagroup" tablename="sys_ruleagendagroup">
+		<field name="name" primary="true"/>	
+		<field name="ruleset" primary="true"/>
+		<field name="title" />
+		<field name="description" />
+		<field name="sortorder" type="integer" />
+	</element>
+	
+	<element name="fact" tablename="sys_rulefact">
+		<field name="name" primary="true"/>	
+		<field name="ruleset" primary="true"/>
+		<field name="title" />
+		<field name="description" />
+		<field name="factclass" />
+		<field name="sortorder" type="integer" />
+		<field name="agendagroup" />
+		<complex name="fields" type="list" ref="factfield" serializer="default"/>
+	</element>
+
+	<element name="factfield">
+		<field name="name" required="true"/>	
+		<field name="datatype" required="true"/>	
+		<field name="caption" required="true"/>	
+	</element>
+	
+	<element name="action" tablename="sys_ruleaction">
+		<field name="name" primary="true"/>	
+		<field name="ruleset" primary="true"/>
+		<field name="title" />
+		<field name="description" />
+		<field name="template" />
+		<field name="sortorder" type="integer" />
+		<field name="agendagroup" />
+		<complex name="params" type="list" ref="actionparam" serializer="default"/>
+	</element>
+	
+	<element name="actionparam">
+		<field name="name" required="true"/>	
+		<field name="datatype" required="true"/>	
+		<field name="caption" required="true"/>	
+		<field name="expression"/>	
+	</element>
+	
+</schema>
