@@ -1,0 +1,99 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+
+class OrgAdminService {
+
+	@PersistenceContext("admin")
+	def	em; 
+
+	@Env
+	def env;
+	
+	
+	private def getChildNodes(def selectedNode) {
+		def n = selectedNode.childnodes.split(",").collect{ "'"+it+"'" }.join(",");	
+		def zlist = em.sqlContext.createNamedQuery("org:getChildClasses").setVars([filter:n]).resultList
+		return zlist.collect{ [
+			objid: selectedNode.objid+"-"+it.name, 
+			parentid: selectedNode.objid,
+			filetype: (selectedNode.orgclass + "-" + it.name).toLowerCase(),
+			folder: ((!it.childnodes) ? false : true),	
+			caption:it.name, 
+			name: it.name,
+			orgclass: it.name
+		] };	
+	}
+	
+	@ProxyMethod
+	public def getNodes( def selectedNode ) {
+		if(selectedNode.childnodes ) {
+			return getChildNodes( selectedNode );
+		}
+		else {
+			def params; def sql;
+			if( selectedNode.root ) {
+				sql = "org:getRootNodes";
+				params = selectedNode;
+			}	
+			else {
+				sql = "org:getChildNodes";
+				params = [parentid: selectedNode.parentid, orgclass: selectedNode.orgclass];
+			}
+			def list = em.sqlContext.createNamedQuery(sql).setParameters(params).resultList;
+			list.each {
+				it.caption = it.name;
+				it.filetype = it.orgclass?.toLowerCase();
+				it.folder = true;
+			}			
+			return list;
+		}	
+	}
+	
+	
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return[
+			[name:'name', caption:'Name' ],
+			[name:'orgclass', caption:'Org. Class' ]
+		];
+	}
+	
+	@ProxyMethod
+	public def getList( def params  ) {
+		if(params.childnodes) {
+			return getChildNodes( params );
+		}
+		if(!params.orgclass) throw new Exception("Please include an orgclass in OrgAdmin getList");
+		def m = [:];
+		m.userid = env.USERID;
+		m.orgclass = params.orgclass;
+		m.parentid = params.parentid;
+		def list = em.sqlContext.createNamedQuery('org:getList').setParameters(m).resultList; 
+		list.each {
+			if(it.orgclass!='BARANGAY') it.folder = true;	
+		}
+		return list;
+	}
+
+	@ProxyMethod
+	public def create( def o ) {
+		o.objid = "USGRP" + new UID();
+		em.create("org", o );
+	}
+
+	@ProxyMethod
+	public def open( def o ) {
+		em.read("org", o );
+	}
+	
+	@ProxyMethod
+	public def update( def o ) {
+		em.update("org", o );
+	}
+	
+
+	
+}

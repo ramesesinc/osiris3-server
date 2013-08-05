@@ -1,0 +1,34 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+
+
+class SecuritygroupAdminService {
+
+	@PersistenceContext("admin")
+	def em;
+
+	@ProxyMethod
+	public def getColumns( param ) {
+		return  [
+			[name:'objid', caption:'Name'],
+		]
+	}
+
+	@ProxyMethod
+	public List getList( params ) {
+		def m = params;
+		return em.sqlContext.createNamedQuery("securitygroup:getList").setParameters(m).resultList;	
+	}
+	
+	@ProxyMethod
+	public def open( def o ) {
+		return em.read("securitygroup", o );
+	}
+	
+	
+}
+
+

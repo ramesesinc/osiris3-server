@@ -1,0 +1,52 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+
+
+class TerminalAdminService {
+
+	@PersistenceContext("admin")
+	def	em; 
+
+	@Env
+	def env;
+	
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return[
+			[name:'objid', caption:'Terminal' ],
+		];
+	}
+	
+	@ProxyMethod
+	public def getList( def o ) {	
+		println 'getList-> ' + o;
+		if(!o.orgtype) throw new Exception("Please include an orgtype in OrgAdmin getList");
+		o.userid = env.USERID;
+		return em.sqlContext.createNamedQuery('org:getList').setParameters(o).resultList; 
+	}
+
+	@ProxyMethod
+	public def create( def o ) {
+		println "saving " + o;
+		//o.objid = "USGRP" + new UID();
+		//em.create("org", o );
+	}
+
+	@ProxyMethod
+	public def open( def o ) {
+		em.read("org", o );
+	}
+	
+	@ProxyMethod
+	public def update( def o ) {
+		em.update("org", o );
+	}
+	
+
+	
+}
+
+
