@@ -3,12 +3,14 @@ import com.rameses.common.*
 import java.rmi.server.UID;
 import com.rameses.util.*;
 import com.rameses.io.*;
+import com.rameses.services.extended.*;
 
-
-class SecuritygroupAdminService {
+class SecuritygroupAdminService extends AbstractCrudListService {
 
 	@PersistenceContext("admin")
 	def em;
+	
+	String schemaName = "securitygroup";
 
 	@ProxyMethod
 	public def getColumns( param ) {
@@ -17,18 +19,6 @@ class SecuritygroupAdminService {
 		]
 	}
 
-	@ProxyMethod
-	public List getList( params ) {
-		def m = params;
-		return em.sqlContext.createNamedQuery("securitygroup:getList").setParameters(m).resultList;	
-	}
-	
-	@ProxyMethod
-	public def open( def o ) {
-		return em.read("securitygroup", o );
-	}
-	
-	
 }
 
 

@@ -11,12 +11,11 @@ class UsergroupAdminService extends AbstractCrudListService {
 	@PersistenceContext("admin")
 	def	em; 
 
-	String schemaName = "usergroup";
-	String subSchemaName = "member";
-	
 	@Env
 	def env;
-	
+
+	String schemaName = "usergroup";
+	String subSchemaName = "member";
 	
 	@ProxyMethod
 	public def getNodes( def o ) {

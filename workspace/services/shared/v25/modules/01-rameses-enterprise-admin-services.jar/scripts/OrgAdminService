@@ -3,8 +3,9 @@ import com.rameses.common.*
 import java.rmi.server.UID;
 import com.rameses.util.*;
 import com.rameses.io.*;
+import com.rameses.services.extended.*;
 
-class OrgAdminService {
+class OrgAdminService extends AbstractCrudService {
 
 	@PersistenceContext("admin")
 	def	em; 
@@ -12,6 +13,7 @@ class OrgAdminService {
 	@Env
 	def env;
 	
+	String schemaName = "org";
 	
 	private def getChildNodes(def selectedNode) {
 		def n = selectedNode.childnodes.split(",").collect{ "'"+it+"'" }.join(",");	
@@ -78,22 +80,9 @@ class OrgAdminService {
 		return list;
 	}
 
-	@ProxyMethod
-	public def create( def o ) {
+	public void beforeCreate( def o ) {
 		o.objid = "USGRP" + new UID();
-		em.create("org", o );
 	}
-
-	@ProxyMethod
-	public def open( def o ) {
-		em.read("org", o );
-	}
-	
-	@ProxyMethod
-	public def update( def o ) {
-		em.update("org", o );
-	}
-	
 
 	
 }
