@@ -1,0 +1,10 @@
+<schema>
+
+	<element name="barangay" tablename="barangay">
+		<field name="objid" primary="true"/>
+		<field name="name" />
+		<field name="pin" />
+		<field name="indexno" />
+	</element>
+	
+</schema>

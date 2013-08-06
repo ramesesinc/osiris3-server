@@ -1,0 +1,23 @@
+import com.rameses.annotations.*;
+import com.rameses.common.*;
+import java.rmi.server.UID
+
+class DistrictLookupService{
+	
+	@PersistenceContext('main')	
+	def em
+	
+	@ProxyMethod
+	public def lookupDistricts( params ) {
+		params.searchtext = (params.searchtext ? params.searchtext : '')
+		params.name = params.searchtext + '%' 
+		params.parentid = ( params.parentid ? params.parentid : '%' ) 
+		
+		return em.sqlContext.createNamedQuery('lgu_district:lookup')
+					.setParameters(params)
+					.setFirstResult( params._start )
+					.setMaxResults(params._limit)
+					.resultList 
+	}
+
+}

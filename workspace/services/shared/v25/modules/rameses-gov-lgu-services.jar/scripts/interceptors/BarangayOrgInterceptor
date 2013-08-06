@@ -1,0 +1,30 @@
+import com.rameses.annotations.*;
+import com.rameses.common.*;
+import java.rmi.server.UID
+
+class BarangayOrgInterceptor {
+	
+	@PersistenceContext('main')	
+	def em
+	
+	@After(pattern="OrgAdminService.create", eval="#{args[0].orgclass=='BARANGAY'}")
+	public def onCreate( evt ) {
+		def o = evt.args[0];
+		em.create("barangay", o );
+	}
+	
+	@After(pattern="OrgAdminService.update", eval="#{args[0].orgclass=='BARANGAY'}")
+	public def onUpdate( evt ) {
+		def o = evt.args[0];
+		em.update("barangay", o );
+	}
+
+	@After(pattern="OrgAdminService.open", eval="#{args[0].orgclass=='BARANGAY'}")
+	public def onOpen( evt ) {
+		println "hooking barangay";
+		def o = evt.args[0];
+		def z = em.read("barangay", o );
+		evt.result.putAll( z );
+	}
+	
+}
