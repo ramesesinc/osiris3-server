@@ -1,6 +1,9 @@
 [getInfo]
 SELECT * FROM sys_user where username=$P{username}  
 
+[getInfoByPrimaryKey]
+SELECT * FROM sys_user where objid=$P{objid}  
+
 [incrementLoginCount]
 update sys_user set 
 	pwdlogincount=$P{pwdlogincount}+1 

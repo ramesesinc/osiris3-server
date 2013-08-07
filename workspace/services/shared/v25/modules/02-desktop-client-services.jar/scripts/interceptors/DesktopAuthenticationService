@@ -24,6 +24,13 @@ class DesktopAuthenticationService
 
 	private Map authenticateImpl( username, password ) 
 	{
+		def isSA = username.toString().equalsIgnoreCase("sa");
+		if (isSA) {
+			if (password == var.sa_pwd) return [:]; 
+
+			throw new Exception("Access denied. Please check your username and password"); 
+		}
+
 		def info = svc.authenticate(username, password);
 		
 		info.pwdlogincount = toInt(info.pwdlogincount); 

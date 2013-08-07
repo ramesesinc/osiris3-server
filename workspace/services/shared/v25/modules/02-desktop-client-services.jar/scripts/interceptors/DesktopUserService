@@ -17,7 +17,13 @@ class DesktopUserService
 	}
 	
 	private Map getInfo( username ) {
-		def info = svc.getInfo(username); 
+		def info = null;		
+		def isSA = username.toString().equalsIgnoreCase("sa");
+		if (isSA) 
+			info = [objid:username, username: username];
+		else 
+			info = svc.getInfo(username); 
+
 		if (!info) throw new Exception("'"+username+"' user account does not exist"); 
 
 		def result = [:]; 
@@ -31,6 +37,8 @@ class DesktopUserService
             TERMINALID: env.TERMINALID,              
 			ROLES: [ALLOWED: 'system.*'] 
 		];
+
+		if (isSA) result.env.ROLES['ADMIN.SYSADMIN'] = null; 
 
 		def permissions = svc.getPermissions([userid: info.objid, orgname:env.CLIENTCODE]); 
 		permissions?.each {

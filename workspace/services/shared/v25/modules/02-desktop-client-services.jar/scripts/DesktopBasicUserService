@@ -15,7 +15,7 @@ class DesktopBasicUserService
 	@Env 
 	def env;
 
-	@ProxyMethod
+	@ProxyMethod 
 	public Map getInfo( username ) 
 	{
 		def qry = em.sqlContext.createNamedQuery('sysuser:getInfo');
@@ -84,13 +84,32 @@ class DesktopBasicUserService
 		em.update('sysuser:changePassword', info); 
 	} 	
 
+	@ProxyMethod
+	public void resetPassword(Map params) 
+	{
+		//initial validation for double checking
+		if (!params.userid) throw new Exception('Please specify userid');
+		if (!params.password) throw new Exception('Please specify password');
+
+		def info = em.read('sysuser:changePassword', [objid: params.userid]); 
+		if (!info) throw new Exception("'"+params.userid+"' user record does not exist"); 
+
+		//initiate lock
+		def newlockid = 'LOCK'+new java.rmi.server.UID();
+		em.update('sysuser:updateLock', [objid: params.userid, lockid: newlockid]);
+
+		info.pwd = params.password;
+		info.pwdexpirydate = null;
+		em.update('sysuser:changePassword', info); 
+	} 
+
  	@ProxyMethod 
 	public def getPermissions( params ) { 
 		def qry = null;
 		if (params.orgname) {
 			qry = em.sqlContext.createNamedQuery('sysuser:getPermissionsByOrg'); 
 		} else {
-			qry = em.sqlContext.createQuery('sysuser:getPermissions'); 
+			qry = em.sqlContext.createNamedQuery('sysuser:getPermissions'); 
 		}
 
 		return qry.setParameters(params).resultList;
