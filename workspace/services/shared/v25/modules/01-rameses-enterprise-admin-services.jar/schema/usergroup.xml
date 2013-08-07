@@ -17,7 +17,10 @@
 	<element name="admin" tablename="sys_usergroup_admin">
 		<field name="objid" primary="true"/>	
 		<field name="usergroupid" />
-		<field name="userid" />
+		<field name="user_objid" />
+		<field name="user_username" />
+		<field name="user_firstname" />
+		<field name="user_lastname" />
 		<field name="exclude"/>
 	</element>
 
@@ -25,6 +28,7 @@
 		<field name="objid" primary="true"/>	
 		<field name="usergroupid" />
 		<field name="user_objid" />
+		<field name="user_username" />
 		<field name="user_firstname" />
 		<field name="user_lastname" />
 		

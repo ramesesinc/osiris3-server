@@ -6,7 +6,7 @@ import com.rameses.io.*;
 import com.rameses.services.extended.*;
 
 
-class UsergroupAdminService extends AbstractCrudListService {
+class UsergroupAdminService extends AbstractCrudService {
 
 	@PersistenceContext("admin")
 	def	em; 
@@ -15,18 +15,7 @@ class UsergroupAdminService extends AbstractCrudListService {
 	def env;
 
 	String schemaName = "usergroup";
-	String subSchemaName = "member";
-	
-	@ProxyMethod
-	public def getNodes( def o ) {
-		o.userid = env.USERID;
-		def sql = "usergroup:" + ( (o.root) ? "getRootNodesForAdmin" : "getChildNodesForAdmin");
-		def list = em.sqlContext.createNamedQuery(sql).setParameters(o).resultList;		
-		list.each { 
-			if(o.root) it.folder = true;
-		}
-		return list;
-	}
+	String subSchemaName = "admin";
 	
 	
 	/*****
@@ -36,35 +25,19 @@ class UsergroupAdminService extends AbstractCrudListService {
 	public def getColumns( def o ) {
 		o.userid = env.USERID;
 		return[
-			[name:'username', caption:'User Name' ],
+			[name:'user.username', caption:'User Name' ],
 			[name:'user.lastname', caption:'Last Name' ],
 			[name:'user.firstname', caption:'First Name' ],
-			[name:'org.name', caption:'Org' ],
-			[name:'securitygroup', caption:'Security Group' ],
 		];
 	}
 	
-	public void beforeList( def o ) {	
-		o.userid = env.USERID;
-	}
-
-	public void beforeCreate( def o ) {	
-		o.objid = "USGRP" + new UID();
-	}
-
-
 	@ProxyMethod
-	public def getPermissions( def o ) {
-		if(!o.usergroupid)
-			throw new Exception("Please include usergroupid when calling getPermissions");
-		def list = em.sqlContext.createNamedQuery("securitygroup:getUserGroupPermissions").setParameters(o).resultList;
-		list.each {
-			it.code = it.object + "." + it.permission;
-			if(!it.title) it.title = it.code;
-		}
-		return list;
+	public def getList( def o ) {
+		println o;
+		return em.sqlContext.createNamedQuery("usergroup:getAdminList").setParameters(o).resultList;
 	}
 
+	
 	
 }
 
