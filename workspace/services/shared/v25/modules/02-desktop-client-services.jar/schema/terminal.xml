@@ -1,0 +1,12 @@
+<schema>
+
+    <element name="terminal" tablename="sys_terminal" >
+		<field name="terminalid" primary="true"/>
+		<field name="macaddress"/>
+		<field name="dtregistered"  />
+		<field name="registeredby" />
+		<field name="info"/>
+		<field name="state" default="0"/>
+    </element>
+
+</schema>
