@@ -1,0 +1,54 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+class DesktopBasicSessionService
+{
+	@PersistenceContext('system') 
+	def em;
+
+	@Service('DateService')
+	def dateSvc;
+
+	@ProxyMethod 
+	public Map createSession( userid, username, clienttype ) {
+		if (!userid) throw new Exception('Please specify userid'); 
+		if (!username) throw new Exception('Please specify username'); 
+
+		//clear active sessions that were left open 
+		//def list = em.sqlContext.createNamedQuery('session:getList').setParameters([userid: userid]).resultList; 
+		//while (!list.isEmpty()) {
+		//	def item = list.remove(0);
+		//	item.timeout = dateSvc.serverDate.toString();
+		//	item.state = 'TIMEDOUT'; 
+		//	em.create('session:log', item);
+		//	em.delete('session', item);
+		//}
+
+		def sess = [
+			sessionid: 	'SESS'+new java.rmi.server.UID(), 
+			userid: 	userid,
+			username: 	username, 
+			clienttype: clienttype, 
+			timein: 	dateSvc.serverDate.toString() 
+		];
+		sess.accesstime = sess.timein; 
+		em.create('session', sess); 
+		return sess;
+	}
+
+	@ProxyMethod 
+	public void closeSession( sessionid ) {
+		def sess = getSession(sessionid); 
+		if (!sess) return;
+
+		sess.timeout = dateSvc.serverDate.toString();
+		sess.state = 'LOGOUT'; 
+		em.create('session:log', sess);
+		em.delete('session', sess);
+	} 
+
+	@ProxyMethod 
+	public Map getSession( sessionid ) {
+		return em.read('session', [sessionid: sessionid]);
+	}
+}

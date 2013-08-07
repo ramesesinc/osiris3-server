@@ -1,0 +1,11 @@
+<schema>
+
+    <element name="changePassword" tablename="sys_user">
+        <field name="objid" primary="true" />
+        <field name="pwd" />
+        <field name="pwdlogincount" />
+        <field name="pwdexpirydate" />
+        <field name="usedpwds" />
+    </element>  	
+	
+</schema>

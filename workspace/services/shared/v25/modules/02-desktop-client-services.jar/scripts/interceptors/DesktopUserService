@@ -1,0 +1,46 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+
+class DesktopUserService
+{
+	@Service('DesktopBasicUserService')
+	def svc;
+
+	@Env 
+	def env;
+
+	@After(pattern="UserService.getInfo", eval="env.CLIENTTYPE=='desktop'") 
+	public void loadUserInfo( evt ) {
+		def username = evt.args[0]; 
+		def resmap = getInfo( username ); 
+		evt.result.putAll(resmap);
+	}
+	
+	private Map getInfo( username ) {
+		def info = svc.getInfo(username); 
+		if (!info) throw new Exception("'"+username+"' user account does not exist"); 
+
+		def result = [:]; 
+		result.username = info.username;
+		result.USERID = info.objid;
+    	result.env = [
+            USER: info.username, 
+            USERID: info.objid, 
+            NAME: info.name, 
+            EMAIL: info.email,
+            TERMINALID: env.TERMINALID,              
+			ROLES: [ALLOWED: 'system.*'] 
+		];
+
+		def permissions = svc.getPermissions([userid: info.objid, orgname:env.CLIENTCODE]); 
+		permissions?.each {
+			def key = it.domain+'.'+it.role; 
+			def lst = [];
+			if (it.security?.exclude) lst << it.security?.exclude;
+			if (it.custom?.exclude) lst << it.custom?.exclude;
+			if (lst) result.env.ROLES[key] = lst.join('|'); 
+		} 
+		return result;
+	}	
+}    	
+
