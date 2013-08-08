@@ -21,7 +21,7 @@ class OrgAdminService extends AbstractCrudService {
 		return zlist.collect{ [
 			objid: selectedNode.objid+"-"+it.name, 
 			parentid: selectedNode.objid,
-			filetype: (selectedNode.orgclass + "-" + it.name).toLowerCase(),
+			filetype: (it.name).toLowerCase()+"-folder",
 			folder: ((!it.childnodes) ? false : true),	
 			caption:it.name, 
 			name: it.name,
@@ -68,20 +68,20 @@ class OrgAdminService extends AbstractCrudService {
 		if(params.childnodes) {
 			return getChildNodes( params );
 		}
-		if(!params.orgclass) throw new Exception("Please include an orgclass in OrgAdmin getList");
-		def m = [:];
-		m.userid = env.USERID;
-		m.orgclass = params.orgclass;
-		m.parentid = params.parentid;
-		def list = em.sqlContext.createNamedQuery('org:getList').setParameters(m).resultList; 
-		list.each {
-			if(it.orgclass!='BARANGAY') it.folder = true;	
-		}
-		return list;
-	}
+		else {
+			if(!params.orgclass) throw new Exception("Please include an orgclass in OrgAdmin getList");
 
-	public void beforeCreate( def o ) {
-		o.objid = "USGRP" + new UID();
+			def m = [:];
+			m.userid = env.USERID;
+			m.orgclass = params.orgclass;
+			m.parentid = params.parentid;
+
+			def list = em.sqlContext.createNamedQuery('org:getList').setParameters(m).resultList; 
+			list.each {
+				if(it.orgclass!='BARANGAY') it.folder = true;	
+			}
+			return list;
+		}
 	}
 
 	

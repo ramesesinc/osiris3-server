@@ -33,7 +33,6 @@ class UsergroupAdminService extends AbstractCrudService {
 	
 	@ProxyMethod
 	public def getList( def o ) {
-		println o;
 		return em.sqlContext.createNamedQuery("usergroup:getAdminList").setParameters(o).resultList;
 	}
 

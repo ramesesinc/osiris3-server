@@ -20,7 +20,7 @@ class UsergroupService extends AbstractCrudListService {
 	@ProxyMethod
 	public def getNodes( def o ) {
 		o.userid = env.USERID;
-		def sql = "usergroup:" + ( (o.root) ? "getRootNodesForAdmin" : "getChildNodesForAdmin");
+		def sql = "usergroup:" + ( (o.root) ? "getRootNodes" : "getChildNodes");
 		def list = em.sqlContext.createNamedQuery(sql).setParameters(o).resultList;		
 		list.each { 
 			if(o.root) it.folder = true;
@@ -47,11 +47,6 @@ class UsergroupService extends AbstractCrudListService {
 	public void beforeList( def o ) {	
 		o.userid = env.USERID;
 	}
-
-	public void beforeCreate( def o ) {	
-		o.objid = "USGRP" + new UID();
-	}
-
 
 	
 	

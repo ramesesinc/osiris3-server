@@ -8,7 +8,7 @@
 		<field name="lastname" />
 		<field name="jobtitle" />
 		<field name="name" />
-		<field name="state" type="integer"/>
+		<field name="state" />
 	</element>
 	
 </schema>

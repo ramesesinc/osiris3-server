@@ -27,8 +27,6 @@ class UserAdminService extends AbstractCrudListService {
 	}
 
 	public void beforeCreate( def o ) {
-		o.objid = "USR" + new UID();
-		o.state = 1;
 		o.name = o.lastname + ","+o.firstname;
 	}
 
