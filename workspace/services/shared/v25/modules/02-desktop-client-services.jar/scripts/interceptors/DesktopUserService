@@ -43,11 +43,10 @@ class DesktopUserService
 
 		if (isSA) result.env.ROLES['ADMIN.SYSADMIN'] = null; 
 
+		def rootOrg = orgSvc.getRoot([:]);
 		def orginfo = null; 
-		if (env.CLIENTCODE) 
-			orginfo = orgSvc.getInfo([name: env.CLIENTCODE]); 
-		else 
-			orginfo = orgSvc.getRoot([:]); 
+		if (env.CLIENTCODE) orginfo = orgSvc.getInfo([name: env.CLIENTCODE]); 
+		if (!orginfo) orginfo = rootOrg;
 
 		result.env.ORGID = orginfo?.objid;
 		result.env.ORGNAME = orginfo?.name; 
