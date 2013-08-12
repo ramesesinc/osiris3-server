@@ -48,8 +48,6 @@ class SecuritygroupAdminService extends AbstractCrudListService {
 		}
 		return results;
 	}	
-
-	
 }
 
 
