@@ -22,7 +22,9 @@ class UserAdminService extends AbstractCrudListService {
 			[name:'username', caption:'User Name'],
 			[name:'lastname', caption:'Last Name'],
 			[name:'firstname', caption:'First Name'],
+			[name:'middlename', caption:'Middle Name'],
 			[name:'jobtitle', caption:'Job Title'],
+			[name:'state', caption:'Status']
 		]
 	}
 
