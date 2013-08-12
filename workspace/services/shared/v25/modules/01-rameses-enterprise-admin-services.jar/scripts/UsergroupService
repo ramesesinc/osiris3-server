@@ -20,9 +20,11 @@ class UsergroupService extends AbstractCrudListService {
 	@ProxyMethod
 	public def getNodes( def o ) {
 		o.userid = env.USERID;
-		println 'Usergroup_getNodes-> ' + o;
-		def sql = "usergroup:" + ( (o.root) ? "getRootNodes" : "getChildNodes");
-		def list = em.sqlContext.createNamedQuery(sql).setParameters(o).resultList;		
+		o.usergroupfilter = "";
+		if (o.usergroupid) o.domain = o.usergroupid;
+
+		def sql = 'usergroup:' + (o.root? 'getRootNodes': 'getChildNodes');
+		def list = em.sqlContext.createNamedQuery(sql).setParameters(o).setVars(o).resultList;		
 		list.each { 
 			if (o.root) it.folder = true;
 			if (it.filetype == 'usergroup-folder') {
@@ -50,8 +52,9 @@ class UsergroupService extends AbstractCrudListService {
 	
 	public void beforeList( def o ) {	
 		o.userid = env.USERID;
+		o.usergroupfilter = "";
+		if (o.usergroupid) o.usergroupfilter = ' AND ugm.usergroupid=$P{usergroupid} ';
 	}
-
 	
 	@ProxyMethod 
 	public void updatePermission(def params) {
@@ -62,7 +65,7 @@ class UsergroupService extends AbstractCrudListService {
 		
 		info.exclude = params.exclude; 
 		em.update('usergroup:member', info); 
-	}
+	} 
 }
 
 

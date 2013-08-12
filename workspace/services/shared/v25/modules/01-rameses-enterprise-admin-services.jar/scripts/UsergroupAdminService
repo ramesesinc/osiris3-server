@@ -15,8 +15,7 @@ class UsergroupAdminService extends AbstractCrudService {
 	def env;
 
 	String schemaName = "usergroup";
-	String subSchemaName = "admin";
-	
+	String subSchemaName = "admin";	
 	
 	/*****
 	* display the member columns
@@ -24,6 +23,7 @@ class UsergroupAdminService extends AbstractCrudService {
 	@ProxyMethod
 	public def getColumns( def o ) {
 		o.userid = env.USERID;
+		println 'UsergroupAdminService_getColumns-> ' + o;
 		return[
 			[name:'user.username', caption:'User Name' ],
 			[name:'user.lastname', caption:'Last Name' ],
@@ -35,8 +35,6 @@ class UsergroupAdminService extends AbstractCrudService {
 	public def getList( def o ) {
 		return em.sqlContext.createNamedQuery("usergroup:getAdminList").setParameters(o).resultList;
 	}
-
-	
 	
 }
 

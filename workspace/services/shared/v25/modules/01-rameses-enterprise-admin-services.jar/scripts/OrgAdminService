@@ -48,7 +48,7 @@ class OrgAdminService extends AbstractCrudService {
 			def list = em.sqlContext.createNamedQuery(sql).setParameters(params).resultList;
 			list.each {
 				it.caption = it.name;
-				it.filetype = it.orgclass?.toLowerCase();
+				it.filetype = it.orgclass;
 				it.folder = true;
 
 				if (it.childnodes) {					
@@ -70,7 +70,6 @@ class OrgAdminService extends AbstractCrudService {
 			[name:'name', caption:'Name' ],
 			[name:'orgclass', caption:'Org. Class' ]
 		];
-		return columns;
 	}
 	
 	@ProxyMethod
@@ -90,27 +89,7 @@ class OrgAdminService extends AbstractCrudService {
 		if (params._limit) qry.setMaxResults(params._limit);
 
 		def list = qry.resultList;
-		//list.each { it.filetype = it.name; }
+		list.each { it.filetype = it.orgclass; }
 		return list;
-		/*
-		if(params.childnodes) {
-			return getChildNodes( params );
-		}
-		else {
-			if(!params.orgclass) throw new Exception("Please include an orgclass in OrgAdmin getList");
-
-			def m = [:];
-			m.userid = env.USERID;
-			m.orgclass = params.orgclass;
-			m.parentid = params.parentid;
-
-			def list = em.sqlContext.createNamedQuery('org:getList').setParameters(m).resultList; 
-			list.each {
-				if(it.orgclass!='BARANGAY') it.folder = true;	
-			}
-			return list;
-		}*/
-	}
-
-	
+	}	
 }

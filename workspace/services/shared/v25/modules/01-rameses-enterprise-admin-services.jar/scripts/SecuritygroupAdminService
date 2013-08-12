@@ -17,7 +17,7 @@ class SecuritygroupAdminService extends AbstractCrudListService {
 		return  [
 			[name:'objid', caption:'Name'],
 		]
-	}
+	} 
 	
 	@ProxyMethod
 	public def getPermissions( def o ) {
