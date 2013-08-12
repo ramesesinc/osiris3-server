@@ -20,10 +20,14 @@ class UsergroupService extends AbstractCrudListService {
 	@ProxyMethod
 	public def getNodes( def o ) {
 		o.userid = env.USERID;
+		println 'Usergroup_getNodes-> ' + o;
 		def sql = "usergroup:" + ( (o.root) ? "getRootNodes" : "getChildNodes");
 		def list = em.sqlContext.createNamedQuery(sql).setParameters(o).resultList;		
 		list.each { 
-			if(o.root) it.folder = true;
+			if (o.root) it.folder = true;
+			if (it.filetype == 'usergroup-folder') {
+				it.children = [[filetype:'usergroup']];
+			}
 		}
 		return list;
 	}
@@ -49,7 +53,16 @@ class UsergroupService extends AbstractCrudListService {
 	}
 
 	
-	
+	@ProxyMethod 
+	public void updatePermission(def params) {
+		if (!params.objid) throw new Exception('Please specify objid'); 
+
+		def info = em.read('usergroup:member', params);  
+		if (!info) throw new Exception("'"+params.objid+"' usergroup member record not found"); 
+		
+		info.exclude = params.exclude; 
+		em.update('usergroup:member', info); 
+	}
 }
 
 

@@ -22,10 +22,11 @@ class UserLookupService  {
 
 	@ProxyMethod
 	public List getList( params ) {
-		def m = [:];
-		return em.sqlContext.createNamedQuery("user:getList").setParameters(m).resultList;	
+		if (!params.name) params.name = params.searchtext;
+		
+		params.name = params.name? params.name+'%': '%';
+		return em.sqlContext.createNamedQuery("user:getList").setParameters(params).resultList;	
 	}
-	
 }
 
 

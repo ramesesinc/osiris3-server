@@ -21,22 +21,22 @@ class OrgAdminService extends AbstractCrudService {
 		return zlist.collect{ [
 			objid: selectedNode.objid+"-"+it.name, 
 			parentid: selectedNode.objid,
-			filetype: (it.name).toLowerCase()+"-folder",
 			folder: ((!it.childnodes) ? false : true),	
 			caption:it.name, 
 			name: it.name,
-			orgclass: it.name
+			orgclass: it.name, 
+			children: [[caption: it.name, filetype:it.name]]
 		] };	
 	}
 	
 	@ProxyMethod
 	public def getNodes( def selectedNode ) {
-		if(selectedNode.childnodes ) {
+		if (selectedNode.childnodes ) {
 			return getChildNodes( selectedNode );
 		}
 		else {
 			def params; def sql;
-			if( selectedNode.root ) {
+			if ( selectedNode.root ) {
 				sql = "org:getRootNodes";
 				params = selectedNode;
 			}	
@@ -44,11 +44,20 @@ class OrgAdminService extends AbstractCrudService {
 				sql = "org:getChildNodes";
 				params = [parentid: selectedNode.parentid, orgclass: selectedNode.orgclass];
 			}
+
 			def list = em.sqlContext.createNamedQuery(sql).setParameters(params).resultList;
 			list.each {
 				it.caption = it.name;
 				it.filetype = it.orgclass?.toLowerCase();
 				it.folder = true;
+
+				if (it.childnodes) {					
+					def children = [];
+					it.childnodes.split(',').each{sval-> 
+						children << [filetype:sval.trim(), caption:sval.trim()]; 
+					}
+					it.children = children;
+				}
 			}			
 			return list;
 		}	
@@ -57,14 +66,33 @@ class OrgAdminService extends AbstractCrudService {
 	
 	@ProxyMethod
 	public def getColumns( def o ) {
-		return[
+		def columns = [
 			[name:'name', caption:'Name' ],
 			[name:'orgclass', caption:'Org. Class' ]
 		];
+		return columns;
 	}
 	
 	@ProxyMethod
 	public def getList( def params  ) {
+		def orgclasses = "'"+params.orgclass+"'";
+		if (params?.childnodes) {
+			orgclasses = params.childnodes.split(",").collect{ "'"+it+"'" }.join(",");		
+		} 
+		
+		def m = [orgclasses: orgclasses, parentid: params.objid];
+		if ("${params.parentid}-${params.name}".toString() == params.objid) {
+			m.parentid = params.parentid; 
+		}
+
+		def qry = em.sqlContext.createNamedQuery('org:getList').setVars(m).setParameters(m); 
+		if (params._start) qry.setFirstResult(params._start);
+		if (params._limit) qry.setMaxResults(params._limit);
+
+		def list = qry.resultList;
+		//list.each { it.filetype = it.name; }
+		return list;
+		/*
 		if(params.childnodes) {
 			return getChildNodes( params );
 		}
@@ -81,7 +109,7 @@ class OrgAdminService extends AbstractCrudService {
 				if(it.orgclass!='BARANGAY') it.folder = true;	
 			}
 			return list;
-		}
+		}*/
 	}
 
 	

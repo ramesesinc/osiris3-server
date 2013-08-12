@@ -31,6 +31,24 @@ class SecuritygroupAdminService extends AbstractCrudListService {
 		return list;
 	}
 
+	@ProxyMethod
+	public def getSecurityGroupPermissions( def params ) {
+		if (!params.securitygroupid)
+			throw new Exception("Please specify securitygroupid");
+
+		def qry = em.sqlContext.createNamedQuery('securitygroup:getSecurityGroupPermissions');
+		def list = qry.setParameters([objid:params.securitygroupid]).resultList;
+		def results = [];
+		list.each {
+			it.code = it.object + "." + it.permission;
+			if (!it.exclude || !it.code.matches(it.exclude)) {
+				if (!it.title) it.title = it.code;
+				results << it;
+			}
+		}
+		return results;
+	}	
+
 	
 }
 

@@ -30,7 +30,12 @@ class UserAdminService extends AbstractCrudListService {
 		o.name = o.lastname + ","+o.firstname;
 	}
 
-	
+	public void beforeList( params ) {
+		if (!params.name) params.name = params.searchtext;
+
+		params.name = (params.name? params.name+'%': '%');
+		println 'beforeList-> ' + params;
+	}
 }
 
 

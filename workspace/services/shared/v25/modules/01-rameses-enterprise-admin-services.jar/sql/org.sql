@@ -18,12 +18,8 @@ SELECT * FROM sys_orgclass WHERE name IN ( ${filter} )
 SELECT * FROM sys_orgclass
 
 [getList]
-SELECT * FROM sys_org WHERE orgclass=$P{orgclass} AND parentid=$P{parentid}
+SELECT * FROM sys_org WHERE orgclass IN (${orgclasses}) AND parentid=$P{parentid} order by name 
 
 [getLookup]
 SELECT * FROM sys_org WHERE orgclass=$P{orgclass} 
-
-
- 
- 
  
