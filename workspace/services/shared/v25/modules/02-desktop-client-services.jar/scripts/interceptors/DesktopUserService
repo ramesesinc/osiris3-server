@@ -6,6 +6,9 @@ class DesktopUserService
 	@Service('DesktopBasicUserService')
 	def svc;
 
+	@Service('DesktopBasicOrgService')
+	def orgSvc;
+
 	@Env 
 	def env;
 
@@ -40,6 +43,15 @@ class DesktopUserService
 
 		if (isSA) result.env.ROLES['ADMIN.SYSADMIN'] = null; 
 
+		def orginfo = null; 
+		if (env.CLIENTCODE) 
+			orginfo = orgSvc.getInfo([name: env.CLIENTCODE]); 
+		else 
+			orginfo = orgSvc.getRoot([:]); 
+
+		result.env.ORGID = orginfo?.objid;
+		result.env.ORGNAME = orginfo?.name; 
+
 		def permissions = svc.getPermissions([userid: info.objid, orgname:env.CLIENTCODE]); 
 		permissions?.each {
 			def key = it.domain+'.'+it.role; 
@@ -47,8 +59,8 @@ class DesktopUserService
 			if (it.security?.exclude) lst << it.security?.exclude;
 			if (it.custom?.exclude) lst << it.custom?.exclude;
 			if (lst) result.env.ROLES[key] = lst.join('|'); 
-		} 
+		} 		
 		return result;
 	}	
-}    	
+}  
 
