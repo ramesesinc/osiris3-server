@@ -22,4 +22,9 @@ SELECT * FROM sys_org WHERE orgclass IN (${orgclasses}) AND parentid=$P{parentid
 
 [getLookup]
 SELECT * FROM sys_org WHERE orgclass=$P{orgclass} 
- 
+
+[getRoot]
+SELECT * FROM sys_org WHERE parentid IS NULL 
+
+[getInfo]
+SELECT * FROM sys_org WHERE name=$P{name} 
