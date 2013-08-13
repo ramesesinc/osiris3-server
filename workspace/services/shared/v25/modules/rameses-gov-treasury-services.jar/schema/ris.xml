@@ -1,0 +1,34 @@
+<schema>
+
+	<element name="ris" tablename="afrequest">
+		<field name="objid" primary="true"/>	
+		<field name="state" />
+		<field name="txntype" required="true"/>
+		<field name="reqdate" />
+		<field name="requester_objid" required="true"/>
+		<field name="requester_name" required="true"/>
+		<field name="requester_title" required="true"/>
+		
+		<field name="dtrequested" />
+		<field name="approver_objid"/>
+		<field name="approver_name"/>
+		<field name="approver_title"/>
+
+		<field name="dtissued" />
+		<field name="issuer_objid"/>
+		<field name="issuer_name"/>
+		<field name="issuer_title"/>
+
+		
+		<complex name="items" ref="item" type="list" />
+	</element>
+	
+	<element name="item" tablename="afrequestitem">
+		<field name="objid" primary="true"/>	
+		<field name="reqid" />		
+		<field name="af" required="true"/>
+		<field name="qty" required="true" type="integer"/>
+		<field name="qtyreceived" type="integer" default="0"/>
+	</element>
+	
+</schema>

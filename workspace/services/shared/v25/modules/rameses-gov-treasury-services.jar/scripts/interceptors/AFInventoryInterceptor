@@ -1,0 +1,36 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFPostingInterceptor {
+
+	@Service("AFPostingService")
+	def inventorySvc;
+	
+	@Service("AFControlService")
+	def afControlSvc;
+	
+	@After(pattern="AFRequisitionService.saveReceipt", eval="#{result.receipt.txntype == 'PURCHASE'}")
+	public def postPurchase(def evt) { 
+		def result = evt.result;
+		def receipt = result.receipt;
+		inventorySvc.postDebit(receipt);
+	}
+
+	@After(pattern="AFRequisitionService.saveReceipt", eval="#{result.receipt.txntype == 'USE'}")
+	public def postUse(def evt) { 
+		def result = evt.result;
+		def receipt = result.receipt;
+		inventorySvc.postCredit(receipt);
+		afControlSvc.postReceipt(receipt);
+	}
+	
+	@After(pattern="AFRequisitionService.saveReceipt", eval="#{result.receipt.txntype == 'SALE'}")
+	public def postSale(def evt) { 
+		def result = evt.result;
+		def receipt = result.receipt;
+		inventorySvc.postCredit(receipt);
+	}
+	
+	
+}

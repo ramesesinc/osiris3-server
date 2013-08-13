@@ -1,0 +1,46 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class CashReceiptInterceptor {
+
+	@PersistenceContext("main")
+	def em
+
+	@Env
+	def env;
+	
+	@Service("AFControlService")
+	def afControlsvc;
+	
+	@Service("AFControlPostService")
+	def postSvc;
+	
+	@After(pattern="CashReceiptService.init")
+	public def loadNextSeries(def evt) { 
+		def args = evt.args[0];
+		def result = evt.result;
+		def params = [af:args.formno, userid: env.USERID]; 	
+		def m = afControlsvc.findActiveControlId( params );
+		if( !m) {
+			throw new Warning("select-afcontrol");
+		}
+		def c = afControlsvc.getNextReceiptInfo( m );
+		result.putAll(c);
+	}
+
+	@After(pattern="CashReceiptService.post")
+	public def postAFControl(def evt) { 
+		def result = evt.result;
+		def m = [:];
+		m.refid = result.objid;
+		m.reftype = "CASHRECEIPT";
+		m.refdate = result.receiptdate;
+		m.series = result.series;
+		m.controlid = result.controlid;
+		postSvc.postReceipt(m);
+	}
+
+	
+	
+}

@@ -1,0 +1,79 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFControlService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Env
+	def env;
+	
+	/**
+	* this routine tests the series to check for conflicts until none is found. 
+	* Routine: Check if there are conflicts if a conflict is returned, get the first value,
+	* then get the endseries. Add 1 and test again until no records are returned
+	*/
+	@ProxyMethod
+	public int findNextAvailableSeries( def m ) {
+		def z = [controlid: m.controlid, startseries:m.series,endseries:m.series];
+		def conflictQry = em.sqlContext.createNamedQuery("afcontrol:getConflictSeries");
+		def result = conflictQry.setParameters(z).singleResult;
+		if( !result ) {
+			return m.series;
+		}	
+		else {
+			m.series = result.endseries + 1;
+			return findNextAvailableSeries( m );
+		}	
+	}
+	
+	
+	/** 
+	* there is only one active control for the collector. called when there are no active
+	* parameters : collectorid, af
+	*/
+	@ProxyMethod
+	public def findActiveControlId( def o ) {
+		if(!o.af) throw new Exception("Please specify af");
+		if(!o.userid) throw new Exception("Please specify userid");
+		return em.sqlContext.createNamedQuery("afcontrol:findActiveControlId").setParameters(o).singleResult;
+	}
+	
+	/** 
+	* called when the controlid is established. A collector needs to get first the active stub
+	*/
+	@ProxyMethod
+	public def getNextReceiptInfo( def o ) {
+		if( !o.objid ) throw new Exception( "getNextReceiptInfo requires an objid parameter");
+	
+		def m = em.sqlContext.createNamedQuery("afcontrol:getNextReceiptInfo").setParameters(o).singleResult;
+		if(!m) {
+			throw new Exception("No receipts available.");
+		}	
+		def sb = new StringBuilder();
+		if(m.prefix) sb.append( m.prefix + "-" );
+		sb.append( 	m.series );
+		if(m.suffix) sb.append( "-" + m.suffix );
+		m.receiptno = sb.toString();
+		return m;
+	}
+	
+	
+	@ProxyMethod
+	public def getOpenControlList( def o ) {
+		if(!o.af) throw new Exception("AFControlService.getOpenControlList requires af parameter");
+		o.userid = env.USERID;
+		return em.sqlContext.createNamedQuery("afcontrol:getOpenControlList").setParameters( o ).resultList;
+	}
+	
+	@ProxyMethod
+	public def activateControl( def o ) {
+		if(!o.objid) throw new Exception("AFControlService.activateControl requires objid parameter");
+		o.userid = env.USERID;
+		return em.sqlContext.createNamedExecutor("afcontrol:activateControl").setParameters( o ).execute();
+	}
+	
+	
+}

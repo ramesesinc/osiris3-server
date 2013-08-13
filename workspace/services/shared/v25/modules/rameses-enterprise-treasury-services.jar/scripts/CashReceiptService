@@ -1,0 +1,74 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class CashReceiptService  {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Env
+	def env;
+	
+	@Service("DateService")
+	def dateService;
+	
+	@Service("Var")
+	def var;
+	
+	@Service("NumberService")
+	def numSvc;
+	
+	@ProxyMethod
+	public def init( def p ) {
+		//calls init for checking collection
+		p.receiptdate = dateService.serverDate;
+		return p;
+	}	
+
+	@ProxyMethod
+    public void validateCheckDate( def checkdate ) {
+		def currdate = dateService.serverDate 
+        checkdate = dateService.parse( 'yyyy-MM-dd',checkdate)
+        if( checkdate > currdate ) throw new Exception('Post dated check is not allowed.')
+        def daysdiff = dateService.getDaysDiff( checkdate, currdate ) 
+        def staledayscount = Integer.parseInt( var.getProperty("stale_check_days_count", 180) + "" );
+        if( daysdiff > staledayscount ) throw new Exception('Stale check is not allowed.')
+    }
+	
+	@ProxyMethod
+	public def post( def p ) {
+		//check if there are payment items with no type. throw error
+		def test = p.paymentitems.findAll{ !it.type };
+		if(test) throw new Exception("All payment items must have a type. Please review the code");
+
+		p.org = [objid:env.ORGID, name:env.ORGNAME];
+		p.txndate = dateService.serverDate;
+		p.user = [objid: env.USERID, name:env.USER];
+		p.state = "OPEN";
+		em.create("cashreceipt", p ); 
+		p.items.each { x->
+			x.objid = "RCTI"+ new UID();
+			x.receiptid = p.objid;
+			em.create("cashreceipt:item", x);
+		}
+		p.paymentitems.each { x->
+			x.objid = "CRPMT"+new UID();
+			x.receiptid = p.objid;
+			def pmtschema = "cashreceipt:paymentitem-"+ x.type.toLowerCase();
+			em.create(pmtschema, x);
+		}
+		return formatReport(p);
+	}	
+		
+	@ProxyMethod
+	public def formatReport( def p ) {
+		p.payerdetails = p.payer.name + "\n" + p.payer.address;
+		p.amountinwords = numSvc.doubleToWords( p.amount );
+		return p;
+	}
+
+		
+}

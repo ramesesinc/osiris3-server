@@ -1,0 +1,90 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+/***
+  This contains queries for checking availability of accountable forms
+**/
+class AFStockQueryService {
+
+	@PersistenceContext("main")
+	def em;
+	
+	@ProxyMethod
+	public def getAvailable(def p) {
+		if(!p.af || !p.qty) throw new Exception("Error. AFStockService.getAvailable. Please indicate af and qty in parameters");
+	
+		def cancelQry = em.sqlContext.createNamedQuery("afstockcontrol:getCancelledSeries");
+	
+		def resultList = em.sqlContext.createNamedQuery("afstockcontrol:findAvailable").setParameters(p).resultList;
+		/**
+		* we have to check first if there are cancelled stubs in the middle. If yes, we rewrite resultList
+		* to break it into chains.
+		*/
+		def newList = [];
+		resultList.each { r->
+			def cancelledList = cancelQry.setParameters(r).resultList;
+			if(cancelledList.size()>0) {
+				def subList = [];
+				int _start = r.startseries;
+				int _startstub = r.startstub;
+				for( c in cancelledList ) {
+					def m = [startseries:_start, endseries: (int)(c.startseries-1), startstub:_startstub];
+					subList << m;
+					_start = (int)c.endseries+1;
+					
+					//compute the next start stub
+					_startstub = (int) ( r.startstub + ((_start - r.startseries + 1)/r.unitqty));
+				}
+				subList << [startseries:_start, endseries:r.endseries, startstub:_startstub];
+				//compute the qtybalance for each and corresponding startstub
+				int qty = 0;
+				int startstub = r.startstub;
+				int indexno = r.indexno;
+				subList.each { x->
+					x.controlid = r.controlid;
+					x.af = r.af;
+					x.prefix = r.prefix;
+					x.suffix = r.suffix;
+					x.unitqty = r.unitqty;
+					x.indexno = (indexno++)
+					x.qtybalance = (int) ((x.endseries - x.startseries+1)/x.unitqty);
+				}
+				newList.addAll(subList);
+			}
+			else {
+				if(newList.size()>0) newList << o;
+			}
+		}
+		
+		//if the resultList was changed, exchange it.
+		if(newList.size()>0) {
+			resultList = newList;
+		}
+		
+		def items = [];
+		int qty = p.qty;
+		for(o in resultList) {
+			if(qty<=0) break;
+			if(qty > o.qtybalance) {
+				qty -= o.qtybalance;
+				o.qty = o.qtybalance;
+			}
+			else {
+				o.qty = qty;
+				qty = 0;
+			}
+			o.remove("qtybalance");
+			o.endseries = o.startseries + (o.unitqty * o.qty)-1;
+			o.endstub = o.startstub + o.qty - 1;
+			items << o;
+		}
+		if(qty>0)
+			throw new Exception("Not enough accountable forms in stock");
+		
+		return items;
+	}
+	
+	
+}

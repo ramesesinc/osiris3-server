@@ -1,0 +1,12 @@
+<schema>
+
+	<element name="revenueitem" tablename="revenueitem">
+		<field name="objid" primary="true"/>	
+		<field name="state" />
+		<field name="code" required="true"/>
+		<field name="title" required="true"/>
+		<field name="description" />
+		<field name="type" />
+	</element>
+
+</schema>

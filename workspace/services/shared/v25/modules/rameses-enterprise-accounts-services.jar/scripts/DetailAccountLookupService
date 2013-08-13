@@ -1,0 +1,26 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+
+class DetailAccountLookupService  {
+
+	@PersistenceContext("main")
+	def em;
+
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return[
+			[name:'code', caption:'Acct Code' ],
+			[name:'title', caption:'Acct Title' ],
+		];
+	}
+	
+	@ProxyMethod
+	public def getList( def o ) {
+		o.type = "detail";
+		return em.sqlContext.createNamedQuery('account:lookupAccount').setParameters(o).resultList;
+	}
+	
+
+}

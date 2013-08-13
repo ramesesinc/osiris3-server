@@ -1,0 +1,53 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+
+import com.rameses.services.extended.*
+
+class AccountService extends AbstractCrudListService {
+
+	@PersistenceContext("main")
+	def em;
+
+	String schemaName = "account"
+	
+	@ProxyMethod
+	public def getNodes( def p ) {
+		def qry = null;
+		def sql = (p.root) ? 'account:getRootNodes' : 'account:getChildNodes';
+		def list = em.sqlContext.createNamedQuery(sql).setParameters(p).resultList;	
+		list.each { 
+			it.caption = it.code + "(" + it.title + ") ";
+			it.filetype = 'account'+it.type;
+			it.children = [  
+				[caption:'Account Group', filetype: 'account-group'],
+				[caption:'Account Detail', filetype: 'account-group'],
+			]
+		}
+		return list;
+	}	
+	
+	@ProxyMethod
+	public def getColumns( def o ) {
+		def cols = [
+			[name:'icon', caption:'', type:'icon', width:30, resizable:false ],
+			[name:'code', caption:'Acct Code' ],
+			[name:'title', caption:'Acct Title' ],
+			[name:'type', caption:'Type' ],
+			[name:'filetype', caption:'Filetype' ],
+		];
+		print "cols " + o;
+		if( o.code == "01" ) {
+			cols << [expression:"'hahaha'", caption:'My Extended Filetype' ]
+		}
+		return cols;
+	}
+	
+	public void afterList( def p, def list ) {
+		list.each { 
+			it.filetype = 'account-'+it.type;
+		}
+	}
+	
+}

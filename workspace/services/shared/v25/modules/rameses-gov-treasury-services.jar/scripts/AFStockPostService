@@ -1,0 +1,141 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+/***
+  To optimize routine, we will be receiving a document that follows schema [afstockcontrol:schema]
+  It will be posted as one whole document, not individual line items. Except for check duplicates
+  it will be assumed that all data is computed and validated to speed up the process. 
+**/
+class AFStockPostService {
+
+	@PersistenceContext("main")
+	def em;
+
+	
+	/**
+	* This is called when posting of receipt. It is assumed that all validation are already done.  
+	*/
+	@ProxyMethod
+	public def postReceipt( o ) {
+		def detail = [:]; 	
+		detail.objid = o.refid+"-"+o.af;
+		detail.state = "OPEN";
+		detail.refid = o.refid;
+		detail.reftype = o.reftype;
+		detail.refdate = o.refdate;
+		detail.currentseries = o.startseries;
+		detail.currentstub = o.startstub;
+		detail.qtyreceived = o.qty;
+		detail.qtyissued = 0;
+		detail.qtycancelled = 0;
+		detail.qtybalance = o.qty;	
+		detail.currentindexno = 1;
+		detail.indexno = 1;
+		detail.controlid = detail.objid;
+		detail.dr = o.qty;
+		detail.cr = 0;
+		detail.runbal = o.qty;
+		detail.startstub = o.startstub;
+		detail.endstub = o.endstub;
+		detail.startseries = o.startseries;
+		detail.endseries = o.endseries;
+		detail.af = o.af;
+		detail.prefix = o.prefix;
+		detail.suffix = o.suffix;
+		detail.unit = o.unit;
+		em.create("afstockcontrol", detail );
+		em.create("afstockcontrol:detail", detail );
+		return detail;
+	}
+
+	/**
+	* this is performed when issuance is posted. add first the item,  then update the parent's total qtyissued
+	*/
+	@ProxyMethod
+	public def postIssue( o ) {
+		//retrieve the parent
+		def control = em.read( "afstockcontrol", [objid:o.controlid]);
+		if( control.currentindexno != o.indexno ) 
+			throw new Exception( " af " + o.af + ": stock is not updated. Please run availability check again");
+		int qtybalance = control.qtybalance;	
+		
+		int lineno = control.currentindexno+1; 	
+		def detail = [:];	
+		detail.objid = o.refid+"-"+o.af+"-"+lineno;
+		detail.controlid = o.controlid;
+		detail.startseries = o.startseries;
+		detail.endseries = o.endseries;
+		detail.refid = o.refid;
+		detail.reftype = o.reftype;
+		detail.refdate = o.refdate;
+		detail.indexno = lineno;
+		detail.dr = 0;
+		detail.cr = o.qty;
+		detail.remarks = o.remarks;
+		detail.runbal = qtybalance - o.qty; 
+		
+		em.create("afstockcontrol:detail", detail );
+			
+		//update the controls
+		control.currentindexno = lineno;
+		control.qtyissued += o.qty;
+		control.currentseries = o.endseries + 1;
+		if( control.currentseries > control.endseries ) {
+			control.state = 'CLOSED';
+		}
+		control.currentstub = o.endstub+1;
+		control.qtybalance = control.qtyreceived - (control.qtyissued+control.qtycancelled);
+		//just to double check
+		if( control.qtybalance != detail.runbal ) {
+			println "control qty balance ->"+control.qtybalance + " runbal->"+detail.runbal; 
+			throw new Exception("control qty balance is not equal to running balance");
+		}	
+		em.update("afstockcontrol", control );
+		return detail;
+	}
+	
+	@ProxyMethod
+	public def postCancel( @Param(schema="afstockcontrol:cancel") o ) {
+		def control = em.read( "afstockcontrol", [objid:o.controlid]);
+		if( !control) 
+			throw new Exception("Control " + o.controlid + " not found");
+		int qtybalance = control.qtybalance;	
+		int lineno = control.currentindexno+1;	
+		
+		o.objid = o.refid;
+		o.indexno = lineno;
+		o.dr = 0;
+		o.cr = o.qty;
+		o.runbal = qtybalance - o.qty;
+		em.create("afstockcontrol:detail", o );
+				
+		//update the control
+		control.currentindexno = lineno;
+		control.qtycancelled += o.qty;
+		
+		if( control.currentseries == o.startseries ) {
+			control.currentseries = o.endseries + 1;
+			control.currentstub = o.currentstub + o.qty;
+		}	
+
+		//adjust also the end series 
+		if( control.endseries == o.endseries ) {
+			control.endseries = o.startseries-1;
+			control.endstub = control.endstub - o.qty;
+		}
+		if( control.currentseries > control.endseries ) control.state = "CLOSED";
+		
+		control.qtybalance = control.qtyreceived - (control.qtyissued+control.qtycancelled);
+		//just to double check
+		if( control.qtybalance != o.runbal ) {
+			println "control qty balance ->"+control.qtybalance + " runbal->"+it.runbal; 
+			throw new Exception("control qty balance is not equal to running balance");
+		}	
+		em.update("afstockcontrol", control );
+		return true;
+	}
+	
+	
+}
