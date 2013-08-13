@@ -9,8 +9,15 @@ class ProvinceOrgInterceptor {
 		
 	def schemaName = 'province';
 
+	@After(pattern="OrgAdminService.open", eval="#{args[0].orgclass=='PROVINCE'}")
+	public void onOpen( evt ) {
+		def orgdata = evt.args[0];
+		def provdata = em.read(schemaName, orgdata);
+		if (provdata) evt.result.putAll( provdata ); 
+	} 
+
 	@After(pattern="OrgAdminService.update", eval="#{args[0].orgclass=='PROVINCE'}")
-	public def onUpdate( evt ) {
+	public void onUpdate( evt ) {
 		def data = evt.args[0];
 		data.state = 'DRAFT';		
 		//create the record if not exist 
@@ -21,21 +28,14 @@ class ProvinceOrgInterceptor {
 			em.create(schemaName, data);
 	}
 
-	@After(pattern="OrgAdminService.open", eval="#{args[0].orgclass=='PROVINCE'}")
-	public def onOpen( evt ) {
-		def orgdata = evt.args[0];
-		def provdata = em.read(schemaName, orgdata);
-		if (provdata) evt.result.putAll( provdata ); 
-	} 
-
 	@After(pattern="OrgAdminService.removeEntity", eval="#{args[0].orgclass=='PROVINCE'}")
-	public def onRemove( evt ) {
+	public void onRemove( evt ) {
 		def data = evt.args[0];
 		em.delete(schemaName, data); 
 	} 	
 	
 	@Before(pattern="OrgAdminService.approve", eval="#{args[0].orgclass=='PROVINCE'}")
-	public def onChangeState( evt ) {
+	public void onChangeState( evt ) {
 		def params = evt.args[0];
 		params.newstate = 'APPROVED';
 		params.oldstate = params.state;

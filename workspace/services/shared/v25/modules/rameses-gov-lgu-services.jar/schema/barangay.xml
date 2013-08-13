@@ -8,10 +8,12 @@
 		<field name="name" />
 		<field name="previd" />
 		<field name="parentid" />
-		<field name="captainname" />
-		<field name="captaintitle" />
-		<field name="treasurername" />
-		<field name="treasurertitle" />
+		<field name="captain_name" />
+		<field name="captain_title" />
+		<field name="captain_office" />
+		<field name="treasurer_name" />
+		<field name="treasurer_title" />
+		<field name="treasurer_office" />
 	</element>
 	
 </schema>
