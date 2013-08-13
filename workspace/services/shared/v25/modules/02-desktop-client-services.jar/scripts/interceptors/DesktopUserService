@@ -29,6 +29,11 @@ class DesktopUserService
 
 		if (!info) throw new Exception("'"+username+"' user account does not exist"); 
 
+		def fullname = new StringBuffer();
+		fullname.append(info.firstname);
+		if (info.middlename) fullname.append(" " + info.middlename);
+		fullname.append(" "+info.lastname);
+
 		def result = [:]; 
 		result.username = info.username;
 		result.USERID = info.objid;
@@ -36,6 +41,7 @@ class DesktopUserService
             USER: info.username, 
             USERID: info.objid, 
             NAME: info.name, 
+            FULLNAME: fullname.toString(), 
             EMAIL: info.email,
             TERMINALID: env.TERMINALID,              
 			ROLES: [ALLOWED: 'system.*'] 
