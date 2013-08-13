@@ -42,6 +42,7 @@ class DesktopUserService
             USERID: info.objid, 
             NAME: info.name, 
             FULLNAME: fullname.toString(), 
+            JOBTITLE: info.jobtitle,
             EMAIL: info.email,
             TERMINALID: env.TERMINALID,              
 			ROLES: [ALLOWED: 'system.*'] 
