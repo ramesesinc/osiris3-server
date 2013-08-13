@@ -1,0 +1,17 @@
+def svc = new osiris3.groovy.tester.Service(
+    ["app.context" : "etracs25", 
+     "app.host": "localhost:8070",
+     "app.cluster": "osiris3"] );
+
+def ts = svc.lookup("AFControlService");
+
+def m = [:];
+m.controlid = '51-A5000001B';
+m.refid = 'CANCEL04';
+m.reftype = 'CANCEL';
+m.refdate = new Date();
+m.startseries = 5000010;
+m.endseries = 5000011;
+m.qty = m.endseries - m.startseries+1;
+m.remarks = 'duplicate'
+ts.postCancel( m );

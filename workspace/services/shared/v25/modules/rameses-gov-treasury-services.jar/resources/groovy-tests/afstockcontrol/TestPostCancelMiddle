@@ -1,0 +1,22 @@
+def svc = new osiris3.groovy.tester.Service(
+    ["app.context" : "etracs25", 
+     "app.host": "localhost:8070",
+     "app.cluster": "osiris3"] );
+
+def ts = svc.lookup("AFStockService");
+
+def m = [refid:'CANCEL01', reftype:'CANCEL', refdate:new Date(), startseries: 5000151, endseries:5000200];
+m.controlid = "IRAF00001-51";
+m.qty = 1;
+m.remarks = 'FIRST MISSING'
+
+m = [refid:'CANCEL02', reftype:'CANCEL', refdate:new Date(), startseries: 5000251, endseries:5000300];
+m.controlid = "IRAF00001-51";
+m.qty = 1;
+m.remarks = 'MISSING ALSO'
+/*
+5000001.step(5000300, 50) {
+    println it + " - " + (it+50-1) 
+}
+*/
+ts.postCancel( m );
