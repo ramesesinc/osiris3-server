@@ -29,7 +29,9 @@ class UserAdminService extends AbstractCrudListService {
 	}
 
 	public void beforeCreate( def o ) {
-		o.name = o.lastname + ", "+o.firstname;
+		o.name = o.lastname + ", "+ o.firstname;
+		if (o.middlename) o.name = o.name + " " + o.middlename;
+		
 		o.pwd = Encoder.MD5.encode('etracs1234', o.username); 
 	}
 
