@@ -104,4 +104,8 @@ class OrgAdminService extends AbstractCrudService {
 		list.each { it.filetype = it.orgclass; }
 		return list;
 	}	
+
+	public void approve ( data ) { 
+		//do be overridden through interceptors 
+	} 
 }
