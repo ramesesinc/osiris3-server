@@ -35,12 +35,11 @@ class BarangayOrgInterceptor {
 		if (resdata) evt.result.putAll( resdata ); 
 	}
 
-	@After(pattern="OrgAdminService.getList", eval="#{args[0].orgclass=='BARANGAY'}")
-	public def onGetList( evt ) {
-		def list = evt.args[0];
-		def resdata = em.read(schemaName, orgdata);
-		if (resdata) evt.result.putAll( resdata ); 
-	}	
+	@After(pattern="OrgAdminService.removeEntity", eval="#{args[0].orgclass=='BARANGAY'}")
+	public def onRemove( evt ) {
+		def data = evt.args[0];
+		em.delete(schemaName, data); 
+	} 
 
 	@Before(pattern="OrgAdminService.approve", eval="#{args[0].orgclass=='BARANGAY'}")
 	public def onChangeState( evt ) {
@@ -49,5 +48,9 @@ class BarangayOrgInterceptor {
 		params.oldstate = params.state;
 		em.sqlContext.createNamedExecutor(schemaName+':changeState').setParameters(params).execute(); 
 	}		
-	
+
+	@After(pattern="OrgAdminService.getList", eval="#{args[0].orgclass=='BARANGAY'}")
+	public void onGetList( evt ) {
+		def list = evt.args[0];
+	}		
 }

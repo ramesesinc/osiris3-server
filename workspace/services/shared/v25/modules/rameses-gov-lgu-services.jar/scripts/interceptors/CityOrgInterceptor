@@ -34,6 +34,12 @@ class CityOrgInterceptor {
 		def resdata = em.read(schemaName, orgdata);
 		if (resdata) evt.result.putAll( resdata ); 
 	} 
+
+	@After(pattern="OrgAdminService.removeEntity", eval="#{args[0].orgclass=='CITY'}")
+	public def onRemove( evt ) {
+		def data = evt.args[0];
+		em.delete(schemaName, data); 
+	} 
 	
 	@Before(pattern="OrgAdminService.approve", eval="#{args[0].orgclass=='CITY'}")
 	public def onChangeState( evt ) {
