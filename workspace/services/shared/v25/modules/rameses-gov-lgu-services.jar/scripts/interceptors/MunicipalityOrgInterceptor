@@ -35,4 +35,11 @@ class MunicipalityOrgInterceptor {
 		if (resdata) evt.result.putAll( resdata ); 
 	} 
 	
+	@Before(pattern="OrgAdminService.approve", eval="#{args[0].orgclass=='MUNICIPALITY'}")
+	public def onChangeState( evt ) {
+		def params = evt.args[0];
+		params.newstate = 'APPROVED';
+		params.oldstate = params.state;
+		em.sqlContext.createNamedExecutor(schemaName+':changeState').setParameters(params).execute(); 
+	}		
 }
