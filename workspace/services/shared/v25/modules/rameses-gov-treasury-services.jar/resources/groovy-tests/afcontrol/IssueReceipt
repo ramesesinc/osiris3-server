@@ -1,0 +1,19 @@
+def svc = new osiris3.groovy.tester.Service(
+    ["app.context" : "etracs25", 
+     "app.host": "localhost:8070",
+     "app.cluster": "osiris3"] );
+
+def ts = svc.lookup("AFControlService");
+
+def m = [controlid: 'A5000001B'];
+def h = ts.getNextReceiptNo( m );
+print h;
+
+
+m.series =  h.series;
+m.reftype =  'CASHRECEIPT';
+m.refid = h.receiptno;
+m.refdate = new Date();
+
+def ps = svc.lookup("AFControlPostService");
+ps.postReceipt( m );

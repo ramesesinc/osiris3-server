@@ -1,0 +1,88 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+/***
+  This contains queries for checking availability of accountable forms
+**/
+class AFStockUtilService {
+
+	@PersistenceContext("main")
+	def em;
+	
+	@Service("AFService")
+	def afSvc;
+	
+	@ProxyMethod
+	public boolean checkSeriesConflict(o) {
+		def builder = new StringBuilder();
+		builder.append( " AND prefix ")
+		builder.append( (o.prefix)? ''' =$P{prefix} ''' : ' IS NULL ' );
+		builder.append( " AND suffix ")
+		builder.append( (o.suffix)? ''' =$P{suffix} ''' : ' IS NULL ' );
+		def qry = em.sqlContext.createNamedQuery("afstockcontrol:checkConflictSeries");
+		def test = qry.setVars([filter:builder.toString()]).setParameters(o).singleResult;
+		if(test) {
+			return true;
+		}	
+		else {
+			return false;
+		}
+	}
+
+	@ProxyMethod
+	public boolean validateSeries(o) {
+		if(!o.af) throw new Exception("Please provide af");
+		if( !(o.startseries) && !(o.endseries) )throw new Exception("Please provide  start and end series");
+		def m = afSvc.getInfo([objid:o.af]);
+		
+		if( o.startseries > o.endseries ) {
+			throw new Exception("Start series must be less than end series" );
+		}
+		if(!(o.startseries+"").endsWith("1")) {
+             throw new Exception("Last number of start series must be 1");
+        }
+        if( (o.startseries+"").length() != (o.endseries+"").length() ) {
+			throw new Exception("Start series must be same length as end series" );
+        }
+        if( (o.startseries+"").length() != m.serieslength ) {
+			throw new Exception("Series number length must be " + m.serieslength );
+        }
+        if( ( (o.startseries-1) % m.unitqty) != 0 ) {
+            throw new Exception("Start series must be divisible by " + m.unitqty);
+        }
+		if( ( (o.endseries-o.startseries+1) % m.unitqty) != 0 ) {
+            throw new Exception("Start, end series must be divisible by " + m.unitqty);
+        }
+		return true;
+	}
+	
+	//given a startdate or an end date and af, this calculates the end or beginning of a series
+	@ProxyMethod
+	public def getCompletedInfo(o) {
+		if(!o.af) throw new Exception("Please provide af");
+		if( !o.startseries && !o.endseries )throw new Exception("Please provide either start or end series");
+		if(!o.qty) throw new Exception("Please provide qty");
+		if( !o.startstub && !o.startstub )throw new Exception("Please provide either start or end stub");
+		
+		def m = em.sqlContext.createNamedQuery("af:getAFInfo").setParameters([objid:o.af]).singleResult;
+		o.unit = m.unit;
+		o.unitqty = m.unitqty;
+		
+		if(o.startseries) {
+			o.endseries = (o.startseries + ( o.qty* o.unitqty )) - 1;
+		}
+		else {
+			o.startseries = o.endseries - (o.qty* o.unitqty) + 1;
+		}
+		if(o.startstub) {
+			 o.endstub = o.startstub + o.qty - 1;
+		}
+		else {
+			o.startstub = o.endstub - o.qty + 1;
+		}
+		return o;
+	}	
+	
+}

@@ -1,0 +1,11 @@
+def svc = new osiris3.groovy.tester.Service(
+    ["app.context" : "etracs25", 
+     "app.host": "localhost:8070",
+     "app.cluster": "osiris3"] );
+
+def ts = svc.lookup("AFControlService");
+def r = [controlid:'51-A5000001B',
+    reftype:'REMITTANCE',refid:'REM02', refdate:new Date()
+]
+
+ts.postRemittance( r );

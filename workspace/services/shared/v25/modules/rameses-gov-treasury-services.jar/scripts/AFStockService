@@ -1,0 +1,60 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+class AFStockService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Service("AFStockUtilService")
+	def stockSvc;
+	
+	@Service("AFStockPostService")
+	def afStockPostSvc;
+	
+	@Service("AFControlPostService")
+	def afControlSvc;
+
+	/**
+	* This is called when posting of receipt. It is assumed that all validation are already done.  
+	*/
+	@ProxyMethod
+	public def postReceipt( @Param(schema="afstockcontrol:receipt") o ) {
+		for(it in o.items) {
+			if(stockSvc.checkSeriesConflict(it)) {
+				throw new Exception("Conflict in series for af " + it.af + ". Series may already have been used"); 
+			}		
+			it.refid = o.refid;
+			it.reftype = o.reftype;
+			it.refdate = o.refdate;
+			afStockPostSvc.postReceipt( it );
+		}
+	}
+
+	@ProxyMethod
+	public def postIssue( @Param(schema="afstockcontrol:issue") o ) {
+		for( it in o.items) {
+			it.refid = o.refid;
+			it.reftype = o.reftype;
+			it.refdate = o.refdate;
+			it.remarks = o.remarks;
+			def c = afStockPostSvc.postIssue( it );
+			
+			//coming from client
+			c.prefix = it.prefix;
+			c.startstub = it.startstub;
+			c.suffix = it.suffix;
+			c.issueto = o.issueto;
+			c.unitqty = it.unitqty;	
+			c.af = it.af;
+			
+			//post each item to af control
+			afControlSvc.postCreate( c );
+		}
+	}
+	
+	
+	
+}

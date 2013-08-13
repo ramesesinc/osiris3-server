@@ -1,0 +1,40 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*;
+
+class FundService extends AbstractCrudListService {
+
+	@PersistenceContext("main")
+	def em;
+	
+	String schemaName = "fund";
+
+	@ProxyMethod
+	public def getNodes( def p ) {
+		def list;
+		if(p.root) {
+			list = [ [caption:'Funds', folder:true]];
+		}
+		else {
+			def sql = (!p.objid) ? 'fund:getRootNodes' : 'fund:getChildNodes';
+			list = em.sqlContext.createNamedQuery(sql).setParameters(p).resultList;	
+			list.each {  it.caption = it.code + "(" + it.title + ") "; }
+		}
+		return list;
+	}	
+	
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return[
+			[name:'icon', caption:'', type:'icon', width:30, resizable:false ],
+			[name:'code', caption:'Acct Code' ],
+			[name:'title', caption:'Acct Title' ],
+			[name:'type', caption:'Type' ],
+			[name:'filetype', caption:'Filetype' ],
+		];
+	}
+	
+	
+}

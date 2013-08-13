@@ -1,0 +1,27 @@
+<schema>
+
+	<element name="afrequest" tablename="afrequest">
+		<field name="objid" primary="true"/>	
+		<field name="state" />
+		<field name="txndate" required="true"/>
+		<field name="txntype" required="true"/>
+		<field name="requester_objid" required="true"/>
+		<field name="requester_lastname" required="true"/>
+		<field name="requester_firstname" required="true"/>
+		<field name="requester_jobtitle" required="true"/>
+		<field name="reqdate" type="timestamp"/>
+		<field name="requnit"/>
+		<field name="createdby"/>
+		<field name="vendor"/>
+		<complex name="items" ref="item" type="list" />
+	</element>
+	
+	<element name="item" tablename="afrequestitem">
+		<field name="objid" primary="true"/>	
+		<field name="reqid" />		
+		<field name="af" required="true"/>
+		<field name="qty" required="true" type="integer"/>
+		<field name="qtyreceived" type="integer" default="0"/>
+	</element>
+	
+</schema>

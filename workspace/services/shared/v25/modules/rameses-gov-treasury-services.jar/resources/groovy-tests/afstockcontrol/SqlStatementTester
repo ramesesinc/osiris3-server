@@ -1,0 +1,13 @@
+DELETE FROM afcontrol_detail;
+DELETE FROM afcontrol;
+DELETE FROM afstockcontrol_detail;
+DELETE FROM afstockcontrol;
+
+
+SELECT objid,startseries,endseries,currentseries,startstub,endstub,currentstub,currentindexno,qtybalance,qtyreceived,qtyissued,qtycancelled FROM afstockcontrol WHERE af='51'
+
+
+
+SELECT ad.* FROM afstockcontrol_detail ad
+INNER JOIN afstockcontrol a ON a.objid=ad.controlid 
+WHERE a.af='51' ORDER BY indexno

@@ -1,0 +1,12 @@
+<schema>
+
+	<element name="fund" tablename="fund">
+		<field name="objid" primary="true"/>	
+		<field name="parentid" />
+		<field name="code" required="true"/>
+		<field name="title" required="true"/>
+		<field name="type" />
+	</element>
+
+	
+</schema>

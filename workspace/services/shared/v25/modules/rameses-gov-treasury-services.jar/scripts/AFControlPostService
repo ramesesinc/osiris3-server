@@ -1,0 +1,181 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFControlPostService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Service("AFControlService")
+	def afControlSvc;
+	
+	@ProxyMethod
+	public def postCreate( o ) {
+		int startstub = o.startstub;
+		o.startseries.step( o.endseries, o.unitqty ) {
+			def afcontrol = [:];
+			afcontrol.collector = o.issueto;
+			afcontrol.objid = (o.prefix?o.prefix:'') + it + (o.suffix?o.suffix:'');
+			afcontrol.controlid = o.controlid;
+			afcontrol.startseries = it;
+			afcontrol.endseries = (it+o.unitqty-1);
+			afcontrol.currentseries = it;
+			afcontrol.active = 0;
+			afcontrol.af = o.af;
+			afcontrol.stub = startstub;
+			afcontrol.prefix = o.prefix;
+			afcontrol.suffix = o.suffix;
+			afcontrol.mode = "ONLINE";
+			afcontrol.state = "OPEN";
+			afcontrol.currentindexno = 1;
+			
+			afcontrol.qtyreceived = o.unitqty;
+			afcontrol.qtyissued = 0;
+			afcontrol.qtycancelled = 0;
+			afcontrol.qtybalance = o.unitqty;
+			
+			em.create( "afcontrol", afcontrol );
+			startstub = startstub+1;
+
+			//insert also the detail	
+			def detail = [:];
+			detail.objid = afcontrol.objid;
+			detail.controlid = afcontrol.objid;
+			detail.refid = o.refid;
+			detail.reftype = 'RECEIPT';
+			detail.refdate = o.refdate;
+			detail.indexno = 1;
+			detail.startseries = afcontrol.startseries;
+			detail.endseries = afcontrol.endseries;
+			detail.dr = o.unitqty;
+			detail.cr = 0;
+			detail.runbal = o.unitqty;
+			em.create("afcontrol:detail", detail );
+		}
+		return true;
+	}	
+	
+	
+	/**
+	* called everytime a cancel series is raised. Test first if the cancelled series has no conflicts
+	*/
+	@ProxyMethod
+	public def postCancel( @Param(schema="afcontrol:cancel") o ) {
+		def control = em.read("afcontrol",[objid:o.controlid]);
+		//test the validity of the specified cancelled series. there must be no conflicts and we should
+		//also test that it is not currently issued but not yet remitted.
+		def conflictQry = em.sqlContext.createNamedQuery("afcontrol:getConflictSeries");
+		def list = conflictQry.setParameters( o ).resultList;
+		if(list.size()>0 ||  o.startseries < control.currentseries ) {
+			throw new Exception("Cancel invalid. The series specified has already been issued or cancelled");
+		}
+		
+		int lineno = control.currentindexno+1;
+		int qtybalance = control.qtybalance;
+		
+		def detail = [:];
+		detail.objid = o.refid;
+		detail.refid = o.refid;
+		detail.reftype = o.reftype;
+		detail.refdate = o.refdate;
+		detail.startseries = o.startseries;
+		detail.endseries = o.endseries;
+		detail.controlid = o.controlid;
+		detail.indexno = lineno;
+		detail.dr = 0;
+		detail.cr = o.qty;
+		detail.runbal = qtybalance - o.qty;
+		detail.remarks = o.remarks;
+		em.create("afcontrol:detail", detail );
+
+		//update the current series. We try to increment and test if the next series is also cancelled. If
+		//cancelled series is the first, we move the start series pointer also
+		int currentseries = control.currentseries;
+		if( o.startseries == currentseries ) {
+			currentseries = o.endseries + 1;
+			control.startseries = currentseries;
+			currentseries = afControlSvc.findNextAvailableSeries( [series:currentseries, controlid:o.controlid] );
+		}	
+		
+		if( o.endseries == control.endseries ) {
+			control.endseries = o.startseries - 1;
+			if( control.endseries == currentseries ) {
+				currentseries = currentseries+1;
+			}
+		}
+		
+		if( currentseries > control.endseries ) {
+			control.state = "CLOSED";
+		}
+		control.currentseries = currentseries;
+		control.qtycancelled += o.qty;
+		control.currentindexno = lineno;
+		control.qtybalance = control.qtyreceived - (control.qtyissued+control.qtycancelled);
+		//just to double check
+		if( control.qtybalance != detail.runbal ) {
+			println "control qty balance ->"+control.qtybalance + " detail.runbal->"+it.runbal; 
+			throw new Exception("control qty balance is not equal to running balance");
+		}
+		em.update("afcontrol", control );
+		return true;	
+	}
+	
+	
+	/**
+	* this is called everytime a receipt is issued. This is for online 
+	* mode. we need another method for batch mode
+	*/
+	@ProxyMethod
+	public def postReceipt( @Param(schema="afcontrol:issuance") def o ) {
+		def control = em.read("afcontrol",[objid:o.controlid]);
+		if(control.currentseries != o.series )
+			throw new Exception("Current series does not match existing series");
+		
+		int lineno = control.currentindexno+1;
+		int qtybalance = control.qtybalance;
+		int runbal = qtybalance;
+		
+		int qty = 1;
+		runbal = runbal - qty;
+		def detail = [:];
+		detail.objid = o.refid;
+		detail.refid = o.refid;
+		detail.reftype = o.reftype;
+		detail.refdate = o.refdate;
+		detail.startseries = o.series;
+		detail.endseries = o.series;
+		detail.controlid = o.controlid;
+		detail.indexno = lineno;
+		detail.dr = 0;
+		detail.cr = qty;
+		detail.runbal = runbal;
+		detail.remarks = o.remarks;
+		em.create("afcontrol:detail", detail );		
+		
+		control.currentindexno = lineno;
+		control.qtyissued += qty;
+		control.qtybalance = control.qtyreceived - (control.qtyissued+control.qtycancelled);
+		//just to double check
+		if( control.qtybalance != runbal ) {
+			println "control qty balance ->"+control.qtybalance + " detail.runbal->"+runbal; 
+			throw new Exception("control qty balance is not equal to running balance");
+		}
+		
+		//recalculate next series	
+		int currentseries = control.currentseries+1;
+		currentseries = afControlSvc.findNextAvailableSeries( [series:currentseries, controlid:o.controlid], );
+		control.currentseries = currentseries;
+		if( control.currentseries > control.endseries ) {
+			control.state = "CLOSED";
+		}
+		em.update("afcontrol", control );
+		return true;
+	}
+	
+	@ProxyMethod
+	public def postRemittance( @Param(schema="afcontrol:remittance") o ) {
+		throw new Exception("Remittance not supported");
+	}
+	
+}
