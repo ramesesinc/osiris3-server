@@ -14,6 +14,18 @@ class OrgAdminService extends AbstractCrudService {
 	def env;
 	
 	String schemaName = "org";
+
+
+	public void beforeCreate( data ) {
+		def prefixid = 'ORG';
+		if (data.orgclass == 'MUNICIPALITY') prefixid = 'MUNI';
+		else if (data.orgclass == 'HOSPITAL') prefixid = 'HOSP';
+		else if (data.orgclass == 'DISTRICT') prefixid = 'DIST';
+		else if (data.orgclass == 'BARANGAY') prefixid = 'BRGY';
+
+		data.objid = prefixid + new UID().toString();
+		data.filetype = data.orgclass;
+	}
 	
 	private def getChildNodes(def selectedNode) {
 		def n = selectedNode.childnodes.split(",").collect{ "'"+it+"'" }.join(",");	
