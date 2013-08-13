@@ -26,6 +26,10 @@ class OrgAdminService extends AbstractCrudService {
 		data.objid = prefixid + new UID().toString();
 		data.filetype = data.orgclass;
 	}
+
+	public void afterUpdate( data ) {
+		data.filetype = data.orgclass;
+	}
 	
 	private def getChildNodes(def selectedNode) {
 		def n = selectedNode.childnodes.split(",").collect{ "'"+it+"'" }.join(",");	
@@ -104,4 +108,8 @@ class OrgAdminService extends AbstractCrudService {
 		list.each { it.filetype = it.orgclass; }
 		return list;
 	}	
+
+	public void approve ( data ) { 
+		//do be overridden through interceptors 
+	} 
 }

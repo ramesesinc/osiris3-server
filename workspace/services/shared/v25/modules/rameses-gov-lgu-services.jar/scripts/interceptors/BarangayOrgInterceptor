@@ -20,7 +20,7 @@ class BarangayOrgInterceptor {
 	public def onUpdate( evt ) {
 		def data = evt.args[0];
 		data.state = 'DRAFT'; 
-		//create the record if not exist 
+		//create the record if not e\xist 
 		def info = em.read(schemaName, data); 
 		if (info) 
 			em.update(schemaName, data); 
@@ -34,5 +34,23 @@ class BarangayOrgInterceptor {
 		def resdata = em.read(schemaName, orgdata);
 		if (resdata) evt.result.putAll( resdata ); 
 	}
-	
+
+	@After(pattern="OrgAdminService.removeEntity", eval="#{args[0].orgclass=='BARANGAY'}")
+	public def onRemove( evt ) {
+		def data = evt.args[0];
+		em.delete(schemaName, data); 
+	} 
+
+	@Before(pattern="OrgAdminService.approve", eval="#{args[0].orgclass=='BARANGAY'}")
+	public def onChangeState( evt ) {
+		def params = evt.args[0];
+		params.newstate = 'APPROVED';
+		params.oldstate = params.state;
+		em.sqlContext.createNamedExecutor(schemaName+':changeState').setParameters(params).execute(); 
+	}		
+
+	@After(pattern="OrgAdminService.getList", eval="#{args[0].orgclass=='BARANGAY'}")
+	public void onGetList( evt ) {
+		def list = evt.args[0];
+	}		
 }

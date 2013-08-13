@@ -8,12 +8,15 @@
 		<field name="name" />
 		<field name="previd" />
 		<field name="parentid" />
-		<field name="mayorname" />
-		<field name="mayortitle" />
-		<field name="assessorname" />
-		<field name="assessortitle" />
-		<field name="treasurername" />
-		<field name="treasurertitle" />
+		<field name="mayor_name" />
+		<field name="mayor_title" />
+		<field name="mayor_office" />
+		<field name="assessor_name" />
+		<field name="assessor_title" />
+		<field name="assessor_office" />
+		<field name="treasurer_name" />
+		<field name="treasurer_title" />
+		<field name="treasurer_office" />
 	</element>
 	
 </schema>
