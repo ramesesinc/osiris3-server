@@ -7,13 +7,20 @@ class ProvinceLookupService{
 	@PersistenceContext('main')	
 	def em
 	
+	@ProxyMethod 
+	public def getColumns( params ) {
+		return [
+			[name:'name', caption:'Name'],  
+			[name:'indexno', caption:'Index-No'],
+			[name:'pin', caption:'PIN'] 
+		];
+	}
+
 	@ProxyMethod
-	public def lookupProvinces( params ) {
-	
-		params.searchtext = (params.searchtext ? params.searchtext : '')
+	public def getList( params ) {
+		params.searchtext = (params.searchtext? params.searchtext: '')
 		params.name = params.searchtext + '%'
-		
-		return em.sqlContext.createNamedQuery('lgu_province:lookup')
+		return em.sqlContext.createNamedQuery('province:lookup')
 					.setParameters(params)
 					.setFirstResult( params._start )
 					.setMaxResults(params._limit)

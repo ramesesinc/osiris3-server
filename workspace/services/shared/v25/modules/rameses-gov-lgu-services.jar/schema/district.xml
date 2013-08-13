@@ -1,6 +1,6 @@
 <schema>
 
-	<element name="barangay" tablename="barangay">
+	<element name="district" tablename="district">
 		<field name="objid" primary="true"/>
 		<field name="state" />
 		<field name="indexno" />
@@ -8,10 +8,6 @@
 		<field name="name" />
 		<field name="previd" />
 		<field name="parentid" />
-		<field name="captainname" />
-		<field name="captaintitle" />
-		<field name="treasurername" />
-		<field name="treasurertitle" />
 	</element>
 	
 </schema>
