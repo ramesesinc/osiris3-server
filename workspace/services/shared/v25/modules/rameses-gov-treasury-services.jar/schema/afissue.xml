@@ -1,16 +1,20 @@
 <schema>
-	<element name="afreceipt" tablename="afreceipt">
+	<element name="afissue" tablename="afissue">
 		<field name="objid" primary="true"/>
 		<field name="state" required="true"/>
-		<field name="receiptno" required="true"/>
 		<field name="risid" required="true"/>
+		<field name="issueno" required="true"/>
 		<field name="txndate" required="true"/>
 		<field name="txntype" required="true"/>
 		<field name="user_objid" required="true"/>
 		<field name="user_name" required="true"/>
+		
+		<field name="issueto_objid" required="true"/>
+		<field name="issueto_name" required="true"/>
+		<field name="issueto_title" required="true"/>
 	</element>
 
-	<element name="item" tablename="afreceiptitem">
+	<element name="item" tablename="afissueitem">
 		<field name="objid" primary="true"/>
 		<field name="parentid" />
 		<field name="af" required="true"/>

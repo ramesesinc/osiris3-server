@@ -1,0 +1,76 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+class AFReceiptService extends AbstractCrudService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Env 
+	def env;
+	
+	@Service("SequenceService") 
+	def seqSvc;
+
+	@Service("DateService") 
+	def dateSvc;
+
+	@Service("AFStockUtilService")
+	def stockSvc;
+	
+	@Service("AFStockPostService")
+	def afStockPostSvc;
+	
+	String schemaName = "afreceipt";
+
+	void beforeCreate( def o ) {
+		if(!o.items)
+			throw new Exception("Please add at least one item");
+		o.user = [objid:env.USERID, name:env.USER, title:'JOB TITLE'];
+		o.receiptno = "AFRCT" + seqSvc.getNextFormattedSeries("AFRCT");
+		o.risid = o.ris.objid;
+		o.txntype = o.ris.txntype;
+		o.txndate = dateSvc.serverDate;
+		o.state = "CLOSED";
+		
+		o.ris.refid = o.objid;		
+		o.ris.refno = o.receiptno;
+		o.ris.reftype = "afreceipt";
+		o.ris.state = "CLOSED";
+	}
+	
+	void afterCreate( def o ) {
+		o.items.each{
+			it.objid = "RIST" + new UID();
+			it.parentid = o.objid;
+			em.create("afreceipt:item", it);
+		}
+		em.update("ris", o.ris);
+		o.ris.items.each {
+			em.update("ris:item", it);
+		}	
+		post( o );
+	}
+	
+	//pot to afstock control immediately
+	public void post( def o ) {
+		for(it in o.items) {
+			if(stockSvc.checkSeriesConflict(it)) {
+				throw new Exception("Conflict in series for af " + it.af + ". Series may already have been used"); 
+			}		
+			it.refid = o.receiptno;
+			it.reftype = "AF:RECEIPT";
+			it.refdate = o.txndate;
+			afStockPostSvc.postReceipt( it );
+		}
+	}
+
+	//on opening.
+	void afterOpen(def o) {
+		o.items = em.sqlContext.createNamedQuery("afreceipt:getItems").setParameters(o).resultList;
+	}
+	
+	
+}

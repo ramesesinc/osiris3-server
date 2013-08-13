@@ -1,0 +1,31 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+class AFControlMgmtService extends AbstractListService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Env
+	def env;
+	
+	String schemaName = "afcontrol";
+	
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return [
+			[name:'af', caption: 'AF No'],
+			[name:'mode', caption: 'Mode'],
+			[name:'currentseries', caption: 'Current Series', type:'integer'],
+			[name:'endseries', caption: 'End Series', type:'integer'],
+			[name:'stub', caption: 'Stub', type:'integer'],
+			[name:'collector.name', caption: 'Collector'],
+			[name:'assignee.name', caption: 'Assignee'],
+			[name:'qtybalance', caption: 'Qty', type:'integer'],
+		]
+	}
+	
+	
+}

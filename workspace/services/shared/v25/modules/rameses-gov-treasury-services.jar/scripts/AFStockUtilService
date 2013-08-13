@@ -58,7 +58,7 @@ class AFStockUtilService {
 		return true;
 	}
 	
-	//given a startdate or an end date and af, this calculates the end or beginning of a series
+	//given a startseries or an endseries and af, this calculates the end or beginning of a series
 	@ProxyMethod
 	public def getCompletedInfo(o) {
 		if(!o.af) throw new Exception("Please provide af");
@@ -82,7 +82,16 @@ class AFStockUtilService {
 		else {
 			o.startstub = o.endstub - o.qty + 1;
 		}
+		
 		return o;
 	}	
+	
+	@ProxyMethod
+	public def getValidatedInfo(o) {
+		def z = getCompletedInfo(o);
+		validateSeries(z);
+		checkSeriesConflict(z);
+		return z;
+	}
 	
 }
