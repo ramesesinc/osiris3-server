@@ -64,8 +64,11 @@ class DesktopUserService
 			def lst = [];
 			if (it.security?.exclude) lst << it.security?.exclude;
 			if (it.custom?.exclude) lst << it.custom?.exclude;
-			if (lst) result.env.ROLES[key] = lst.join('|'); 
-		} 		
+			if (lst) 
+				result.env.ROLES[key] = lst.join('|'); 
+			else 
+				result.env.ROLES[key] = null; 
+		} 
 		return result;
 	}	
 }  
