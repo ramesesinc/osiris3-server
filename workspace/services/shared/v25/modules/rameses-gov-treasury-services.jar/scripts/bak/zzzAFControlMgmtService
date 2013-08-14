@@ -1,0 +1,46 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFControlMgmtService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@ProxyMethod
+	public def getColumns( def p ) {
+		return [
+			[name:"af", caption:"AF"],
+			[name:"mode", caption:"Mode"],
+			[name:"startseries", caption:"Start Series", type:"integer"],
+            [name:"endseries", caption:"End Series", type:"integer"],
+			[name:"currentseries", caption:"Current Series", type:"integer"],
+			[name:"stub", caption:"Stub", type:"integer"],
+			[name:"prefix", caption:"Prefix", alignment:'center'],
+			[name:"suffix", caption:"Suffix", alignment:'center'],			
+			[name:"collector", caption:"Collector", alignment:'center'],
+			[name:"assignee", caption:"Assignee", alignment:'center'],
+			[name:"qtybalance", caption:"Qty on Hand", type:"integer"],
+			[name:"active", caption:"Active?", type:"checkbox", checkedValue:1, uncheckedValue:0, alignment:'center'],
+			[name:"refid", caption:"Ref.Txn"],
+		];	
+	}	
+	
+	@ProxyMethod
+	public def getList(def params) {
+		def qry= em.sqlContext.createNamedQuery('afcontrol:getList');
+		qry.setMaxResults(params._limit);
+		qry.setFirstResult(params._start);
+		def filter = new StringBuilder();
+		if(params.af) {
+			filter.append( ''' af = $P{af} ''' );
+			qry.setParameter( "af", params.af );
+		}
+		if( filter.length() > 0 ) {
+			filter.insert( 0, " WHERE " );
+		}
+		qry.setVars( [filter: filter.toString()] );
+		return qry.resultList;
+	}
+	
+}

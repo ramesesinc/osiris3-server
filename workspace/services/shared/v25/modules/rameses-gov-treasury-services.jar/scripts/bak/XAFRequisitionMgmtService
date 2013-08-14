@@ -1,0 +1,28 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFRequisitionMgmtService {
+
+	@PersistenceContext("main")
+	def em;
+	
+	@Env
+	def env;
+
+	@ProxyMethod
+	public def getColumns( def p ) {
+		return [
+			[name:"objid", caption:"Req No" ],
+			[name:"txndate", caption:"Req Date"],
+            [name:"txntype", caption:"Type"],
+			[name:"requester", caption:"Requester"],
+			[name:"state", caption:"State"],
+		];	
+	}	
+	
+	@ProxyMethod
+	public def getList(def params) {
+		return em.sqlContext.createQuery('select objid,txndate,txntype,requester,state from afrequest').resultList;
+	}
+}

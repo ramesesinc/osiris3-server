@@ -1,3 +1,6 @@
+[getList]
+SELECT * FROM afcontrol WHERE currentseries <= endseries
+
 [getConflictSeries]
 SELECT startseries,endseries,cr as qty
 FROM afcontrol_detail 

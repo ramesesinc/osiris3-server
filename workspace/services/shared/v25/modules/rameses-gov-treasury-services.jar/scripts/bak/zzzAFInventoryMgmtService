@@ -1,0 +1,41 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFInventoryMgmtService {
+
+	@PersistenceContext("main")
+	def em;
+	
+	@ProxyMethod
+	public def getColumns( def p ) {
+		return [
+			[name:"receiptid", caption:"IRAF No" ],
+			[name:"reqid", caption:"RIV No" ],
+			[name:"af", caption:"AF"],
+			[name:"currentstub", caption:"Start Stub", type:"integer"],
+			[name:"prefix", caption:"Prefix"],
+			[name:"suffix", caption:"Suffix"],
+			[name:"startseries", caption:"Start Series", type:"integer"],
+            [name:"endseries", caption:"End Series", type:"integer"],
+			[name:"currentseries", caption:"Current Series", type:"integer"],
+			[name:"qtybalance", caption:"Qty on Hand" , type:"integer"],
+		];	
+	}	
+	
+	@ProxyMethod
+	public def getList(def params) {
+		def qry = em.sqlContext.createNamedQuery('afinventory:getList');
+		def filter = new StringBuilder();
+		if(params.af) {
+			filter.append( ''' af = $P{af} ''' );
+			qry.setParameter( "af", params.af );
+		}
+		
+		if( filter.length() > 0 ) {
+			filter.insert( 0, " WHERE " );
+		}
+		qry.setVars( [filter: filter.toString()] );
+		return qry.resultList;
+	}
+}
