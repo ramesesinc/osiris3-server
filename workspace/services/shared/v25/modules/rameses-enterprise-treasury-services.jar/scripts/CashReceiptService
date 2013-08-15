@@ -22,10 +22,20 @@ class CashReceiptService  {
 	def numSvc;
 	
 	@ProxyMethod
-	public def init( def p ) {
-		//calls init for checking collection
-		p.receiptdate = dateService.serverDate;
-		return p;
+	public def init( def entity ) {
+		if(!entity.receiptdate) {
+			entity.receiptdate =  dateService.serverDate;
+		}	
+		entity.objid = "RCT"+new java.rmi.server.UID();
+        entity.items = [];
+        entity.amount = 0;
+		entity.totalcash = 0;
+        entity.totalnoncash = 0;
+        entity.balancedue = 0;
+        entity.cashchange = 0;
+        entity.totalcredit = 0;
+        entity.paymentitems = [];		
+		return entity;
 	}	
 
 	@ProxyMethod
