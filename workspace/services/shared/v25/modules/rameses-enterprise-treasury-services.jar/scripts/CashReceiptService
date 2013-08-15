@@ -54,6 +54,8 @@ class CashReceiptService  {
 		def test = p.paymentitems.findAll{ !it.type };
 		if(test) throw new Exception("All payment items must have a type. Please review the code");
 
+		if(!p.payer) p.payer = [:];  //if there is no id, we need still to add bec. it is an object.
+
 		p.org = [objid:env.ORGID, name:env.ORGNAME];
 		p.txndate = dateService.serverDate;
 		p.user = [objid: env.USERID, name:env.USER];

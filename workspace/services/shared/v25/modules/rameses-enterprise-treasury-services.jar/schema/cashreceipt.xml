@@ -6,8 +6,8 @@
 		<field name="receiptno" required="true" />
 		<field name="receiptdate" required="true" />
 		<field name="txnmode" required="true" />
-		<field name="payer_objid" required="true" />
-		<field name="payer_name" required="true" />
+		<field name="payer_objid"  />
+		<field name="payer_name"  />
 		<field name="paidby" required="true" />
 		<field name="paidbyaddress" required="true" />
 		<field name="series" required="true" />\
@@ -37,6 +37,7 @@
 		<field name="item_code" required="true" />
 		<field name="item_title" required="true" />
 		<field name="amount" required="true" />
+		<field name="remarks"  />
 	</element>
 	
 	<element name="paymentitem-check" tablename="cashreceiptpayment_check">
