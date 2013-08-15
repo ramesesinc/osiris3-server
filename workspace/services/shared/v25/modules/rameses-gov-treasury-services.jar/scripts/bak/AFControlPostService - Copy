@@ -7,6 +7,11 @@ class AFControlPostService {
 	@PersistenceContext("main")
 	def em;
 
+	@Service("StockUtilService")
+	def stockUtil;
+	
+	@Service("AFControlPostService")
+	def afControlSvc;
 	
 	/**
 	* Posting steps:
@@ -16,7 +21,6 @@ class AFControlPostService {
 	*/
 	@ProxyMethod
 	public def postCreate( o ) {
-		println "post create";
 		int startstub = o.startstub;
 		o.startseries.step( o.endseries, o.unitqty ) {
 			//create the afcontrol header
@@ -146,10 +150,22 @@ class AFControlPostService {
 		
 		em.create( "afcontrol:detail", detail );
 		
+		
+		
 		link.detailid = detail.objid;
 		em.update( "afcontrol:activedetail", link );
 		em.update("afcontrol",control);
 		return true;
+	}
+
+	
+	
+	
+	
+	
+	@ProxyMethod
+	public def postRemittance( @Param(schema="afcontrol:remittance") o ) {
+		throw new Exception("Remittance not supported");
 	}
 	
 }

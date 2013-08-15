@@ -47,6 +47,7 @@ class RISService extends AbstractCrudListService {
 	public def getColumns( o ) {
 		return [
 			[name:'risno', caption:'RIS No'],
+			[name:'state', caption:'State'],
 			[name:'dtfiled', caption:'Date Filed'],
 			[name:'requester.name', caption:'Requester'],
 			[name:'txntype', caption:'Type of Request'],

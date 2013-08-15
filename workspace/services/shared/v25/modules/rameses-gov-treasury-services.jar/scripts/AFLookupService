@@ -18,4 +18,8 @@ class AFLookupService extends AbstractListService {
 		];	
 	}	
 	
+	public void beforeList( o ) {
+		o.searchtext = o.searchtext+"%";
+	}
+	
 }
