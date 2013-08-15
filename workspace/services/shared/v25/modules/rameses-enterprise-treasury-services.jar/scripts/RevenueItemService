@@ -12,14 +12,6 @@ class RevenueItemService extends AbstractCrudListService {
 	String schemaName = "revenueitem";
 	
 	@ProxyMethod
-	public def getNodes( def p ) {
-		return [
-			[caption:'Active1', objid:'APPROVED', state:'APPROVED', folder:false],
-			[caption:'Draft', objid:'DRAFT',  state:'DRAFT', folder:false],
-		];
-	}	
-	
-	@ProxyMethod
 	public def getColumns( def o ) {
 		return[
 			[name:'code', caption:'Item Code' ],

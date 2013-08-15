@@ -7,112 +7,50 @@
 	lastremittedseries=updated everytime a remittance is done.
 	-->
 	<element name="afcontrol" tablename="afcontrol">
-		<field name="objid" primary="true"/>	
-		<field name="state" />
-		<field name="active" />
-		<field name="mode"/>
+		<field name="objid" primary="true"/>
+		<field name="controlid" required="true"/>		
+		<field name="mode" required="true"/>		
+		<field name="state" required="true"/>
 		<field name="af" required="true"/>
-		<field name="controlid" />
-		<field name="collector_objid" required="true"/>
-		<field name="collector_name" required="true"/>
-		<field name="collector_jobtitle" required="true"/>
-		<field name="assignee_objid"/>
-		<field name="assignee_name"/>
-		<field name="assignee_jobtitle"/>
-		<field name="startseries" type="integer"/>
-		<field name="endseries" type="integer"/>
-		<field name="lastremittedseries" type="integer"/>
-		<field name="currentseries" type="integer"/>
-		<field name="beginseries" type="integer"/>
 		<field name="prefix" />
 		<field name="suffix" />
 		<field name="stub" type="integer"/>
-		<field name="currentindexno" type="integer"/>
-		
-		<field name="qtyreceived" />
-		<field name="qtyissued" />
-		<field name="qtycancelled" />
-		<field name="qtybalance" />
+		<field name="active" required="true"/>
+		<field name="cancelledseries" />
+		<field name="currentlineno" type="integer" required="true"/>
 	</element>
+	
+	<element name="activedetail" tablename="afcontrol_activedetail">
+		<field name="controlid" primary="true" />
+		<field name="detailid"/>
+	</element>
+	
 	<element name="detail" tablename="afcontrol_detail">
-		<field name="objid" primary="true"/>
-		<field name="controlid" />
-		<field name="refid" />
-		<field name="reftype" />
-		<field name="refdate" />
-		<field name="indexno" />
-		<field name="startseries" />
-		<field name="endseries" />
-		<field name="dr" />
-		<field name="cr" />
-		<field name="runbal" />
-		<field name="postingrefid" />
-		<field name="remarks" />
-	</element>
-	
-	<element name="issuance">
+		<field name="objid" primary="true" />
 		<field name="controlid" required="true"/>
-		<field name="series" required="true" />
-		<field name="refid" required="true"/>
-		<field name="reftype" required="true"/>
-		<field name="refdate" required="true"/>
-	</element>
-	
-	<element name="remittance">
-		<field name="controlid" required="true"/>
-		<field name="refid" required="true" />
-		<field name="reftype" required="true"/>
-		<field name="refdate" required="true"/>
-	</element>
-	
-	<element name="cancelled" tablename="afcontrolcancelled">
-		<field name="objid" primary="true"/>	
-		<field name="controlid" />
-		<field name="startseries" type="integer" />
-		<field name="endseries"  type="integer"/>
-		<field name="remarks" />
-		<field name="collector" />
-		<field name="txndate" type="timestamp"/>
-		<field name="qty"  type="integer"/>
-		<field name="issuedby" />
-	</element>
-	
-	<element name="transferhistory" tablename="afcontroltransferhistory">
-		<field name="objid" primary="true"/>	
-		<field name="controlid" />
-		<field name="txndate" type="timestamp"/>
-		<field name="startseries" type="integer" />
-		<field name="endseries"  type="integer"/>
-		<field name="collector" />
-		<field name="assignee" />
-	</element>
-	
-	<element name="beginbalance" tablename="afcontrolbeginbalance">
-		<field name="objid" primary="true"/>	
-		<field name="af" />
-		<field name="txndate" type="timestamp"/>
-		<field name="startseries" type="integer" />
-		<field name="endseries"  type="integer"/>
-		<field name="collector" />
-		<field name="qty" type="integer"/>
-		<field name="startstub" type="integer"/>
-		<field name="prefix" />
-		<field name="suffix" />
-		<field name="createdby" />
-	</element>
-	
-	<!-- structure for posting -->
-	<element name="cancel">
-		<field name="controlid" required="true"/>
-		<field name="remarks" required="true"/>
-		<field name="refid" required="true" />
-		<field name="reftype" required="true"/>
-		<field name="refdate" required="true"/>
+		<field name="refdate"  />
+		<field name="reftype"  required="true" pattern="ISSUED|TRANSFER|FORWARD"/>
+		<field name="collector_objid" required="true"/>
+		<field name="collector_name" required="true"/>
+		<field name="collector_title" required="true"/>
+		<field name="lineno" type="integer" required="true"/>
 		<field name="startseries" type="integer" required="true"/>
 		<field name="endseries" type="integer" required="true"/>
-		<field name="qty" type="integer" required="true"/>
+		<field name="currentseries" type="integer" required="true"/>
+		<field name="qtyreceived" required="true"/>
+		<field name="qtybegin" required="true"/>
+		<field name="qtyissued" required="true"/>
+		<field name="qtycancelled" required="true"/>
+		<field name="qtybalance" required="true"/>
+		<field name="cancelledseries" />
+		<field name="remittanceid" />
 	</element>
 	
-	
+	<element name="subcollector_detail" tablename="afcontrol_subcollector_detail">
+		<field name="assignee_objid"/>
+		<field name="assignee_name"/>
+		<field name="assignee_title"/>
+		
+	</element>
 	
 </schema>

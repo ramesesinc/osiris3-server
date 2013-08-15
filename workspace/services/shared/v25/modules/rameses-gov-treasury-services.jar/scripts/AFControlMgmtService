@@ -22,8 +22,11 @@ class AFControlMgmtService extends AbstractListService {
 			[name:'endseries', caption: 'End Series', type:'integer'],
 			[name:'stub', caption: 'Stub', type:'integer'],
 			[name:'collector.name', caption: 'Collector'],
-			[name:'assignee.name', caption: 'Assignee'],
-			[name:'qtybalance', caption: 'Qty', type:'integer'],
+			[name:'qtyreceived', caption: 'Qty Received', type:'integer', width:100, resizable:false],
+			[name:'qtybegin', caption: 'Qty Beg.', type:'integer', width:100, resizable:false],
+			[name:'qtyissued', caption: 'Qty Issued', type:'integer', width:100, resizable:false],
+			[name:'qtycancelled', caption: 'Qty Cancelled', type:'integer', width:100, resizable:false],
+			[name:'qtybalance', caption: 'Qty Bal.', type:'integer', width:100, resizable:false],
 		]
 	}
 	

@@ -7,8 +7,16 @@ class AFControlService {
 	@PersistenceContext("main")
 	def em;
 
+	@Service("AFControlPostService")
+	def postSvc;
+	
+	@Service("DateService")
+	def dateSvc;
+	
 	@Env
 	def env;
+	
+	
 	
 	/**
 	* this routine tests the series to check for conflicts until none is found. 
@@ -69,11 +77,50 @@ class AFControlService {
 	}
 	
 	@ProxyMethod
-	public def activateControl( def o ) {
+	public void activateControl( def o ) {
 		if(!o.objid) throw new Exception("AFControlService.activateControl requires objid parameter");
-		o.userid = env.USERID;
-		return em.sqlContext.createNamedExecutor("afcontrol:activateControl").setParameters( o ).execute();
+		em.sqlContext.createNamedExecutor("afcontrol:activateControl").setParameters( o ).execute();
 	}
 	
+	@ProxyMethod
+	public void deactivateControl( def o ) {
+		if(!o.objid) throw new Exception("AFControlService.deactivateControl requires objid parameter");
+		em.sqlContext.createNamedExecutor("afcontrol:deactivateControl").setParameters( o ).execute();
+	}
+	
+	@ProxyMethod
+	public void shiftActivateControl( def o ) {
+		if(!o.previd) throw new Exception("AFControlService.shiftActivateControl requires previd parameter");
+		if(!o.objid) throw new Exception("AFControlService.shiftActivateControl requires objid parameter");
+		em.sqlContext.createNamedExecutor("afcontrol:deactivateControl").setParameters( [objid:o.previd] ).execute();
+		em.sqlContext.createNamedExecutor("afcontrol:activateControl").setParameters( [objid:o.objid] ).execute();
+	}
+	
+	@ProxyMethod
+	public void transfer( def o ) {
+		if(!o.issueto) throw new Exception("AFControlService.transfer requires issueto");
+		
+		//since most of the time usergroup is job title but required info is only title, so we need to correct.
+		if(!o.issueto.title) o.issueto.title = o.issueto.jobtitle;
+		o.refdate = dateSvc.serverDate;
+		postSvc.postTransfer( o );
+	}	
+	
+	@ProxyMethod
+	public void changeMode( def o ) {
+		em.sqlContext.createNamedExecutor("afcontrol:changeMode").setParameters(o).execute();
+	}	
+	
+	@ProxyMethod
+	public void cancelSeries( def o ) {
+		println "cancel series " + o;
+		postSvc.postCancel( [controlid:o.objid] );
+	}	
+	
+	@ProxyMethod
+	public def getDetailsList( def o ) {
+		return em.sqlContext.createNamedQuery("afcontrol:getDetailsList").setParameters(o).resultList;
+	}	
+
 	
 }

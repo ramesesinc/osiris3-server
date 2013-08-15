@@ -19,9 +19,5 @@ class BankService extends AbstractCrudListService {
 		];
 	}
 	
-	public void beforeCreate(def m) {
-		m.objid = "BNK"+ new java.rmi.server.UID();
-	}
-	
 	
 }

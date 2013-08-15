@@ -1,5 +1,57 @@
 [getList]
-SELECT * FROM afcontrol WHERE currentseries <= endseries
+SELECT * 
+FROM afcontrol a
+INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
+INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
+WHERE ad.currentseries < ad.endseries
+ 
+[findActiveControlId]
+SELECT a.objid
+FROM afcontrol a
+INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
+INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
+WHERE a.active=1 AND a.af=$P{af}
+AND ad.collector_objid = $P{userid}
+
+[activateControl]
+UPDATE afcontrol SET active=1 WHERE objid=$P{objid}
+
+[deactivateControl]
+UPDATE afcontrol SET active=0 WHERE objid=$P{objid}
+
+[getOpenControlList]
+SELECT a.objid, currentseries as startseries, endseries, stub 
+FROM afcontrol a
+INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
+INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
+WHERE a.af=$P{af} 
+AND currentseries <= endseries 
+AND (ad.collector_objid=$P{userid}) 
+ORDER BY stub
+
+
+[getNextReceiptInfo]
+SELECT a.objid as controlid,prefix,suffix,currentseries as series,
+stub,collector_objid,collector_name,collector_title
+FROM afcontrol a
+INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
+INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
+WHERE a.objid=$P{objid} AND currentseries<=endseries
+
+
+[findActiveDetail]
+SELECT * 
+FROM afcontrol a
+INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
+INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
+WHERE a.controlid = $P{objid}
+
+[changeMode]
+UPDATE afcontrol SET mode=$P{mode} WHERE objid=$P{objid}
+
+[getDetailsList]
+SELECT * FROM afcontrol_detail WHERE controlid=$P{objid} ORDER BY startseries
+
 
 [getConflictSeries]
 SELECT startseries,endseries,cr as qty
@@ -23,29 +75,11 @@ AND startseries >= $P{startseries}
 AND endseries <= $P{endseries} 
 AND reftype='CANCEL'
 
-[getNextReceiptInfo]
-SELECT objid as controlid,prefix,suffix,currentseries as series,
-stub,collector_objid,collector_name,collector_jobtitle 
-FROM afcontrol WHERE objid=$P{objid} AND currentseries<=endseries
- 
-[findActiveControlId]
-SELECT objid
-FROM afcontrol 
-WHERE active=1 AND af=$P{af}
-AND collector_objid = $P{userid} OR assignee_objid=$P{userid}
 
-[activateControl]
-UPDATE afcontrol 
-SET active=(  CASE WHEN objid=$P{objid} THEN 1 ELSE 0 END)	
-WHERE collector_objid=$P{userid} AND (assignee_objid IS NULL OR assignee_objid=$P{userid}) 
-AND currentseries <= endseries
 
-[getOpenControlList]
-SELECT objid,currentseries as startseries,endseries,stub 
-FROM afcontrol 
-WHERE af=$P{af} 
-AND currentseries <= endseries 
-AND (collector_objid=$P{userid} OR assignee_objid=$P{userid}) 
-ORDER BY stub
+
+
+
+
 
 

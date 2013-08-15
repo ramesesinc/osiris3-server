@@ -7,171 +7,171 @@ class AFControlPostService {
 	@PersistenceContext("main")
 	def em;
 
-	@Service("AFControlService")
-	def afControlSvc;
-	
+	/**
+	* Posting steps:
+	* 1. create the afcontrol
+	* 2. create afcontrol_detail
+	* 3. create the active link
+	*/
 	@ProxyMethod
 	public def postCreate( o ) {
 		int startstub = o.startstub;
 		o.startseries.step( o.endseries, o.unitqty ) {
+		
+			//create the afcontrol header
 			def afcontrol = [:];
-			afcontrol.collector = o.issueto;
-			afcontrol.objid = (o.prefix?o.prefix:'') + it + (o.suffix?o.suffix:'');
+			afcontrol.objid = "AFCTRL"+ new UID();
 			afcontrol.controlid = o.controlid;
-			afcontrol.startseries = it;
-			afcontrol.endseries = (it+o.unitqty-1);
-			afcontrol.currentseries = it;
-			afcontrol.active = 0;
-			afcontrol.af = o.af;
-			afcontrol.stub = startstub;
-			afcontrol.prefix = o.prefix;
-			afcontrol.suffix = o.suffix;
 			afcontrol.mode = "ONLINE";
 			afcontrol.state = "OPEN";
-			afcontrol.currentindexno = 1;
+			afcontrol.af = o.af;
+			afcontrol.prefix = o.prefix;
+			afcontrol.suffix = o.suffix;
+			afcontrol.stub = startstub;
+			afcontrol.active = 0;
+			afcontrol.currentlineno = 1;
+			em.create("afcontrol", afcontrol);
 			
-			afcontrol.qtyreceived = o.unitqty;
-			afcontrol.qtyissued = 0;
-			afcontrol.qtycancelled = 0;
-			afcontrol.qtybalance = o.unitqty;
-			
-			em.create( "afcontrol", afcontrol );
-			startstub = startstub+1;
-
-			//insert also the detail	
+			//create the detail
 			def detail = [:];
-			detail.objid = afcontrol.objid;
+			detail.objid = "AFCTRLD"+ new UID();
 			detail.controlid = afcontrol.objid;
-			detail.refid = o.refid;
-			detail.reftype = 'RECEIPT';
 			detail.refdate = o.refdate;
-			detail.indexno = 1;
-			detail.startseries = afcontrol.startseries;
-			detail.endseries = afcontrol.endseries;
-			detail.dr = o.unitqty;
-			detail.cr = 0;
-			detail.runbal = o.unitqty;
-			em.create("afcontrol:detail", detail );
+			detail.reftype = "ISSUED";
+			detail.collector = o.issueto;
+			detail.lineno = 1;
+			detail.startseries = it;
+			detail.endseries = (it+o.unitqty-1);
+			detail.currentseries = it;
+			detail.qtyreceived = o.unitqty;
+			detail.qtybegin = 0;
+			detail.qtyissued = 0;
+			detail.qtycancelled = 0;
+			detail.qtybalance = o.unitqty;
+			em.create( "afcontrol:detail", detail );
+			
+			//create the active detail
+			def activedetail = [:]
+			activedetail.controlid = afcontrol.objid;
+			activedetail.detailid = detail.objid;
+			em.create("afcontrol:activedetail", activedetail );
+			startstub = startstub+1;
 		}
 		return true;
 	}	
+	
+	/**
+	* this is called everytime a receipt is issued. This is for online 
+	* update qty issued+1, update qty balance, update next series. if end, then remove active 
+	*/
+	@ProxyMethod
+	public def postReceipt( def o ) {
+		def link = em.read( "afcontrol:activedetail", [controlid: o.controlid] );
+		
+		//get the ref ids.
+		def detailid = link.detailid;
+		def controlid = link.controlid;
+		
+		def control = em.read( "afcontrol", [objid:controlid]);
+		def detail = em.read( "afcontrol:detail", [objid:detailid]);
+		
+		int qtybalance = detail.qtybalance;
+		detail.qtyissued += 1;
+		
+		//move the serial pointer. check also for cancelled series. update qtycancelled on the way while removing
+		detail.currentseries += 1;
+		if( control.cancelledseries ) {
+			def newList = [];
+			def clist = control.cancelledseries.split(",").collect{it.trim()};
+			def series = detail.currentseries+"";
+			while( clist.remove(series) ) {
+				newList << series;
+				series = (series.toInteger()+1)+"";
+				detail.qtycancelled+=1;
+			}
+			detail.currentseries = series.toInteger();
+			control.cancelledseries = clist.join(",");
+			if( detail.cancelledseries ) {
+				newList = detail.cancelledseries.split(",").collect{it.trim()}+newList;
+			}	
+			detail.cancelledseries = newList.join(",");	
+		}
+		
+		detail.qtybalance = (detail.qtyreceived + detail.qtybegin) - (detail.qtyissued + detail.qtycancelled);	
+		
+		if( detail.endseries < detail.currentseries ) {
+			control.state = "CLOSED";
+			control.active = 0;
+			em.delete( "afcontrol:activedetail", [controlid: controlid] );
+		}	
+		em.update( "afcontrol", control );
+		em.update("afcontrol:detail", detail );	
+		return true;
+	}
+	
+	/**
+	* this is called when a series is transferred to another collector
+    * steps: create a new entry for the new collector. 
+	* open existing series and transfer qtybalance->qty received, currentseries->startseries 
+	* and endseries update qty issued+1, update qty balance, update next series. if end, then remove active 
+	*/
+	@ProxyMethod
+	public def postTransfer( def o ) {
+		def link = em.read( "afcontrol:activedetail", [controlid: o.controlid] );
+		def detailid = link.detailid;
+		def controlid = link.controlid;
+		
+		def control = em.read( "afcontrol", [objid:controlid] );
+		control.currentlineno += 1;
+
+		def oldDetail = em.read( "afcontrol:detail", [objid:detailid] );
+		
+		//create the new detail	
+		def detail = [ objid: "AFCTRLD"+ new UID() ];
+		detail.controlid = controlid;
+		detail.refdate = o.refdate;
+		detail.reftype = "TRANSFER";
+		detail.collector = o.issueto;
+		detail.lineno = control.currentlineno;
+		detail.startseries = oldDetail.currentseries;
+		detail.endseries = oldDetail.endseries;
+		detail.currentseries = oldDetail.currentseries;
+		detail.qtyreceived = oldDetail.qtybalance;
+		detail.qtybegin = 0;
+		detail.qtyissued = 0;
+		detail.qtycancelled = 0;
+		detail.qtybalance = oldDetail.qtybalance;
+		
+		em.create( "afcontrol:detail", detail );
+		
+		
+		
+		link.detailid = detail.objid;
+		em.update( "afcontrol:activedetail", link );
+		em.update("afcontrol",control);
+	}
+
 	
 	
 	/**
 	* called everytime a cancel series is raised. Test first if the cancelled series has no conflicts
 	*/
 	@ProxyMethod
-	public def postCancel( @Param(schema="afcontrol:cancel") o ) {
-		def control = em.read("afcontrol",[objid:o.controlid]);
-		//test the validity of the specified cancelled series. there must be no conflicts and we should
-		//also test that it is not currently issued but not yet remitted.
-		def conflictQry = em.sqlContext.createNamedQuery("afcontrol:getConflictSeries");
-		def list = conflictQry.setParameters( o ).resultList;
-		if(list.size()>0 ||  o.startseries < control.currentseries ) {
-			throw new Exception("Cancel invalid. The series specified has already been issued or cancelled");
+	public def postCancel( def o ) {
+		def link = em.read( "afcontrol:activedetail", [controlid: o.controlid] );
+		def detailid = link.detailid;
+		def controlid = link.controlid;
+		
+		def control = em.read( "afcontrol", [objid:controlid] );
+		if(control.cancelledseries) {
+			def items = control.cancelledseries.split(",");
+			
 		}
 		
-		int lineno = control.currentindexno+1;
-		int qtybalance = control.qtybalance;
 		
-		def detail = [:];
-		detail.objid = o.refid;
-		detail.refid = o.refid;
-		detail.reftype = o.reftype;
-		detail.refdate = o.refdate;
-		detail.startseries = o.startseries;
-		detail.endseries = o.endseries;
-		detail.controlid = o.controlid;
-		detail.indexno = lineno;
-		detail.dr = 0;
-		detail.cr = o.qty;
-		detail.runbal = qtybalance - o.qty;
-		detail.remarks = o.remarks;
-		em.create("afcontrol:detail", detail );
-
-		//update the current series. We try to increment and test if the next series is also cancelled. If
-		//cancelled series is the first, we move the start series pointer also
-		int currentseries = control.currentseries;
-		if( o.startseries == currentseries ) {
-			currentseries = o.endseries + 1;
-			control.startseries = currentseries;
-			currentseries = afControlSvc.findNextAvailableSeries( [series:currentseries, controlid:o.controlid] );
-		}	
-		
-		if( o.endseries == control.endseries ) {
-			control.endseries = o.startseries - 1;
-			if( control.endseries == currentseries ) {
-				currentseries = currentseries+1;
-			}
-		}
-		
-		if( currentseries > control.endseries ) {
-			control.state = "CLOSED";
-		}
-		control.currentseries = currentseries;
-		control.qtycancelled += o.qty;
-		control.currentindexno = lineno;
-		control.qtybalance = control.qtyreceived - (control.qtyissued+control.qtycancelled);
-		//just to double check
-		if( control.qtybalance != detail.runbal ) {
-			println "control qty balance ->"+control.qtybalance + " detail.runbal->"+it.runbal; 
-			throw new Exception("control qty balance is not equal to running balance");
-		}
-		em.update("afcontrol", control );
-		return true;	
 	}
 	
 	
-	/**
-	* this is called everytime a receipt is issued. This is for online 
-	* mode. we need another method for batch mode
-	*/
-	@ProxyMethod
-	public def postReceipt( @Param(schema="afcontrol:issuance") def o ) {
-		def control = em.read("afcontrol",[objid:o.controlid]);
-		if(control.currentseries != o.series )
-			throw new Exception("Current series does not match existing series");
-		
-		int lineno = control.currentindexno+1;
-		int qtybalance = control.qtybalance;
-		int runbal = qtybalance;
-		
-		int qty = 1;
-		runbal = runbal - qty;
-		def detail = [:];
-		detail.objid = o.refid;
-		detail.refid = o.refid;
-		detail.reftype = o.reftype;
-		detail.refdate = o.refdate;
-		detail.startseries = o.series;
-		detail.endseries = o.series;
-		detail.controlid = o.controlid;
-		detail.indexno = lineno;
-		detail.dr = 0;
-		detail.cr = qty;
-		detail.runbal = runbal;
-		detail.remarks = o.remarks;
-		em.create("afcontrol:detail", detail );		
-		
-		control.currentindexno = lineno;
-		control.qtyissued += qty;
-		control.qtybalance = control.qtyreceived - (control.qtyissued+control.qtycancelled);
-		//just to double check
-		if( control.qtybalance != runbal ) {
-			println "control qty balance ->"+control.qtybalance + " detail.runbal->"+runbal; 
-			throw new Exception("control qty balance is not equal to running balance");
-		}
-		
-		//recalculate next series	
-		int currentseries = control.currentseries+1;
-		currentseries = afControlSvc.findNextAvailableSeries( [series:currentseries, controlid:o.controlid], );
-		control.currentseries = currentseries;
-		if( control.currentseries > control.endseries ) {
-			control.state = "CLOSED";
-		}
-		em.update("afcontrol", control );
-		return true;
-	}
 	
 	@ProxyMethod
 	public def postRemittance( @Param(schema="afcontrol:remittance") o ) {

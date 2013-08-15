@@ -20,9 +20,12 @@ class RISService extends AbstractCrudListService {
 	String schemaName = "ris";
 
 	void beforeCreate( def o ) {
-		o.requester = [objid:env.USERID, name:'TEMP NAME', title:'JOB TITLE'];
+		o.requester = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE];
+		print o.requester;
+		o.org = [objid:env.ORGID, name:env.ORGNAME];
 		o.risno = "RIS" + seqSvc.getNextFormattedSeries("RIS");
 		o.dtfiled = dateSvc.serverDate;
+		o.state = "APPROVED";
 	}
 	
 	void afterCreate( def o ) {

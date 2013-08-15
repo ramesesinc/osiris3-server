@@ -41,7 +41,6 @@ class AFIssueService extends AbstractCrudService {
 		o.ris.state = "CLOSED";
 		
 		o.issueto = o.ris.requester;
-		o.issueto.jobtitle = o.ris.requester.title;
 	}
 	
 	void afterCreate( def o ) {
