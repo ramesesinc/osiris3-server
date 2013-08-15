@@ -11,4 +11,7 @@ UPDATE revenueitem SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT'
 
 [getLookup]
 SELECT r.* FROM revenueitem r  
-WHERE r.state='APPROVED' AND r.title LIKE $P{code}
+WHERE r.state='APPROVED' 
+AND 
+(r.title LIKE $P{title} 
+OR r.code LIKE $P{code} )
