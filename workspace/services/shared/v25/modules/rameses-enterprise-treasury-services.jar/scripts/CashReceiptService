@@ -69,6 +69,7 @@ class CashReceiptService  {
 		p.amountinwords = numSvc.doubleToWords( p.amount );
 		return p;
 	}
+	
 
 		
 }

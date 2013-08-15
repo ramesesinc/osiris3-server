@@ -5,7 +5,6 @@ LEFT JOIN revenueitem_account ra ON ra.objid=r.objid
 LEFT JOIN account a ON a.objid=ra.acctid
 LEFT JOIN revenueitem_fund rf ON rf.objid=r.objid
 LEFT JOIN fund f ON f.objid=rf.acctid
-WHERE r.state=$P{state}
 
 [changeState-approved]
 UPDATE revenueitem SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT'
