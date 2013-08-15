@@ -10,3 +10,6 @@ UPDATE province SET
 WHERE 
 	objid=$P{objid} AND state=$P{oldstate} 
 
+[getById]
+SELECT * FROM province WHERE objid = $P{objid}
+
