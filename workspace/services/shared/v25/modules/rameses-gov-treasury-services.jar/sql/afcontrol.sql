@@ -4,6 +4,7 @@ FROM afcontrol a
 INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
 INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
 WHERE ad.currentseries < ad.endseries
+ORDER BY ad.currentseries
  
 [findActiveControlId]
 SELECT a.objid
@@ -27,7 +28,7 @@ INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
 WHERE a.af=$P{af} 
 AND currentseries <= endseries 
 AND (ad.collector_objid=$P{userid}) 
-ORDER BY stub
+ORDER BY currentseries
 
 
 [getNextReceiptInfo]
