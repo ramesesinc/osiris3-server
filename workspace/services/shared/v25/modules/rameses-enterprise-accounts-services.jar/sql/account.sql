@@ -17,4 +17,4 @@ SELECT * FROM account WHERE parentid=$P{objid} ORDER BY code
 SELECT * FROM account WHERE type=$P{type} ORDER BY code
 
 [changeState-approved]
-UPDATE account SET state='APPROVED' WHERE objid=$P{objid} AND state = 'DRAFT' 
+UPDATE account SET state='APPROVED' WHERE objid=$P{objid} 

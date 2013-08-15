@@ -35,12 +35,7 @@ class AccountService extends AbstractCrudListService {
 			[name:'code', caption:'Acct Code' ],
 			[name:'title', caption:'Acct Title' ],
 			[name:'type', caption:'Type' ],
-			[name:'filetype', caption:'Filetype' ],
 		];
-		print "cols " + o;
-		if( o.code == "01" ) {
-			cols << [expression:"'hahaha'", caption:'My Extended Filetype' ]
-		}
 		return cols;
 	}
 	

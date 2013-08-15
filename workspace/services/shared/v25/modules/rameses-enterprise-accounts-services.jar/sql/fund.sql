@@ -14,4 +14,4 @@ FROM fund
 # -- WHERE parentid=$P{objid}
 
 [changeState-approved]
-UPDATE fund SET state='APPROVED' WHERE objid=$P{objid} AND state = 'DRAFT' 
+UPDATE fund SET state='APPROVED' WHERE objid=$P{objid} 
