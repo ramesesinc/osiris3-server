@@ -1,0 +1,59 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+class AFReceiptService extends AbstractCrudService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Service("DateService")
+	def dateSvc;
+	
+	@Service("SequenceService")
+	def seqSvc;
+
+	@Env
+	def env;
+	
+	String schemaName = "afreceipt"
+	
+	public void beforeCreate(def o) {
+		o.objid = "IRAF"+seqSvc.getNextFormattedSeries("IRAF");
+		o.txntype = o.request.txntype;
+		o.txndate = dateSvc.serverDate;
+		o.createdby = env.USER;
+		o.state = 'DRAFT';
+
+		def req = o.request;
+		def receipt = o.receipt;
+		
+		receipt.issuer = env.USER;
+		receipt.createdby = env.USER;
+		receipt.issueto = req.requester;
+	}
+	
+	public void afterCreate(def o) {
+		o.items.each {
+			it.objid = "IRAFI"+seqSvc.getNextFormattedSeries("IRAFI");
+			it.receiptid = receipt.objid;
+			//create the controlid so it can be used by inventory.
+			if( !it.controlid ) it.controlid = it.objid;
+			em.create( "afreceipt:item", it );
+		}
+		em.sqlContext.createNamedExecutor("arequest:changeState-closed")
+			.setParameters([objid:o.request.objid, receiptid:o.objid]).execute();
+		o.request.items.each {
+			em.save("afrequest:item", it );	
+		}
+	}
+
+	public void afterOpen(def o) {
+		o.items = em.sqlContext.createNamedQuery("afreceipt:getItems").setParameters(o).resultList;
+		def req = [objid:o.reqid]
+		o.request = em.read( "afrequest", req );
+		o.request.items = em.sqlContext.createNamedQuery("afrequest:getItems").setParameters(req).resultList;
+	}
+	
+}

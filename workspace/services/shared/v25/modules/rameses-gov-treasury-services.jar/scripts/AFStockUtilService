@@ -94,4 +94,11 @@ class AFStockUtilService {
 		return z;
 	}
 	
+	@ProxyMethod
+	public def sayHello(o) {
+		print "hello " + o;
+		return "ehllo";
+	}
+	
+	
 }
