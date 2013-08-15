@@ -12,9 +12,11 @@ class OrgAdminService extends AbstractCrudService {
 
 	@Env
 	def env;
+
+	@Service 
+	def self;
 	
 	String schemaName = "org";
-
 
 	public void beforeCreate( data ) {
 		def prefixid = 'ORG';
@@ -84,7 +86,9 @@ class OrgAdminService extends AbstractCrudService {
 	public def getColumns( def o ) {
 		def columns = [
 			[name:'name', caption:'Name' ],
-			[name:'orgclass', caption:'Org. Class' ]
+			[name:'orgclass', caption:'Org. Class' ], 
+			[name:'indexno', caption:'Index No.'],
+			[name:'pin', caption:'PIN']
 		];
 	}
 	
@@ -100,6 +104,10 @@ class OrgAdminService extends AbstractCrudService {
 			m.parentid = params.parentid; 
 		}
 
+		m.orgclass = params.orgclass;
+		def resmap = self.search( m ); 
+		if (resmap.list) return resmap.list; 
+
 		def qry = em.sqlContext.createNamedQuery('org:getList').setVars(m).setParameters(m); 
 		if (params._start) qry.setFirstResult(params._start);
 		if (params._limit) qry.setMaxResults(params._limit);
@@ -108,6 +116,15 @@ class OrgAdminService extends AbstractCrudService {
 		list.each { it.filetype = it.orgclass; }
 		return list;
 	}	
+
+
+	@ProxyMethod 
+	public Map search( params ) { 
+		/* 
+			specific org implementations will intercept this method 
+		 */ 
+		return params; 
+	} 
 
 	public void approve ( data ) { 
 		//do be overridden through interceptors 

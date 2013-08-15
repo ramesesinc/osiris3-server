@@ -49,8 +49,9 @@ class BarangayOrgInterceptor {
 		em.sqlContext.createNamedExecutor(schemaName+':changeState').setParameters(params).execute(); 
 	}		
 
-	@After(pattern="OrgAdminService.getList", eval="#{args[0].orgclass=='BARANGAY'}")
-	public void onGetList( evt ) {
-		def list = evt.args[0];
-	}		
+	@After(pattern="OrgAdminService.search")
+	public void onSearch( evt ) {		
+		def params = evt.args[0];
+		println 'onSearch-> ' + params; 		
+	} 
 }
