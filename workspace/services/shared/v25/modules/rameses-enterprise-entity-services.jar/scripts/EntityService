@@ -117,9 +117,7 @@ class EntityService extends AbstractCrudListService {
 
 	private void updateContacts( entity ) {
 		em.sqlContext.createNamedExecutor(schemaName+':removeContacts').setParameters([objid: entity.objid]).execute();
-		if (!entity.contacts) return;
-
-		entity.contacts.each{
+		entity.contacts?.each{
 			it.entityid = entity.objid;
 			em.create(schemaName+':contact', it); 
 		}
