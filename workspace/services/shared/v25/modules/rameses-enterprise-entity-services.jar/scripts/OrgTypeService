@@ -1,0 +1,16 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+
+class OrgTypeService {
+
+	@ProxyMethod
+	public def getList() {		
+		return [
+			[key:'SINGLEPROPERTORSHIP', value:'SINGLEPROPERTORSHIP'], 
+			[key:'CORPORATION', value:'CORPORATION'] 
+		]; 
+	} 
+} 
