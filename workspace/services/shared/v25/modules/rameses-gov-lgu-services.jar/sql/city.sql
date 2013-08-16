@@ -10,6 +10,3 @@ UPDATE city SET
 WHERE 
 	objid=$P{objid} AND state=$P{oldstate} 
 
-
-[getById]
-SELECT * FROM city WHERE objid = $P{objid}

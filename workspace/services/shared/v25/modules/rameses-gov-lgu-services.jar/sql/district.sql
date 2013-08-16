@@ -10,5 +10,3 @@ UPDATE district SET
 WHERE 
 	objid=$P{objid} AND state=$P{oldstate} 
 
-[getById]
-SELECT * FROM district WHERE objid = $P{objid}
