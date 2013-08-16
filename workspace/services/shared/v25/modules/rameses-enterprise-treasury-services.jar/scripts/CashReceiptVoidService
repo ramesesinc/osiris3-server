@@ -15,30 +15,36 @@ class CashReceiptVoidService  {
 	@Service("DateService")
 	def dateService;
 	
-	@Service("Var")
-	def var;
-	
 	@Service("CashBookPostService")
 	def cashBookSvc;
 	
+	
 	@ProxyMethod
 	public def post( def p ) {
-	
-		em.create("cashreceipt:void", p );
+		def v = [objid: "VOID"+new UID()];
+		v.postedby = [ objid:env.USERID, name:env.FULLNAME ];
+		v.receiptid = p.receipt.objid;
+		v.reason = p.reason;
+		v.txndate = dateService.serverDate;
 		
+		em.create("cashreceipt:void", v );
+		p.receipt.items.each {
+			println it.item;
+		}
 		//summarize receipts by fund, locate the fund and update 
-		def z = p.items.groupBy{ it.item.fund.objid };
-		z.each { k,v->
+		def z = p.receipt.items.groupBy{ it.item.fund.objid };
+		z.each { k, c->
+			println k ;
 			def entry = [:]
 			entry.fundid = k;
-			entry.fundtitle = v[0].item.fund.title;   //get the first element
-			entry.subacctid = p.collector.objid;
-			entry.refid = p.objid;
-			entry.refno = p.receiptno;
-			entry.refdate = p.receiptdate;
-			entry.reftype = "cashreceipt";
+			entry.fundtitle = c[0].item.fund.title;   //get the first element
+			entry.subacctid = p.receipt.collector.objid;
+			entry.refid = v.objid;
+			entry.refno = p.receipt.receiptno;
+			entry.refdate = v.txndate;
+			entry.reftype = "cashreceipt:void";
 			entry.particulars = "VOID " + p.reason;
-			entry.amount = v.sum{ it.amount };
+			entry.amount = c.sum{ it.amount };
 			cashBookSvc.postCR( entry ); 
 		}
 		return p;

@@ -23,12 +23,13 @@ class CashReceiptQueryService extends AbstractListService {
 			[name:"collectiontype.name", caption:"Collection Type"],
 			[name:"amount", caption:"Amount", type:"decimal"],
 			[name:"collector.name", caption:"Collector"],
+			[name:"voided", caption:"Voided", type:'checkbox', checkedValue:1, uncheckedValue: 0],
 			[name:"remitted", caption:"Remitted", type:'checkbox', checkedValue:1, uncheckedValue: 0],
 		];
 	}
 	
 	void beforeList(o) {
-		
+			
 	}
 		
 	@ProxyMethod 

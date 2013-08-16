@@ -50,6 +50,14 @@
 		<field name="particulars" />
 	</element>
 	
+	<element name="void" tablename="cashreceipt_void">
+		<field name="objid" primary="true"/>
+		<field name="receiptid" required="true" />
+		<field name="txndate" required="true" />
+		<field name="postedby_objid" required="true" />
+		<field name="postedby_name" required="true" />
+		<field name="reason"  />
+	</element>
 	
 </schema>
 

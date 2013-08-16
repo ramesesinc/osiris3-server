@@ -32,6 +32,10 @@ class CashBookService extends AbstractCrudListService {
 		o.currentlineno = 1;
 	}
 
-
+	@ProxyMethod
+	public def getEntries( o ) {
+		return em.sqlContext.createNamedQuery( "cashbook:getEntries" ).setParameters(o).resultList;
+	}
+	
 	
 }

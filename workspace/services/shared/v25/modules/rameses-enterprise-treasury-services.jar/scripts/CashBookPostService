@@ -53,5 +53,35 @@ class CashBookPostService {
 		return true;
 	}
 
+	@ProxyMethod
+	public def postCR( def o ) {
+		def cb = em.sqlContext.createNamedQuery( "cashbook:findByCollectorFund" ).setParameters( o ).singleResult;
+		if(!cb)
+			throw new Exception("Posting failed. There is no associated cashbook for fund: " + o.fundtitle + ". Please contact the treasurer"); 
+		
+		def balance = cb.endbalance;
+		cb.totalcr += o.amount;
+		cb.endbalance = (cb.beginbalance + cb.forwardbalance + cb.totaldr) - cb.totalcr;
+		
+		def detail = [:];
+		detail.objid = "CSHBK"+new UID();
+		detail.parentid = cb.objid;
+		detail.pageno = cb.currentpageno;
+		detail.lineno = cb.currentlineno;
+		
+		detail.refid = o.refid;
+		detail.refno = o.refno;
+		detail.refdate = o.refdate;
+		detail.reftype = o.reftype;
+		detail.particulars = o.particulars;
+		detail.dr = 0;
+		detail.cr = o.amount;	
+		detail.runbalance = cb.endbalance;
+		em.create("cashbook:detail", detail);
+		
+		moveNextPage( cb );
+		em.update( "cashbook", cb );
+		return true;
+	}
 	
 }
