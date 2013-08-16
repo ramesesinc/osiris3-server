@@ -39,6 +39,7 @@ class CashReceiptInterceptor {
 		m.series = result.series;
 		m.controlid = result.controlid;
 		postSvc.postReceipt(m);
+		
 	}
 
 	

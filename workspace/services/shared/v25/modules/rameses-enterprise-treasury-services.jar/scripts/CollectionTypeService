@@ -21,30 +21,20 @@ class RevenueItemService extends AbstractCrudListService {
 		];
 	}
 	
+	//must return a collection of elements with fields [formno and formtype]
+	//this is impt for associating handlers. Used by collection type.
 	@ProxyMethod
 	public def getFormTypes() {
-		//must return a collection of elements with fields [formno and formtype]
-		//this is impt for associating handlers. See collectiontype client handler.
 		return [];
 	}
-	
+
+	//used by cash receipt initial
 	@ProxyMethod
-	public def getAvailableFormTypes() {
-		return em.sqlContext.createNamedQuery("collectiontype:getAvailableFormTypes").resultList*.formno;
+	public def getCollectionTypes() {
+		return em.sqlContext.createNamedQuery("collectiontype:getList").resultList;
 	}
+
 	
-	@ProxyMethod
-	public def getListByFormType(def o) {
-		return em.sqlContext.createNamedQuery("collectiontype:getListByFormType").setParameters(o).resultList;
-	}
 	
-	public void beforeCreate(o) {
-		println "before create collection type " ; 
-	}
-		
-	public void afterOpen(o) {
-		o.text = "SAMPLE HAHA";
-		println "after open collection type " ; 
-	}
 		
 }

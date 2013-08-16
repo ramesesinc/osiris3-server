@@ -15,6 +15,8 @@ class BankAccountService extends AbstractCrudListService {
 			[name:"state", caption:"State"],
 			[name:"code", caption:"Account No."],
 			[name:"title", caption:"Account Title"],
+			[name:"fund.code", caption:"Fund Code"],
+			[name:"fund.title", caption:"Fund Title"],
 			[name:"bank.code", caption:"Bank Code"],
 			[name:"bank.name", caption:"Bank Name"],
 			[name:"branchname", caption:"Branch Name"],

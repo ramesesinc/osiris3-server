@@ -16,8 +16,9 @@ class RevenueItemService extends AbstractCrudListService {
 		return[
 			[name:'code', caption:'Item Code' ],
 			[name:'title', caption:'Item Title' ],
-			[name:'ngasacct', caption:'NGAS Account' ],
-			[name:'fundacct', caption:'Fund Account' ],
+			[name:'fund.code', caption:'Fund Account' ],
+			[name:'fund.title', caption:'Fund Title' ],
+			[name:'state', caption:'State' ],
 		];
 	}
 	
