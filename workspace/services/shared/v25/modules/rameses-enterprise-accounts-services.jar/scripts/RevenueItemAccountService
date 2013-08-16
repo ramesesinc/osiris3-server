@@ -1,10 +1,10 @@
 import com.rameses.annotations.*;
 import com.rameses.util.*;
 import java.rmi.server.*;
-import com.rameses.common.*
-import com.rameses.services.extended.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*;
 
-class RevenueItemService extends AbstractCrudListService {
+class RevenueItemAccountService extends AbstractCrudListService {
 
 	@PersistenceContext("main")
 	def em;
@@ -20,7 +20,6 @@ class RevenueItemService extends AbstractCrudListService {
 			[name:'fund.title', caption:'Fund Title' ],
 			[name:'state', caption:'State' ],
 		];
-	}
+	}	
 	
-		
 }
