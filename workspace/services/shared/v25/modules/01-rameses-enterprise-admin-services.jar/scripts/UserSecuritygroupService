@@ -1,0 +1,70 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+import com.rameses.services.extended.*;
+
+class UserSecuritygroupService {
+
+	@PersistenceContext('admin')
+	def em;
+
+
+	@ProxyMethod 
+	public List getUsergroups() {
+		return em.sqlContext.createNamedQuery('usersecuritygroup:getUsergroups').resultList;
+	}
+
+	@ProxyMethod 
+	public List getSecuritygroups( params ) {
+		if (!params.usergroupid) throw new Exception('Please specify usergroupid');
+
+		return em.sqlContext.createNamedQuery('usersecuritygroup:getSecuritygroups')
+				.setParameters(params).resultList;
+	}
+
+	@ProxyMethod 
+	public void addSecuritygroup( params ) {
+		if (!params.usergroupid) 
+			throw new Exception('Please specify usergroupid');
+		if (!params.securitygroupid) 
+			throw new Exception('Please specify securitygroupid');
+		if (!params.userid) 
+			throw new Exception('Please specify userid');
+
+		def qry = em.sqlContext.createNamedQuery('usersecuritygroup:getSecuritygroup');
+		def info = qry.setParameters([
+						objid: params.securitygroupid, 
+						usergroupid: params.usergroupid 
+					]).singleResult; 
+
+		if (!info) throw new Exception("'"+params.objid+"' security group not found"); 
+
+		def entity = [
+			objid: 				'USGRP'+new UID(), 
+			usergroupid: 		params.usergroupid, 
+			securitygroupid: 	params.securitygroupid 
+		];
+
+		if (params.orgid) {
+			qry = em.sqlContext.createNamedQuery('usersecuritygroup:getOrg');
+			entity.org = qry.setParameters([
+							objid: params.orgid, 
+							orgclass: params.orgclass
+						]).singleResult; 
+
+			if (!entity.org) throw new Exception("'"+params.orgid+"' org not found"); 
+		} 
+
+		qry = em.sqlContext.createNamedQuery('usersecuritygroup:getUser');
+		entity.user = qry.setParameters([objid: params.userid]).singleResult; 
+		if (!entity.user) throw new Exception("'"+params.userid+"' user not found"); 
+
+		entity.jobtitle = entity.user.jobtitle;
+		em.create('usergroup:member', entity); 
+	}
+
+}
+
+

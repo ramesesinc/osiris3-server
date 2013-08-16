@@ -40,6 +40,16 @@ class UserAdminService extends AbstractCrudListService {
 
 		params.name = (params.name? params.name+'%': '%');
 	}
+
+	public void afterOpen( entity ) {
+		entity.usergroups = getUsergroups(entity); 
+	}
+
+	@ProxyMethod 
+	public List getUsergroups( params ) {
+		def qry = em.sqlContext.createNamedQuery(schemaName+':getUsergroups');
+		return qry.setParameters([userid: params.objid]).resultList;
+	}
 }
 
 
