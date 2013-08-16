@@ -1,0 +1,90 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFRequisitionService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Service("DateService")
+	def dateSvc;
+	
+	@Service("SequenceService")
+	def seqSvc;
+
+	@Env
+	def env;
+	
+	@ProxyMethod
+	public def create(def o) {
+		o.objid = "RIV"+seqSvc.getNextFormattedSeries("RIV");
+		o.txndate = dateSvc.serverDate;
+		o.requester = env.USER;
+		o.createdby = env.USER;
+		o.state = 'OPEN';
+		em.validate("afrequest", o);
+		o = em.create("afrequest", o );
+		o.items.each {
+			it.objid = "AFRQI"+new UID();
+			it.reqid = o.objid;
+			it.qtyreceived = 0;
+			em.create( "afrequest:item", it );
+		}
+		return open(o);
+	}
+	
+	@ProxyMethod
+	public def open(def o) {
+		def x = em.read("afrequest", o );
+		x.items = em.sqlContext.createNamedQuery("afrequest:getItems").setParameters(x).resultList;
+		if( x.receiptid ) {
+			def p = [objid:x.receiptid];
+			def r = em.read( "afreceipt", p );
+			r.items = em.sqlContext.createNamedQuery("afreceipt:getItems").setParameters(p).resultList;
+			x.receipt = r;	
+		}
+		return x;
+	}
+	
+	
+	/*****
+	* upon saving the receipt, it is immediately autoposted to inventory
+	**/
+	@ProxyMethod
+	public def saveReceipt(def o) {
+		def req = o.request;
+		def receipt = o.receipt;
+		receipt.objid = "IRAF"+seqSvc.getNextFormattedSeries("IRAF");
+		receipt.txntype = req.txntype;
+		receipt.state = "CLOSED";
+		receipt.txndate = dateSvc.serverDate;
+		receipt.issuer = env.USER;
+		receipt.createdby = env.USER;
+		receipt.issueto = req.requester;
+		receipt.reqid = req.objid;
+		em.validate("afreceipt", receipt );
+		em.create("afreceipt", receipt );
+		
+		receipt.items.each {
+			it.objid = "IRAFI"+seqSvc.getNextFormattedSeries("IRAFI");
+			it.receiptid = receipt.objid;
+			//create the controlid so it can be used by inventory.
+			if( !it.controlid ) it.controlid = it.objid;
+			em.create( "afreceipt:item", it );
+		}
+		
+		req.receiptid = receipt.objid;
+		req.state = "CLOSED";
+		em.update("afrequest", req );
+		req.items.each {
+			em.save("afrequest:item", it );	
+		}
+		return [request:req, receipt: receipt];
+	}
+
+
+	
+	
+	
+}

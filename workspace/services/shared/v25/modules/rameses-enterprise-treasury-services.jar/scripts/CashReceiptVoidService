@@ -1,0 +1,48 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class CashReceiptVoidService  {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Env
+	def env;
+	
+	@Service("DateService")
+	def dateService;
+	
+	@Service("Var")
+	def var;
+	
+	@Service("CashBookPostService")
+	def cashBookSvc;
+	
+	@ProxyMethod
+	public def post( def p ) {
+	
+		em.create("cashreceipt:void", p );
+		
+		//summarize receipts by fund, locate the fund and update 
+		def z = p.items.groupBy{ it.item.fund.objid };
+		z.each { k,v->
+			def entry = [:]
+			entry.fundid = k;
+			entry.fundtitle = v[0].item.fund.title;   //get the first element
+			entry.subacctid = p.collector.objid;
+			entry.refid = p.objid;
+			entry.refno = p.receiptno;
+			entry.refdate = p.receiptdate;
+			entry.reftype = "cashreceipt";
+			entry.particulars = "VOID " + p.reason;
+			entry.amount = v.sum{ it.amount };
+			cashBookSvc.postCR( entry ); 
+		}
+		return p;
+	}	
+		
+		
+}

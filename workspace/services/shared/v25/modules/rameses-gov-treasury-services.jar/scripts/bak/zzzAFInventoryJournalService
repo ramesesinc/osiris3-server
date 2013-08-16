@@ -1,0 +1,51 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFInventoryJournalService {
+
+	@PersistenceContext("main")
+	def em;
+	
+	@ProxyMethod
+	public def getColumns( def p ) {
+		return [
+		    [name:"txndate", caption:"Date"],
+			[name:"ref", caption:"Reference"],
+			[name:"particulars", caption:"Particulars"],
+			[name:"dr", caption:"Debit", alignment:'center', type:"integer", width:100],
+			[name:"cr", caption:"Credit", alignment:'center', type:"integer", width:100],
+			[name:"balance", caption:"Balance", alignment:'center', type:"integer", width:100]
+		];	
+	}	
+	
+	@ProxyMethod
+	public def getList(def params) {
+		def qry= em.sqlContext.createNamedQuery('afinventory:getJournalEntriesByAF');
+		qry.setMaxResults( params._limit );
+		
+		int start = params._start;
+		if(params._start>0) start = params._start - 1;
+		qry.setFirstResult( start );
+		def list = qry.setParameters(params).resultList;
+		
+		def results = [];
+		
+		int bal = 0;
+		def particulars = "BEGIN.BALANCE";
+		if(params.bal) {
+			bal = params.bal; 
+			particulars = "FORWARDED BALANCE";
+		}	
+		
+		results << [particulars:particulars,balance:bal];
+		list.each {
+			bal = bal + it.dr - it.cr;	
+			results << [txndate:it.txndate, ref:it.objid, particulars:it.txntype, dr:it.dr, cr:it.cr, balance:bal];
+		}
+		results.remove(results.last());
+		return results;
+	}
+	
+	
+}
