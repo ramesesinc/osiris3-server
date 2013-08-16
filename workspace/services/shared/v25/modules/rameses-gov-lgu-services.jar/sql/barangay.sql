@@ -10,5 +10,8 @@ UPDATE barangay SET
 WHERE 
 	objid=$P{objid} AND state=$P{oldstate} 
 
+[getById]
+SELECT * FROM barangay WHERE objid = $P{objid}
+
 [search]
 SELECT * FROM barangay

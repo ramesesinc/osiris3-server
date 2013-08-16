@@ -37,5 +37,14 @@ class RevenueItemService extends AbstractCrudListService {
 	public def getListByFormType(def o) {
 		return em.sqlContext.createNamedQuery("collectiontype:getListByFormType").setParameters(o).resultList;
 	}
+	
+	public void beforeCreate(o) {
+		println "before create collection type " ; 
+	}
+		
+	public void afterOpen(o) {
+		o.text = "SAMPLE HAHA";
+		println "after open collection type " ; 
+	}
 		
 }

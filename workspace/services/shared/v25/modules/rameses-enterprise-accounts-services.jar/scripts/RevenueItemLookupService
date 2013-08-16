@@ -12,14 +12,16 @@ class RevenueItemLookupService  {
 	@ProxyMethod
 	public def getColumns( def o ) {
 		return[
-			[name:'code', caption:'Item Code' ],
+			[name:'code', caption:'Item Code', width:100, resizable:false ],
 			[name:'title', caption:'Item Title' ]
 		];
 	}
 	
 	@ProxyMethod
 	public def getList( Map m ) {
-		if(m.searchtext) m.code = m.searchtext + "%";
+		if(m.searchtext == null ) m.searchtext = "";
+		m.code = m.searchtext.trim() + "%";
+		m.title = m.searchtext.trim() + "%";
 		return em.sqlContext.createNamedQuery("revenueitem:getLookup").setParameters(m).setMaxResults(50).resultList;
 	}
 }
