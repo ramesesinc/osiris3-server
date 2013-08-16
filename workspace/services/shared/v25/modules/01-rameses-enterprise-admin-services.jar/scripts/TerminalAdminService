@@ -3,50 +3,49 @@ import com.rameses.common.*
 import java.rmi.server.UID;
 import com.rameses.util.*;
 import com.rameses.io.*;
+import com.rameses.services.extended.*;
 
+class TerminalAdminService extends AbstractListService { 
 
-class TerminalAdminService {
-
-	@PersistenceContext("admin")
+	@PersistenceContext('admin')
 	def	em; 
 
-	@Env
-	def env;
-	
+	String schemaName = 'terminal';
+
 	@ProxyMethod
-	public def getColumns( def o ) {
+	public def getColumns( params ) {
 		return[
-			[name:'objid', caption:'Terminal' ],
+			[name:'terminalid', caption:'Terminal Key', maxWidth:100 ], 
+			[name:'macaddress', caption:'Mac Address', width:200, maxWidth:200 ], 
+			[name:'dtregistered', caption:'Date Registered', width:150, resizable:false ], 
+			[name:'registeredby', caption:'Registered By' ] 
 		];
 	}
-	
-	@ProxyMethod
-	public def getList( def o ) {	
-		println 'getList-> ' + o;
-		if(!o.orgtype) throw new Exception("Please include an orgtype in OrgAdmin getList");
-		o.userid = env.USERID;
-		return em.sqlContext.createNamedQuery('org:getList').setParameters(o).resultList; 
-	}
 
-	@ProxyMethod
-	public def create( def o ) {
-		println "saving " + o;
-		//o.objid = "USGRP" + new UID();
-		//em.create("org", o );
-	}
+	@ProxyMethod 
+	public void generateKeys( params ) {
+		if (!params.size) throw new Exception('Please specify size');
 
-	@ProxyMethod
-	public def open( def o ) {
-		em.read("org", o );
-	}
-	
-	@ProxyMethod
-	public def update( def o ) {
-		em.update("org", o );
-	}
-	
+		def data = [:];
+		for (int i=0; i<params.size; i++) {
+			data.terminalid = KeyGen.generateAlphanumKey( null, 10 );
+			data.state = 0;
+			em.create( schemaName, data ); 
+		} 
+	} 
 
-	
+	@ProxyMethod 
+	public void unassign( entity ) {
+		if (!entity?.terminalid) throw new Exception('Please specify terminalid');
+
+		def data = em.read(schemaName, [terminalid: entity.terminalid]); 
+		if (!data) throw new Exception("'"+entity.terminalid+"' terminal not found"); 
+
+		def newdata = [:];
+		data.each{k,v-> newdata[k]=null; } 
+		newdata.terminalid = entity.terminalid;
+		newdata.state = 0;
+		em.update(schemaName, newdata); 
+	} 	
+		
 }
-
-
