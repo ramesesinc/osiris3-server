@@ -3,17 +3,17 @@ import com.rameses.util.*;
 import java.rmi.server.*;
 import com.rameses.services.extended.*;
 
-class CollectorLookupService extends AbstractListService {
+class LiquidatingOfficerLookupService extends AbstractListService {
 
 	@PersistenceContext("main")
 	def em;
 
-	String schemaName = "collector";
+	String schemaName = "liquidatingofficer";
 	
 	@ProxyMethod
 	public def getColumns( def p ) {
 		return [
-			[name:"username", caption:"XUser Name"],
+			[name:"username", caption:"User Name"],
 			[name:"lastname", caption:"Last Name"],
 			[name:"firstname", caption:"First Name"],
 			[name:"jobtitle", caption:"Job Title"],
