@@ -66,6 +66,8 @@ class UsergroupService extends AbstractCrudListService {
 		info.exclude = params.exclude; 
 		em.update('usergroup:member', info); 
 	} 
+
+	public void approve ( data ) {} 	
 }
 
 
