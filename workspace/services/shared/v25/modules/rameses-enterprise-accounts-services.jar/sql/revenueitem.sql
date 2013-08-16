@@ -1,17 +1,27 @@
 [getList]
-SELECT r.*, a.code as ngasacct, f.code as fundacct 
-FROM revenueitem r 
-LEFT JOIN revenueitem_account ra ON ra.objid=r.objid
-LEFT JOIN account a ON a.objid=ra.acctid
-LEFT JOIN revenueitem_fund rf ON rf.objid=r.objid
-LEFT JOIN fund f ON f.objid=rf.acctid
+SELECT r.* FROM revenueitem r 
 
 [changeState-approved]
 UPDATE revenueitem SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT'
 
 [getLookup]
-SELECT r.* FROM revenueitem r  
-WHERE r.state='APPROVED' 
-AND 
-(r.title LIKE $P{title} 
-OR r.code LIKE $P{code} )
+SELECT r.* FROM revenueitem r 
+WHERE  (r.title LIKE $P{title}  OR r.code LIKE $P{code} )
+
+[getLookupBasicCashReceipt]
+SELECT 
+   r.objid,r.code,r.title, 
+   r.fund_objid,  r.fund_code, r.fund_title, 
+   cb.objid as cashbookid   
+FROM revenueitem r 
+LEFT JOIN cashbook cb ON cb.fund_objid=r.fund_objid AND cb.subacct_objid = $P{collectorid}
+WHERE (r.title LIKE $P{title}  OR r.code LIKE $P{code} )
+
+[getLookupExtendedCashReceipt]
+SELECT 
+   r.objid,r.code,r.title, 
+   r.fund_objid,  r.fund_code, r.fund_title, 
+   cb.objid as cashbookid   
+FROM revenueitem r 
+LEFT JOIN cashbook cb ON cb.fund_objid=r.fund_objid AND cb.subacct_objid = $P{collectorid}
+WHERE r.objid IN ( ${filter} )

@@ -1,38 +1,42 @@
 <schema>
-	<element name="rule" tablename="rule" >
+	<element name="cashbook" tablename="cashbook" >
 		<field name="objid" primary="true"/>
-		<field name="docstate" required="true" />
-		<field name="rulename" required="true" />
-		<field name="description" required="true" />
-		<field name="packagename" required="true" />
-		<field name="author" required="true" />
-		<field name="salience" type="integer" required="true" />
-		<field name="agendagroup" required="true" />
-		<field name="ruleset" required="true" />
-		<field name="effectivefrom" />
-		<field name="effectiveto" />
-		<complex name="conditions" ref="condition" type="list" serializer="default" />
-		<complex name="actions" ref="action" type="list" serializer="default" />
+		<field name="state" required="true"/>
+		<field name="code" required="true"/>
+		<field name="title" required="true"/>
+		<field name="description" required="true"/>
+		<field name="type" required="true"/>
+		<field name="subacct_objid" required="true"/>
+		<field name="subacct_name" required="true"/>
+		<field name="fund_objid" required="true"/>
+		<field name="fund_code" required="true"/>
+		<field name="fund_title" required="true"/>
+		<field name="org_objid"/>
+		<field name="org_code" />
+		<field name="org_name" />
+		<field name="beginbalance" required="true"/>
+		<field name="forwardbalance" required="true"/>
+		<field name="totaldr" required="true"/>
+		<field name="totalcr" required="true"/>
+		<field name="endbalance" required="true"/>
+		<field name="currentpageno" required="true"/>
+		<field name="currentlineno" required="true"/>
 	</element>
 	
-	<element name="condition">
-		<field name="name" required="true"/>
-		<field name="displaytext" required="true" />
-		<field name="factclass" required="true"/>
-		<complex name="constraints" ref="constraint" type="list" serializer="default" />
-	</element>
-	
-	<element name="constraint">
-		<field name="displaytext" required="true" />
-		<field name="fieldname" required="true" />
-		<field name="datatype"  />
-		<field name="varname"  />
-		<field name="operator" />
-	</element>
-	
-	<element name="action">
-		<field name="name" required="true"/>
-		<field name="displaytext" required="false" />
+	<element name="detail" tablename="cashbook_entry">
+		<field name="objid" primary="true"/>
+		<field name="parentid" required="true"/>
+		<field name="refid"  required="true"/>
+		<field name="reftype"  required="true"/>
+		<field name="refno"  required="true"/>
+		<field name="refdate"  required="true"/>
+		<field name="particulars"  required="true"/>
+		<field name="dr"  required="true"/>
+		<field name="cr"  required="true"/>
+		<field name="runbalance"  required="true"/>
+		<field name="pageno"  required="true"/>
+		<field name="lineno"  required="true"/>
+		<field name="postingrefid" />
 	</element>
 	
 	

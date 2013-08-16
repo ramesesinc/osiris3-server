@@ -20,6 +20,9 @@ class CashReceiptService  {
 	
 	@Service("NumberService")
 	def numSvc;
+
+	@Service("CashBookPostService")
+	def cashBookSvc;
 	
 	@ProxyMethod
 	public def init( def entity ) {
@@ -72,6 +75,23 @@ class CashReceiptService  {
 			def pmtschema = "cashreceipt:paymentitem-"+ x.type.toLowerCase();
 			em.create(pmtschema, x);
 		}
+		
+		//summarize receipts by fund, locate the fund and update 
+		def z = p.items.groupBy{ it.item.fund.objid };
+		z.each { k,v->
+			def entry = [:]
+			entry.fundid = k;
+			entry.fundtitle = v[0].item.fund.title;   //get the first element
+			entry.subacctid = p.collector.objid;
+			entry.refid = p.objid;
+			entry.refno = p.receiptno;
+			entry.refdate = p.receiptdate;
+			entry.reftype = "cashreceipt";
+			entry.particulars = p.collectiontype?.name + "("+p.paidby+")";
+			entry.amount = v.sum{ it.amount };
+			cashBookSvc.postDR( entry ); 
+		}
+		
 		return formatReport(p);
 	}	
 		
@@ -81,6 +101,7 @@ class CashReceiptService  {
 		p.amountinwords = numSvc.doubleToWords( p.amount );
 		return p;
 	}
+	
 	
 
 		

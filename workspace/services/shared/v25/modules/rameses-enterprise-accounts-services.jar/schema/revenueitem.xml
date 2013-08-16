@@ -7,6 +7,20 @@
 		<field name="title" required="true"/>
 		<field name="description" />
 		<field name="type" />
+		<field name="fund_objid" required="true"/>
+		<field name="fund_code" required="true"/>
+		<field name="fund_title" required="true"/>
 	</element>
 
+	<!-- ACCOUNT SEGMENTS - called by AccountSegmentService -->
+	<element name="account-segment" tablename="revenueitem_account">
+		<field name="objid" primary="true"/>	
+		<field name="acctid" />
+	</element>
+
+	<element name="subaccount-segment" tablename="revenueitem_subaccount">
+		<field name="objid" primary="true"/>	
+		<field name="acctid" />
+	</element>
+	
 </schema>

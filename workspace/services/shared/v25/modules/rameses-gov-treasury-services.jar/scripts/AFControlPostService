@@ -115,7 +115,7 @@ class AFControlPostService {
 	* this is called when a series is transferred to another collector
     * steps: create a new entry for the new collector. 
 	* open existing series and transfer qtybalance->qty received, currentseries->startseries 
-	* and endseries update qty issued+1, update qty balance, update next series. if end, then remove active 
+	* header - update lineno + 1
 	*/
 	@ProxyMethod
 	public def postTransfer( def o ) {
@@ -140,6 +140,48 @@ class AFControlPostService {
 		detail.currentseries = oldDetail.currentseries;
 		detail.qtyreceived = oldDetail.qtybalance;
 		detail.qtybegin = 0;
+		detail.qtyissued = 0;
+		detail.qtycancelled = 0;
+		detail.qtybalance = oldDetail.qtybalance;
+		
+		em.create( "afcontrol:detail", detail );
+		
+		link.detailid = detail.objid;
+		em.update( "afcontrol:activedetail", link );
+		em.update("afcontrol",control);
+		return true;
+	}
+	
+	/**
+	* this is called when a series is remitted.
+    * steps: create a new entry for the collector. 
+	* open existing series and transfer qtybalance->qty begin, currentseries->startseries 
+	* and endseries update qty issued+1, update qty balance, update next series. if end, then remove active 
+	*/
+	@ProxyMethod
+	public def postRemittance( def o ) {
+		def link = em.read( "afcontrol:activedetail", [controlid: o.controlid] );
+		def detailid = link.detailid;
+		def controlid = link.controlid;
+		
+		def control = em.read( "afcontrol", [objid:controlid] );
+		control.currentlineno += 1;
+
+		def oldDetail = em.read( "afcontrol:detail", [objid:detailid] );
+		
+		//create the new detail	
+		def detail = [ objid: "AFCTRLD"+ new UID() ];
+		detail.controlid = controlid;
+		detail.refdate = o.refdate;
+		detail.reftype = "REMITTANCE";
+		detail.collector = oldDetail.collector;
+		detail.lineno = control.currentlineno;
+		detail.startseries = oldDetail.currentseries;
+		detail.endseries = oldDetail.endseries;
+		detail.currentseries = oldDetail.currentseries;
+
+		detail.qtyreceived = 0;
+		detail.qtybegin = oldDetail.qtybalance;
 		detail.qtyissued = 0;
 		detail.qtycancelled = 0;
 		detail.qtybalance = oldDetail.qtybalance;
