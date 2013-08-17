@@ -8,6 +8,10 @@ CASE WHEN r.receiptid IS NULL THEN 0 ELSE 1 END AS remitted
 FROM cashreceipt c 
 LEFT JOIN remittance_cashreceipt r ON c.objid=r.receiptid
 LEFT JOIN cashreceipt_void v ON c.objid=v.receiptid
+WHERE c.receiptno LIKE $P{searchtext} 
+	OR c.paidby LIKE $P{searchtext}
+	OR c.payer_name LIKE $P{searchtext}
+ORDER BY c.formno, c.receiptno 
 
 [getCashReceiptInfo]
 SELECT c.*, 
