@@ -27,7 +27,7 @@ SELECT
 FROM afstockcontrol ac
 INNER JOIN af ON ac.af = af.objid
 WHERE ac.af=$P{af} 
-AND ac.endseries > ac.startseries
+AND ac.endseries > ac.currentseries
 
 [getCancelledSeries]
 SELECT startseries,endseries,cr as qty FROM afstockcontrol_detail 

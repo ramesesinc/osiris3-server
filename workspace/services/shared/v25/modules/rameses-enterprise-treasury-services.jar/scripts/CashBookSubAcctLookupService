@@ -9,13 +9,12 @@ class CashBookSubAcctLookupService extends AbstractListService {
 	@PersistenceContext("main")
 	def em;
 
-	String schemaName = "cashbook_subaccount";
-	
+	String schemaName = "cashbook_subaccount";	
 	@ProxyMethod
 	public def getColumns( def p ) {
 		return [
 			[name:"name", caption:"Account Name"],
-			[name:"subaccttype", caption:"Sub Account Type"],
+			[name:"subaccttype", caption:"Sub Account Type"]
 		];	
 	}	
 	

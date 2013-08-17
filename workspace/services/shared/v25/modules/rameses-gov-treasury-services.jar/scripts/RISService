@@ -42,6 +42,10 @@ class RISService extends AbstractCrudListService {
 		o.items = em.sqlContext.createNamedQuery("ris:getItems").setParameters(o).resultList;
 	}
 	
+
+	void beforeList(o) {
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+	}
 	
 	@ProxyMethod
 	public def getColumns( o ) {

@@ -17,7 +17,8 @@ class CashReceiptQueryService extends AbstractListService {
 	@ProxyMethod
 	public def getColumns(def m) {
 		return [
-			[name:"receiptno", caption:"Receipt No"],
+			[name:"formno", caption:"Form No."],
+			[name:"receiptno", caption:"Receipt No."],
 			[name:"txnmode", caption:"Mode"],
 			[name:"receiptdate", caption:"Receipt Date"],
 			[name:"paidby", caption:"Payer"],
@@ -30,7 +31,7 @@ class CashReceiptQueryService extends AbstractListService {
 	}
 	
 	void beforeList(o) {
-			
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
 	}
 		
 	@ProxyMethod 
