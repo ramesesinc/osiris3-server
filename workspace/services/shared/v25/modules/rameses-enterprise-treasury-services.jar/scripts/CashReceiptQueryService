@@ -34,7 +34,7 @@ class CashReceiptQueryService extends AbstractListService {
 		
 	@ProxyMethod 
 	public def open(def o) {
-		def x = em.read( schemaName, o );
+		def x = em.sqlContext.createNamedQuery("cashreceipt:getCashReceiptInfo").setParameters(o).singleResult;
 		x.items = em.sqlContext.createNamedQuery( "cashreceipt:getItems").setParameters(o).resultList;
 		x.paymentitems = em.sqlContext.createNamedQuery( "cashreceipt:getCheckPayments").setParameters(o).resultList;
 		return x;

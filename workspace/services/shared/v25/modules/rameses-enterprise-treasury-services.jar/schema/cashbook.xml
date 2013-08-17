@@ -4,7 +4,7 @@
 		<field name="state" required="true"/>
 		<field name="code" required="true"/>
 		<field name="title" required="true"/>
-		<field name="description" required="true"/>
+		<field name="description" />
 		<field name="type" required="true"/>
 		<field name="subacct_objid" required="true"/>
 		<field name="subacct_name" required="true"/>

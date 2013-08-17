@@ -13,7 +13,7 @@ class CollectorLookupService extends AbstractListService {
 	@ProxyMethod
 	public def getColumns( def p ) {
 		return [
-			[name:"username", caption:"XUser Name"],
+			[name:"username", caption:"User Name"],
 			[name:"lastname", caption:"Last Name"],
 			[name:"firstname", caption:"First Name"],
 			[name:"jobtitle", caption:"Job Title"],

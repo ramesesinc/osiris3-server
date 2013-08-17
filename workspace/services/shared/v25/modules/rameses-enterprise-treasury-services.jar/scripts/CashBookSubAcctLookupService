@@ -1,0 +1,29 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class CashBookSubAcctLookupService extends AbstractListService {
+
+	@PersistenceContext("main")
+	def em;
+
+	String schemaName = "cashbook_subaccount";
+	
+	@ProxyMethod
+	public def getColumns( def p ) {
+		return [
+			[name:"name", caption:"Account Name"],
+			[name:"subaccttype", caption:"Sub Account Type"],
+		];	
+	}	
+	
+	public void afterList(def p, def list) {
+		list.each {
+			it.name = it.firstname + " " + it.lastname + "(" + it.subaccttype + ")"; 
+		}
+	}
+	
+	
+}
