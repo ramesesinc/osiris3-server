@@ -14,8 +14,7 @@ class CashBookSubAcctLookupService extends AbstractListService {
 	public def getColumns( def p ) {
 		return [
 			[name:"name", caption:"Account Name"],
-			[name:"subaccttype", caption:"Sub Account Type"],
-			[name:"jobtitle", caption:"Job Title"],
+			[name:"subaccttype", caption:"Sub Account Type"]
 		];	
 	}	
 	
