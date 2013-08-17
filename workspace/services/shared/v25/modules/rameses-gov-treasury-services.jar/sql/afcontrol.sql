@@ -3,7 +3,8 @@ SELECT *
 FROM afcontrol a
 INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
 INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
-WHERE ad.currentseries < ad.endseries
+WHERE ad.currentseries < ad.endseries 
+  AND (ad.startseries = $P{startseries} OR ad.collector_name LIKE $P{searchtext})
 ORDER BY ad.currentseries
  
 [findActiveControlId]

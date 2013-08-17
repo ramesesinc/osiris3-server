@@ -29,6 +29,11 @@ class AFControlMgmtService extends AbstractListService {
 			[name:'qtybalance', caption: 'Qty Bal.', type:'integer', width:100, resizable:false],
 		]
 	}
+
+	void beforeList(o) {
+		o.startseries = o.searchtext
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+	}
 	
 	
 }
