@@ -20,6 +20,10 @@ class RevenueItemService extends AbstractCrudListService {
 			[name:'handler', caption:'Handler' ],
 		];
 	}
+
+	void beforeList(o) {
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+	}
 	
 	//must return a collection of elements with fields [formno and formtype]
 	//this is impt for associating handlers. Used by collection type.
