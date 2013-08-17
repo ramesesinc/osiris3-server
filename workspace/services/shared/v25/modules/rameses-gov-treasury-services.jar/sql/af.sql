@@ -1,5 +1,5 @@
 [getTypes]
-SELECT af.objid as af, af.* FROM af 
+SELECT af.objid as af, af.* FROM af ORDER BY af.objid
 
 [getAFInfo]
 SELECT unitqty, unit,serieslength  FROM af WHERE objid=$P{objid}
