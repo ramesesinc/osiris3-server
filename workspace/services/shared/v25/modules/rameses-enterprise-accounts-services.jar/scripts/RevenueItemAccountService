@@ -21,5 +21,10 @@ class RevenueItemAccountService extends AbstractCrudListService {
 			[name:'state', caption:'State' ],
 		];
 	}	
+
+	void beforeList(o) {
+		o.fund = o.searchtext
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+	}
 	
 }

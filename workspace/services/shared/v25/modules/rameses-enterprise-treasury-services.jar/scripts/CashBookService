@@ -14,12 +14,16 @@ class CashBookService extends AbstractCrudListService {
 	@ProxyMethod
 	public def getColumns(def m) {
 		return [
-			[name:"state", caption:"State"],
-			[name:"code", caption:"Sub Account Code."],
-			[name:"title", caption:"Account Title"],
-			[name:"fund.code", caption:"Fund Code"],
-			[name:"fund.title", caption:"Fund Title"],
+			[name:"state", caption:"State", width:"80"],
+			[name:"code", caption:"Sub Account Code", width:"100"],
+			[name:"title", caption:"Account Title", width:"300"],
+			[name:"fund.code", caption:"Fund Code", width:"60"],
+			[name:"fund.title", caption:"Fund Title", width:"150"],
 		];
+	}
+
+	void beforeList(o) {
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
 	}
 	
 	public void beforeCreate( def o ) {
