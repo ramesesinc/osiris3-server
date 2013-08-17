@@ -1,5 +1,8 @@
 [getList]
-SELECT * FROM cashbook 
+SELECT * 
+FROM cashbook 
+WHERE code LIKE $P{searchtext} OR subacct_name LIKE $P{searchtext}
+ORDER BY subacct_name, fund_code
 
 [changeState-approved]
 UPDATE cashbook SET state='APPROVED' WHERE objid=$P{objid}
