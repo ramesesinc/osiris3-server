@@ -35,10 +35,7 @@ class RevenueItemService extends AbstractCrudListService {
 	//used by cash receipt initial
 	@ProxyMethod
 	public def getCollectionTypes() {
-		return em.sqlContext.createNamedQuery("collectiontype:getList").resultList;
+		return getList([:])
 	}
-
-	
-	
 		
 }
