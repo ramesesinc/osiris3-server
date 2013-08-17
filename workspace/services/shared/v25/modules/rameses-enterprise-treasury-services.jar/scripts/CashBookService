@@ -17,8 +17,11 @@ class CashBookService extends AbstractCrudListService {
 			[name:"state", caption:"State", width:"80"],
 			[name:"code", caption:"Sub Account Code", width:"100"],
 			[name:"title", caption:"Account Title", width:"300"],
-			[name:"fund.code", caption:"Fund Code", width:"60"],
-			[name:"fund.title", caption:"Fund Title", width:"150"],
+			[name:"fund.code", caption:"Fund Name", width:"60"],
+			[name:"fund.title", caption:"Fund Title", width:"60"],
+			[name:"totaldr", caption:"Total Dr", width:"150", type:"decimal"],
+			[name:"totalcr", caption:"Total Cr", width:"150", type:"decimal"],
+			[name:"endbalance", caption:"End Balance", width:"150", type:"decimal"],
 		];
 	}
 
