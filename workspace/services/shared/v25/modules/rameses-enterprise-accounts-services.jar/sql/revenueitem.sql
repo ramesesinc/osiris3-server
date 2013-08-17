@@ -1,5 +1,10 @@
 [getList]
-SELECT r.* FROM revenueitem r 
+SELECT r.* 
+FROM revenueitem r 
+WHERE r.code LIKE $P{searchtext}
+  OR r.title LIKE $P{searchtext}
+  OR r.fund_title = $P{fund}
+ORDER BY r.title
 
 [changeState-approved]
 UPDATE revenueitem SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT'
