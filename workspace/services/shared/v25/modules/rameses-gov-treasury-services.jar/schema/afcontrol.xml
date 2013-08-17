@@ -1,0 +1,56 @@
+<schema>
+
+	<!--
+	startseries,endseries=series assigned when afcontrol was created	
+	currentseries=updated during cancellation if number was affected, during issuance of receipt
+	beginseries=series the collector was using. first time when created, updated during transfer
+	lastremittedseries=updated everytime a remittance is done.
+	-->
+	<element name="afcontrol" tablename="afcontrol">
+		<field name="objid" primary="true"/>
+		<field name="controlid" required="true"/>		
+		<field name="mode" required="true"/>		
+		<field name="state" required="true"/>
+		<field name="af" required="true"/>
+		<field name="prefix" />
+		<field name="suffix" />
+		<field name="stub" type="integer"/>
+		<field name="active" required="true"/>
+		<field name="cancelledseries" />
+		<field name="currentlineno" type="integer" required="true"/>
+	</element>
+	
+	<element name="activedetail" tablename="afcontrol_activedetail">
+		<field name="controlid" primary="true" />
+		<field name="detailid"/>
+	</element>
+	
+	<element name="detail" tablename="afcontrol_detail">
+		<field name="objid" primary="true" />
+		<field name="controlid" required="true"/>
+		<field name="refdate"  />
+		<field name="reftype"  required="true" pattern="ISSUED|TRANSFER|FORWARD"/>
+		<field name="collector_objid" required="true"/>
+		<field name="collector_name" required="true"/>
+		<field name="collector_title" required="true"/>
+		<field name="lineno" type="integer" required="true"/>
+		<field name="startseries" type="integer" required="true"/>
+		<field name="endseries" type="integer" required="true"/>
+		<field name="currentseries" type="integer" required="true"/>
+		<field name="qtyreceived" required="true"/>
+		<field name="qtybegin" required="true"/>
+		<field name="qtyissued" required="true"/>
+		<field name="qtycancelled" required="true"/>
+		<field name="qtybalance" required="true"/>
+		<field name="cancelledseries" />
+		<field name="remittanceid" />
+	</element>
+	
+	<element name="subcollector_detail" tablename="afcontrol_subcollector_detail">
+		<field name="assignee_objid"/>
+		<field name="assignee_name"/>
+		<field name="assignee_title"/>
+		
+	</element>
+	
+</schema>

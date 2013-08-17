@@ -1,0 +1,41 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class RevenueItemService extends AbstractCrudListService {
+
+	@PersistenceContext("main")
+	def em;
+
+	String schemaName = "collectiontype";
+	
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return[
+			[name:'name', caption:'Name' ],
+			[name:'title', caption:'Title' ],
+			[name:'formno', caption:'Form No' ],
+			[name:'handler', caption:'Handler' ],
+		];
+	}
+
+	void beforeList(o) {
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+	}
+	
+	//must return a collection of elements with fields [formno and formtype]
+	//this is impt for associating handlers. Used by collection type.
+	@ProxyMethod
+	public def getFormTypes() {
+		return [];
+	}
+
+	//used by cash receipt initial
+	@ProxyMethod
+	public def getCollectionTypes() {
+		return getList([:])
+	}
+		
+}

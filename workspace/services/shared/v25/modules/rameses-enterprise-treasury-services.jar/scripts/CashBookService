@@ -1,0 +1,45 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class CashBookService extends AbstractCrudListService {
+
+	@PersistenceContext("main")
+	def em;
+
+	String schemaName = "cashbook";
+	
+	@ProxyMethod
+	public def getColumns(def m) {
+		return [
+			[name:"state", caption:"State", width:"80"],
+			[name:"code", caption:"Sub Account Code", width:"100"],
+			[name:"title", caption:"Account Title", width:"300"],
+			[name:"fund.code", caption:"Fund Code", width:"60"],
+			[name:"fund.title", caption:"Fund Title", width:"150"],
+		];
+	}
+
+	void beforeList(o) {
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+	}
+	
+	public void beforeCreate( def o ) {
+		o.beginbalance = 0;
+		o.forwardbalance = 0;
+		o.totaldr = 0;
+		o.totalcr = 0;
+		o.endbalance = 0;
+		o.currentpageno = 1;
+		o.currentlineno = 1;
+	}
+
+	@ProxyMethod
+	public def getEntries( o ) {
+		return em.sqlContext.createNamedQuery( "cashbook:getEntries" ).setParameters(o).resultList;
+	}
+	
+	
+}

@@ -1,0 +1,63 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+class RISService extends AbstractCrudListService {
+
+	@PersistenceContext("main")
+	def em;
+
+	@Env 
+	def env;
+	
+	@Service("SequenceService") 
+	def seqSvc;
+
+	@Service("DateService") 
+	def dateSvc;
+
+	String schemaName = "ris";
+
+	void beforeCreate( def o ) {
+		o.requester = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE];
+		print o.requester;
+		o.org = [objid:env.ORGID, name:env.ORGNAME];
+		o.risno = "RIS" + seqSvc.getNextFormattedSeries("RIS");
+		o.dtfiled = dateSvc.serverDate;
+		o.state = "APPROVED";
+	}
+	
+	void afterCreate( def o ) {
+		o.items.each{
+			it.objid = "RIST" + new UID();
+			it.parentid = o.objid;
+			it.qtyreceived = 0;
+			it.qtyissued = 0;
+			em.create("ris:item", it);
+		}
+	}
+	
+	void afterOpen(def o) {
+		o.items = em.sqlContext.createNamedQuery("ris:getItems").setParameters(o).resultList;
+	}
+	
+
+	void beforeList(o) {
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+	}
+	
+	@ProxyMethod
+	public def getColumns( o ) {
+		return [
+			[name:'risno', caption:'RIS No'],
+			[name:'state', caption:'State'],
+			[name:'dtfiled', caption:'Date Filed'],
+			[name:'requester.name', caption:'Requester'],
+			[name:'txntype', caption:'Type of Request'],
+			[name:'refno', caption:'Ref.No'],
+			[name:'reftype', caption:'Ref.Type'],
+		]
+	}
+	
+}

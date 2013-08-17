@@ -1,0 +1,197 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFControlPostService {
+
+	@PersistenceContext("main")
+	def em;
+
+	
+	/**
+	* Posting steps:
+	* 1. create the afcontrol
+	* 2. create afcontrol_detail
+	* 3. create the active link
+	*/
+	@ProxyMethod
+	public def postCreate( o ) {
+		println "post create";
+		int startstub = o.startstub;
+		o.startseries.step( o.endseries, o.unitqty ) {
+			//create the afcontrol header
+			def afcontrol = [:];
+			afcontrol.objid = "AFCTRL"+ new UID();
+			afcontrol.controlid = o.controlid;
+			afcontrol.mode = "ONLINE";
+			afcontrol.state = "OPEN";
+			afcontrol.af = o.af;
+			afcontrol.prefix = o.prefix;
+			afcontrol.suffix = o.suffix;
+			afcontrol.stub = startstub;
+			afcontrol.active = 0;
+			afcontrol.currentlineno = 1;
+			em.create("afcontrol", afcontrol);
+			
+			//create the detail
+			def detail = [:];
+			detail.objid = "AFCTRLD"+ new UID();
+			detail.controlid = afcontrol.objid;
+			detail.refdate = o.refdate;
+			detail.reftype = "ISSUED";
+			detail.collector = o.issueto;
+			detail.lineno = 1;
+			detail.startseries = it;
+			detail.endseries = (it+o.unitqty-1);
+			detail.currentseries = it;
+			detail.qtyreceived = o.unitqty;
+			detail.qtybegin = 0;
+			detail.qtyissued = 0;
+			detail.qtycancelled = 0;
+			detail.qtybalance = o.unitqty;
+			em.create( "afcontrol:detail", detail );
+			
+			//create the active detail
+			def activedetail = [:]
+			activedetail.controlid = afcontrol.objid;
+			activedetail.detailid = detail.objid;
+			em.create("afcontrol:activedetail", activedetail );
+			startstub = startstub+1;
+		}
+		return true;
+	}	
+	
+	
+	/**
+	* this is called everytime a receipt is issued. This is for online 
+	* update qty issued+1, update qty balance, update next series. if end, then remove active 
+	*/
+	@ProxyMethod
+	public def postReceipt( def o ) {
+		def link = em.read( "afcontrol:activedetail", [controlid: o.controlid] );
+		
+		//get the ref ids.
+		def detailid = link.detailid;
+		def controlid = link.controlid;
+		
+		def control = em.read( "afcontrol", [objid:controlid]);
+		def detail = em.read( "afcontrol:detail", [objid:detailid]);
+		
+		int qtybalance = detail.qtybalance;
+		detail.qtyissued += 1;
+		
+		//move the serial pointer. check also for cancelled series. update qtycancelled on the way while removing
+		detail.currentseries += 1;
+		if( control.cancelledseries ) {
+			def newList = [];
+			def clist = control.cancelledseries.split(",").collect{it.trim()};
+			def series = detail.currentseries+"";
+			while( clist.remove(series) ) {
+				newList << series;
+				series = (series.toInteger()+1)+"";
+				detail.qtycancelled+=1;
+			}
+			detail.currentseries = series.toInteger();
+			control.cancelledseries = clist.join(",");
+			if( detail.cancelledseries ) {
+				newList = detail.cancelledseries.split(",").collect{it.trim()}+newList;
+			}	
+			detail.cancelledseries = newList.join(",");	
+		}
+		
+		detail.qtybalance = (detail.qtyreceived + detail.qtybegin) - (detail.qtyissued + detail.qtycancelled);	
+		
+		if( detail.endseries < detail.currentseries ) {
+			control.state = "CLOSED";
+			control.active = 0;
+			em.delete( "afcontrol:activedetail", [controlid: controlid] );
+		}	
+		em.update( "afcontrol", control );
+		em.update("afcontrol:detail", detail );	
+		return true;
+	}
+	
+	/**
+	* this is called when a series is transferred to another collector
+    * steps: create a new entry for the new collector. 
+	* open existing series and transfer qtybalance->qty received, currentseries->startseries 
+	* header - update lineno + 1
+	*/
+	@ProxyMethod
+	public def postTransfer( def o ) {
+		def link = em.read( "afcontrol:activedetail", [controlid: o.controlid] );
+		def detailid = link.detailid;
+		def controlid = link.controlid;
+		
+		def control = em.read( "afcontrol", [objid:controlid] );
+		control.currentlineno += 1;
+
+		def oldDetail = em.read( "afcontrol:detail", [objid:detailid] );
+		
+		//create the new detail	
+		def detail = [ objid: "AFCTRLD"+ new UID() ];
+		detail.controlid = controlid;
+		detail.refdate = o.refdate;
+		detail.reftype = "TRANSFER";
+		detail.collector = o.issueto;
+		detail.lineno = control.currentlineno;
+		detail.startseries = oldDetail.currentseries;
+		detail.endseries = oldDetail.endseries;
+		detail.currentseries = oldDetail.currentseries;
+		detail.qtyreceived = oldDetail.qtybalance;
+		detail.qtybegin = 0;
+		detail.qtyissued = 0;
+		detail.qtycancelled = 0;
+		detail.qtybalance = oldDetail.qtybalance;
+		
+		em.create( "afcontrol:detail", detail );
+		
+		link.detailid = detail.objid;
+		em.update( "afcontrol:activedetail", link );
+		em.update("afcontrol",control);
+		return true;
+	}
+	
+	/**
+	* this is called when a series is remitted.
+    * steps: create a new entry for the collector. 
+	* open existing series and transfer qtybalance->qty begin, currentseries->startseries 
+	* and endseries update qty issued+1, update qty balance, update next series. if end, then remove active 
+	*/
+	@ProxyMethod
+	public def postRemittance( def o ) {
+		def link = em.read( "afcontrol:activedetail", [controlid: o.controlid] );
+		def detailid = link.detailid;
+		def controlid = link.controlid;
+		
+		def control = em.read( "afcontrol", [objid:controlid] );
+		control.currentlineno += 1;
+
+		def oldDetail = em.read( "afcontrol:detail", [objid:detailid] );
+		
+		//create the new detail	
+		def detail = [ objid: "AFCTRLD"+ new UID() ];
+		detail.controlid = controlid;
+		detail.refdate = o.refdate;
+		detail.reftype = "REMITTANCE";
+		detail.collector = oldDetail.collector;
+		detail.lineno = control.currentlineno;
+		detail.startseries = oldDetail.currentseries;
+		detail.endseries = oldDetail.endseries;
+		detail.currentseries = oldDetail.currentseries;
+
+		detail.qtyreceived = 0;
+		detail.qtybegin = oldDetail.qtybalance;
+		detail.qtyissued = 0;
+		detail.qtycancelled = 0;
+		detail.qtybalance = oldDetail.qtybalance;
+		
+		em.create( "afcontrol:detail", detail );
+		
+		link.detailid = detail.objid;
+		em.update( "afcontrol:activedetail", link );
+		em.update("afcontrol",control);
+		return true;
+	}
+	
+}

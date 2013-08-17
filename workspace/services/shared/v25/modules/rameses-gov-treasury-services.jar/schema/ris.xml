@@ -1,0 +1,40 @@
+<schema>
+
+	<element name="ris" tablename="ris">
+		<field name="objid" primary="true"/>	
+		<field name="state" />
+		<field name="risno" required="true"/>
+		<field name="txntype" required="true"/>
+		<field name="dtfiled" required="true" />
+		<field name="requester_objid" required="true"/>
+		<field name="requester_name" required="true"/>
+		<field name="requester_title" required="true"/>
+		<field name="dtapproved" />
+		<field name="approver_objid"/>
+		<field name="approver_name"/>
+		<field name="approver_title"/>
+		<field name="dtissued" />
+		<field name="issuer_objid"/>
+		<field name="issuer_name"/>
+		<field name="issuer_title"/>
+		<field name="org_objid"/>
+		<field name="org_name"/>
+		<field name="refid"/>
+		<field name="refno"/>
+		<field name="reftype"/>
+	</element>
+	
+	<element name="item" tablename="risitem">
+		<field name="objid" primary="true"/>	
+		<field name="parentid" required="true"/>		
+		<field name="item_objid" required="true"/>
+		<field name="item_code" required="true"/>
+		<field name="item_description" required="true"/>
+		<field name="unit" required="true"/>
+		<field name="qty" required="true" type="integer"/>
+		<field name="qtyissued" type="integer"/>
+		<field name="qtyreceived" type="integer" />
+		<field name="remarks" />
+	</element>
+	
+</schema>

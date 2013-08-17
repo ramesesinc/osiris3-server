@@ -1,0 +1,132 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+import com.rameses.services.extended.*;
+
+class OrgAdminService extends AbstractCrudService {
+
+	@PersistenceContext("admin")
+	def	em; 
+
+	@Env
+	def env;
+
+	@Service 
+	def self;
+	
+	String schemaName = "org";
+
+	public void beforeCreate( data ) {
+		def prefixid = 'ORG';
+		if (data.orgclass == 'MUNICIPALITY') prefixid = 'MUNI';
+		else if (data.orgclass == 'HOSPITAL') prefixid = 'HOSP';
+		else if (data.orgclass == 'DISTRICT') prefixid = 'DIST';
+		else if (data.orgclass == 'BARANGAY') prefixid = 'BRGY';
+
+		data.objid = prefixid + new UID().toString();
+		data.filetype = data.orgclass;
+	}
+
+	public void afterUpdate( data ) {
+		data.filetype = data.orgclass;
+	}
+	
+	private def getChildNodes(def selectedNode) {
+		def n = selectedNode.childnodes.split(",").collect{ "'"+it+"'" }.join(",");	
+		def zlist = em.sqlContext.createNamedQuery("org:getChildClasses").setVars([filter:n]).resultList
+		return zlist.collect{ [
+			objid: selectedNode.objid+"-"+it.name, 
+			parentid: selectedNode.objid,
+			folder: ((!it.childnodes) ? false : true),	
+			caption:it.name, 
+			name: it.name,
+			orgclass: it.name, 
+			children: [[caption: it.name, filetype:it.name]]
+		] };	
+	}
+	
+	@ProxyMethod
+	public def getNodes( def selectedNode ) {
+		if (selectedNode.childnodes ) {
+			return getChildNodes( selectedNode );
+		}
+		else {
+			def params; def sql;
+			if ( selectedNode.root ) {
+				sql = "org:getRootNodes";
+				params = selectedNode;
+			}	
+			else {
+				sql = "org:getChildNodes";
+				params = [parentid: selectedNode.parentid, orgclass: selectedNode.orgclass];
+			}
+
+			def list = em.sqlContext.createNamedQuery(sql).setParameters(params).resultList;
+			list.each {
+				it.caption = it.name;
+				it.filetype = it.orgclass;
+				it.folder = true;
+
+				if (it.childnodes) {					
+					def children = [];
+					it.childnodes.split(',').each{sval-> 
+						children << [filetype:sval.trim(), caption:sval.trim()]; 
+					}
+					it.children = children;
+				}
+			}			
+			return list;
+		}	
+	}
+	
+	
+	@ProxyMethod
+	public def getColumns( def o ) {
+		def columns = [
+			[name:'name', caption:'Name' ],
+			[name:'orgclass', caption:'Org. Class' ], 
+			[name:'indexno', caption:'Index No.'],
+			[name:'pin', caption:'PIN']
+		];
+	}
+	
+	@ProxyMethod
+	public def getList( def params  ) {
+		def orgclasses = "'"+params.orgclass+"'";
+		if (params?.childnodes) {
+			orgclasses = params.childnodes.split(",").collect{ "'"+it+"'" }.join(",");		
+		} 
+		
+		def m = [orgclasses: orgclasses, parentid: params.objid];
+		if ("${params.parentid}-${params.name}".toString() == params.objid) {
+			m.parentid = params.parentid; 
+		}
+
+		m.orgclass = params.orgclass;
+		def resmap = self.search( m ); 
+		if (resmap.list) return resmap.list; 
+
+		def qry = em.sqlContext.createNamedQuery('org:getList').setVars(m).setParameters(m); 
+		if (params._start) qry.setFirstResult(params._start);
+		if (params._limit) qry.setMaxResults(params._limit);
+
+		def list = qry.resultList;
+		list.each { it.filetype = it.orgclass; }
+		return list;
+	}	
+
+
+	@ProxyMethod 
+	public Map search( params ) { 
+		/* 
+			specific org implementations will intercept this method 
+		 */ 
+		return params; 
+	} 
+
+	public void approve ( data ) { 
+		//do be overridden through interceptors 
+	} 
+}

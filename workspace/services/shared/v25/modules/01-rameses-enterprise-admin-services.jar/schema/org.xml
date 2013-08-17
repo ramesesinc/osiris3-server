@@ -1,0 +1,16 @@
+<schema>
+
+	<element name="org" tablename="sys_org">
+		<field name="objid" primary="true"/>
+		<field name="name" />
+		<field name="orgclass" />
+		<field name="parentid" />
+		<field name="parentclass" />
+	</element>
+	
+	<element name="orgtype" tablename="sys_orgtype">
+		<field name="name" primary="true"/>
+		<field name="title" />
+	</element>
+
+</schema>

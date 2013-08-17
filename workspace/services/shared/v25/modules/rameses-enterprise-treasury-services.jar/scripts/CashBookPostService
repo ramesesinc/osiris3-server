@@ -1,0 +1,87 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class CashBookPostService {
+
+	@PersistenceContext("main")
+	def em;
+
+	int lines_per_page = 25;
+
+	private void moveNextPage( o ) {
+		int lineno = o.currentlineno + 1;
+		int pageno = o.currentpageno;
+		if(lineno > lines_per_page ) {
+			lineno = 1;
+			pageno = pageno + 1;
+		}
+		o.currentlineno = lineno;
+		o.currentpageno = pageno;
+	}
+	
+	@ProxyMethod
+	public def postDR( def o ) {
+		def cb = em.sqlContext.createNamedQuery( "cashbook:findByCollectorFund" ).setParameters( o ).singleResult;
+		if(!cb)
+			throw new Exception("Posting failed. There is no associated cashbook for fund: " + o.fundtitle + ". Please contact the treasurer"); 
+		
+		def balance = cb.endbalance;
+		cb.totaldr += o.amount;
+		cb.endbalance = (cb.beginbalance + cb.forwardbalance + cb.totaldr) - cb.totalcr;
+		
+		def detail = [:];
+		detail.objid = "CSHBK"+new UID();
+		detail.parentid = cb.objid;
+		detail.pageno = cb.currentpageno;
+		detail.lineno = cb.currentlineno;
+		
+		detail.refid = o.refid;
+		detail.refno = o.refno;
+		detail.refdate = o.refdate;
+		detail.reftype = o.reftype;
+		detail.particulars = o.particulars;
+		detail.dr = o.amount;	
+		detail.cr = 0;
+		detail.runbalance = cb.endbalance;
+		em.create("cashbook:detail", detail);
+		
+		moveNextPage( cb );
+		em.update( "cashbook", cb );
+		return true;
+	}
+
+	@ProxyMethod
+	public def postCR( def o ) {
+		def cb = em.sqlContext.createNamedQuery( "cashbook:findByCollectorFund" ).setParameters( o ).singleResult;
+		if(!cb)
+			throw new Exception("Posting failed. There is no associated cashbook for fund: " + o.fundtitle + ". Please contact the treasurer"); 
+		
+		def balance = cb.endbalance;
+		cb.totalcr += o.amount;
+		cb.endbalance = (cb.beginbalance + cb.forwardbalance + cb.totaldr) - cb.totalcr;
+		
+		def detail = [:];
+		detail.objid = "CSHBK"+new UID();
+		detail.parentid = cb.objid;
+		detail.pageno = cb.currentpageno;
+		detail.lineno = cb.currentlineno;
+		
+		detail.refid = o.refid;
+		detail.refno = o.refno;
+		detail.refdate = o.refdate;
+		detail.reftype = o.reftype;
+		detail.particulars = o.particulars;
+		detail.dr = 0;
+		detail.cr = o.amount;	
+		detail.runbalance = cb.endbalance;
+		em.create("cashbook:detail", detail);
+		
+		moveNextPage( cb );
+		em.update( "cashbook", cb );
+		return true;
+	}
+	
+}

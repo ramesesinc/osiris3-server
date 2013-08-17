@@ -1,0 +1,37 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class MarriageReceiptInterceptor {
+
+	@Service('SpecialCollectionTypeService')
+	def svc
+	
+	@PersistenceContext("main")
+	def em
+	
+	@After(pattern="CashReceiptService.init", eval="#{result.formno=='54'}")
+	public def initCashReceiptItems(def evt) { 
+		def cs = evt.result 
+		def setting = svc.open(cs.collectiontype.objid)
+		if (setting){
+			cs.amount = setting.amount
+			cs.items = []
+			cs.items += [
+				objid : 'CSI' + new java.rmi.server.UID(),
+				item : setting.item, 
+				amount : setting.amount,
+			]
+		}
+		else {
+			throw new Exception('Collection Type ' + cs.collectiontype.name + ' account is not set.' )
+		}
+	}
+	
+	@After(pattern="CashReceiptService.post", eval="#{result.formno=='54'}")
+	public def postToSpecificTable(def evt) { 
+		def cs = evt.result;	
+		em.create("cashreceiptmarriage:cashreceiptmarriage", cs);
+	}
+
+}

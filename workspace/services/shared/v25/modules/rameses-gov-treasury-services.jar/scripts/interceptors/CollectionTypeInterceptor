@@ -1,0 +1,21 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class CollectionTypeInterceptor {
+
+	@PersistenceContext("main")
+	def em
+
+	@After(pattern="CollectionTypeService.getFormTypes")
+	public def loadFormTypes(def evt) { 
+		def result = evt.result;
+		result.addAll( em.sqlContext.createNamedQuery("af:getTypes").resultList.collect {
+				[formno: it.objid, formtype: it.aftype ]
+			} 
+		);
+	}
+
+	
+	
+}

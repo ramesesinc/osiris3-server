@@ -1,0 +1,53 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+import com.rameses.services.extended.*;
+
+class SecuritygroupAdminService extends AbstractCrudListService {
+
+	@PersistenceContext("admin")
+	def em;
+	
+	String schemaName = "securitygroup";
+
+	@ProxyMethod
+	public def getColumns( param ) {
+		return  [
+			[name:'objid', caption:'Name'],
+		]
+	} 
+	
+	@ProxyMethod
+	public def getPermissions( def o ) {
+		if(!o.usergroupid)
+			throw new Exception("Please include usergroupid when calling getPermissions");
+		def list = em.sqlContext.createNamedQuery("securitygroup:getUserGroupPermissions").setParameters(o).resultList;
+		list.each {
+			it.code = it.object + "." + it.permission;
+			if(!it.title) it.title = it.code;
+		}
+		return list;
+	}
+
+	@ProxyMethod
+	public def getSecurityGroupPermissions( def params ) {
+		if (!params.securitygroupid)
+			throw new Exception("Please specify securitygroupid");
+
+		def qry = em.sqlContext.createNamedQuery('securitygroup:getSecurityGroupPermissions');
+		def list = qry.setParameters([objid:params.securitygroupid]).resultList;
+		def results = [];
+		list.each {
+			it.code = it.object + "." + it.permission;
+			if (!it.exclude || !it.code.matches(it.exclude)) {
+				if (!it.title) it.title = it.code;
+				results << it;
+			}
+		}
+		return results;
+	}	
+}
+
+

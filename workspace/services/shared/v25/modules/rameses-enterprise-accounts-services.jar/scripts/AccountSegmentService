@@ -1,0 +1,45 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+
+class AccountSegmentService {
+
+	@PersistenceContext("main")
+	def em;
+
+
+	@ProxyMethod
+	public def getSegments(def p) {
+		if(!p.objectname) throw new Exception("Please indicate objectname in AccountSegment.getSegments");
+			
+		//retrieve associated segments with account
+		def qry = em.sqlContext.createNamedQuery('accountsegment:fetchSegment');
+		
+		def list = em.sqlContext.createNamedQuery('accountsegment:getSegments').setParameters(p).resultList;
+		list.each {
+			try {
+				def vars = [segment:it.name, source:it.source, objectname:p.objectname];
+				def result = qry.setParameters(p).setVars(vars).singleResult;
+				if(result) {
+					it.value = result.code + "-" + result.title;
+					it.acctid = result.objid;
+				}
+			}
+			catch(e){;}
+		}
+		return list;
+	}
+	
+	@ProxyMethod
+	public def addSegment(def p) {
+		if(!p.objectname) throw new Exception("Please indicate objectname in AccountSegment.addSegment");
+		
+		def objectname = p.objectname;
+		def segment = p.segment;
+
+		def obj = [objid:p.objid, acctid:p.acctid];
+		em.save( objectname + ":" + segment + "-segment", obj );
+	}
+	
+}
