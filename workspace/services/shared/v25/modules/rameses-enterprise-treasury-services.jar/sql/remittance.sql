@@ -27,11 +27,10 @@ AND c.collector_objid = $P{collectorid}
 
 [collectAFControl]
 INSERT INTO remittance_af (objid, remittanceid)
-SELECT ad.objid, $P{remittanceid}  
-FROM afcontrol_detail ad
-LEFT JOIN remittance_af af ON ad.objid=af.objid
-WHERE af.objid IS NULL 
-AND ad.collector_objid = $P{collectorid} 
+SELECT ad.objid, $P{remittanceid} 
+FROM afcontrol_activedetail av 
+INNER JOIN afcontrol_detail ad ON ad.objid=av.detailid 
+WHERE ad.collector_objid = $P{collectorid} 
 
 [getRemittedAFControlIdsForPosting]
 SELECT av.controlid 
