@@ -27,6 +27,7 @@ class BankAccountService extends AbstractCrudListService {
 		params.code = params.searchtext
 		params.bank_code = params.searchtext
 		params.bank_name = params.searchtext
+		params.searchtext = (params.searchtext ? params.searchtext : '') + '%'
 	}
 	
 	@ProxyMethod
