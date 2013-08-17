@@ -24,6 +24,10 @@ class CashReceiptService  {
 	@Service("CashBookPostService")
 	def cashBookSvc;
 	
+	/**
+	* note: setting of collector is in the CashReceiptInterceptor of gov. module.
+	* it is gotten during getNextReceiptInfo
+	*/
 	@ProxyMethod
 	public def init( def entity ) {
 		if(!entity.receiptdate) {

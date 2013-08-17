@@ -20,4 +20,10 @@ class LiquidatingOfficerLookupService extends AbstractListService {
 		];	
 	}	
 
+	public void afterList(def p, def list) {
+		list.each {
+			it.name = it.firstname + " " + it.lastname;
+		}
+	}
+
 }

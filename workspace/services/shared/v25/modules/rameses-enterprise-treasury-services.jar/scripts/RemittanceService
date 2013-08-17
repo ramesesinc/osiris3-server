@@ -1,0 +1,89 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class RemittanceService  {
+
+	@PersistenceContext("main")
+	def em; 
+
+	@Env
+	def env;
+
+	@Service("SequenceService")
+	def seqSvc;
+
+	@Service("DateService")
+	def dateSvc;
+
+
+	@Service("AFControlPostService")
+	def afControl;
+
+	@Service("CashBookPostService")
+	def cashBook;
+	
+
+	@ProxyMethod
+	public def init() {
+		def o = [objid: "REM"+new UID()];	
+		o.items = em.sqlContext.createNamedQuery("remittance:getUnremittedForCollector")
+			.setParameters( [collectorid: env.USERID]).resultList;
+		
+		if(!o.items)
+			throw new Exception("No pending collection to remit");
+
+		o.amount = o.items.sum{ it.amount };	
+		o.totalcash = o.items.sum{ it.totalcash };	
+		o.totalnoncash = o.items.sum{ it.totalnoncash };	
+		return o;
+	}
+
+	@ProxyMethod
+	public def post( o ) {
+		
+		def z = em.sqlContext.createNamedQuery("collector:getUserTxnCode")
+			.setParameters( [userid: env.USERID]).singleResult;
+
+		def txncode = "REM";	
+		if(z?.usertxncode) txncode = z.usertxncode; 	
+		o.txnno = txncode + seqSvc.getNextFormattedSeries(txncode);
+		o.state = "OPEN";
+		o.dtposted = dateSvc.serverDate;
+
+		o.collector = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE ];
+
+		em.create( "remittance", o );
+
+		//insert the cash receipts
+		def m = [remittanceid: o.objid, collectorid: o.collector.objid ];
+		em.sqlContext.createNamedExecutor( "remittance:collectReceipts").setParameters(m).execute();
+		em.sqlContext.createNamedExecutor( "remittance:collectAFControl").setParameters(m).execute();
+
+		//post new entry in afcontrol to update new balance
+		def list = em.sqlContext.createNamedQuery("remittance:getRemittedAFControlIdsForPosting").setParameters(m).resultList;
+		list.each {	
+			it.refdate = o.dtposted;	
+			afControl.postRemittance( it );	
+		}
+		
+		//update cashbook to add new entry
+		def flist = em.sqlContext.createNamedQuery("remittance:getRemittedFundTotals").setParameters(m).resultList;
+		flist.each {
+				def detail = [:];
+				detail.fundid = it.fundid;
+				detail.subacctid = o.collector.objid; 
+				detail.refid = o.objid;
+				detail.refno = o.txnno;
+				detail.refdate = o.dtposted;
+				detail.reftype = "remittance";
+				detail.amount = o.amount;
+				detail.particulars = "REMITTANCE";
+				cashBook.postCR( detail );
+		}
+		return o;
+	}
+
+}

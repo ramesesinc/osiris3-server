@@ -173,7 +173,7 @@ class AFControlPostService {
 		def detail = [ objid: "AFCTRLD"+ new UID() ];
 		detail.controlid = controlid;
 		detail.refdate = o.refdate;
-		detail.reftype = "REMITTANCE";
+		detail.reftype = "FORWARD";
 		detail.collector = oldDetail.collector;
 		detail.lineno = control.currentlineno;
 		detail.startseries = oldDetail.currentseries;

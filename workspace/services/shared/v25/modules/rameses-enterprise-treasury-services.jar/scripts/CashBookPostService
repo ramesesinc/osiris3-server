@@ -59,6 +59,13 @@ class CashBookPostService {
 		if(!cb)
 			throw new Exception("Posting failed. There is no associated cashbook for fund: " + o.fundtitle + ". Please contact the treasurer"); 
 		
+		if(!o.amount) 
+			throw new Exception("Amount is required");
+		if(!o.refid) 
+			throw new Exception("Refid is required");
+		if(!o.reftype) 
+			throw new Exception("Reftype is required");
+
 		def balance = cb.endbalance;
 		cb.totalcr += o.amount;
 		cb.endbalance = (cb.beginbalance + cb.forwardbalance + cb.totaldr) - cb.totalcr;
