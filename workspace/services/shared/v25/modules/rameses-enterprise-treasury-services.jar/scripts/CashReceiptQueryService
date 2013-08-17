@@ -18,6 +18,7 @@ class CashReceiptQueryService extends AbstractListService {
 	public def getColumns(def m) {
 		return [
 			[name:"receiptno", caption:"Receipt No"],
+			[name:"txnmode", caption:"Mode"],
 			[name:"receiptdate", caption:"Receipt Date"],
 			[name:"paidby", caption:"Payer"],
 			[name:"collectiontype.name", caption:"Collection Type"],
