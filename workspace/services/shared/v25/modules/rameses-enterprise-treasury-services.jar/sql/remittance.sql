@@ -1,5 +1,9 @@
 [getList]
-SELECT * FROM remittance 
+SELECT * 
+FROM remittance 
+WHERE txnno = $P{txnno}
+  OR collector_name LIKE $P{searchtext} 
+ORDER BY collector_name, txnno DESC 
 
 [getUnremittedForCollector]
 SELECT af.af as formno, af.stub as stub, 
@@ -57,3 +61,13 @@ LEFT JOIN cashreceipt_void v ON c.objid=v.receiptid
 WHERE r.receiptid IS NULL
 AND c.collector_objid = $P{collectorid}
 GROUP by af.af, af.stub 
+
+[getNonCashPayments]
+SELECT cc.*
+FROM remittance r
+	INNER JOIN remittance_cashreceipt rc ON r.objid = rc.remittanceid
+	INNER JOIN cashreceiptpayment_check cc ON rc.objid = cc.receiptid 
+WHERE r.objid = $P{remittanceid}
+  AND NOT EXISTS(SELECT * FROM cashreceipt_void WHERE receiptid = cc.receiptid)
+ORDER BY cc.bank, cc.checkno   
+  

@@ -25,5 +25,10 @@ class RemittanceListService extends AbstractListService {
 			[name:"amount", caption:"Amount"]
 		];	
 	}	
+
+	void beforeList(o) {
+		o.txnno = o.searchtext 
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+	}
 	
 }
