@@ -1,0 +1,29 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class LiquidationListService extends AbstractListService {
+
+	@PersistenceContext("main")
+	def em; 
+
+	String schemaName = "liquidation";
+
+	@Env
+	def env;
+
+	@ProxyMethod
+	public def getColumns( def p ) {
+		return [
+			[name:"txnno", caption:"Liq No", width:120, resizable:false],
+			[name:"dtposted", caption:"Liq Date", width:120, resizable:false],
+			[name:"liquidatingofficer.name", caption:"Liquidating Officer"],
+			[name:"totalcash", caption:"Total Cash"],
+			[name:"totalnoncash", caption:"Total Noncash"],
+			[name:"amount", caption:"Amount"]
+		];	
+	}	
+	
+}
