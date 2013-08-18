@@ -1,0 +1,94 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class LiquidationService  {
+
+	@PersistenceContext("main")
+	def em; 
+
+	@Env
+	def env;
+
+	@Service("SequenceService")
+	def seqSvc;
+
+	@Service("DateService")
+	def dateSvc;
+
+	@Service("CashBookPostService")
+	def cashBook;
+	
+	@ProxyMethod
+	public def init() {
+		def o = [objid: "LIQ"+new UID(), cashier:[:]];	
+
+		println "env user id is ->" + env.USERID;
+		o.remittances = em.sqlContext.createNamedQuery("liquidation:getUnliquidatedRemittances")
+			.setParameters( [liquidatingofficerid: env.USERID]).resultList;
+		
+		if(!o.remittances)
+			throw new Exception("No pending remittances to liquidate");
+
+		o.amount = o.remittances.sum{ it.amount };	
+		o.totalcash = o.remittances.sum{ it.totalcash };	
+		o.totalnoncash = o.remittances.sum{ it.totalnoncash };	
+
+		//get fund summary
+		o.fundsummary =  em.sqlContext.createNamedQuery("liquidation:getUnliquidatedFundSummary")
+			.setParameters( [liquidatingofficerid: env.USERID]).resultList;		
+
+		return o;
+	}
+
+	@ProxyMethod
+	public def post( o ) {
+		if( o.fundsummary.find{ !it.cashier }   )
+			throw new Exception("There must be a cashier associated");
+
+		def z = em.sqlContext.createNamedQuery("liquidatingofficer:getUserTxnCode")
+			.setParameters( [userid: env.USERID]).singleResult;
+
+		o.liquidatingofficer = [objid:env.USERID, name:env.FULLNAME, title: env.JOBTITLE ];	
+
+		def txncode = "LIQ";	
+		if(z?.usertxncode) txncode = z.usertxncode; 	
+		o.txnno = txncode + seqSvc.getNextFormattedSeries(txncode);
+		o.state = "OPEN";
+		o.dtposted = dateSvc.serverDate;
+		em.create( "liquidation", o );
+
+
+		//update remittances				
+		o.remittances.each {
+			def m = [ objid:it.objid, liquidationid: o.objid ];
+			em.create("liquidation:remittance", m);
+		}
+
+		//update cashbook to add new entry
+		o.fundsummary.each {
+				it.objid = "LIQFUND"+new UID();
+				it.liquidationid = o.objid;
+				em.create( "liquidation:cashier_fund" , it);
+				def detail = [:];
+				detail.fundid = it.fund.objid;
+				detail.subacctid = o.liquidatingofficer.objid; 
+				detail.refid = o.objid;
+				detail.refno = o.txnno;
+				detail.refdate = o.dtposted;
+				detail.reftype = "liquidation";
+				detail.amount = it.amount;
+				detail.particulars = "LIQUIDATION";
+				cashBook.postDR( detail );
+		}
+		return o;		
+	}	
+
+
+	@ProxyMethod
+	public def open( o ) {
+		return em.read( "liquidation", o);
+	}
+}	

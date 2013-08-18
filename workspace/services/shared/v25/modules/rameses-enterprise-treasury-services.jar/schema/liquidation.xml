@@ -4,20 +4,31 @@
 		<field name="state" required="true"/>
 		<field name="txnno" required="true"/>
 		<field name="dtposted" required="true"/>
-		
 
 		<field name="liquidatingofficer_objid" required="true"/>
 		<field name="liquidatingofficer_name" required="true"/>
 		<field name="liquidatingofficer_title" required="true"/>
-
-
-		<field name="cashier_objid" required="true"/>
-		<field name="cashier_name" required="true"/>
-		<field name="cashier_title" required="true"/>
 
 		<field name="amount" required="true"/>
 		<field name="totalcash" required="true"/>
 		<field name="totalnoncash" required="true"/>
 		<complex name="cashbreakdown" required="true" serializer="default" type="list"/>
 	</element>
+
+
+	<element name="remittance" tablename="liquidation_remittance">
+		<field name="objid" primary="true"/>
+		<field name="liquidationid" required="true"/>
+	</element>
+
+	<element name="cashier_fund" tablename="liquidation_cashier_fund">
+		<field name="objid" primary="true"/>
+		<field name="liquidationid" required="true"/>
+		<field name="fund_objid" required="true"/>
+		<field name="fund_title" required="true"/>
+		<field name="cashier_objid" required="true"/>
+		<field name="cashier_name" required="true"/>
+		<field name="amount" />
+	</element>
+
 </schema>	
