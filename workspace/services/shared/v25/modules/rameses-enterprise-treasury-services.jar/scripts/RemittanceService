@@ -54,7 +54,6 @@ class RemittanceService  {
 		o.dtposted = dateSvc.serverDate;
 
 		o.collector = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE ];
-		print o.liquidatingofficer;
 
 		em.create( "remittance", o );
 

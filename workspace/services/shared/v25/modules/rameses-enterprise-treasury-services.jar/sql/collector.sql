@@ -13,4 +13,4 @@ FROM sys_usergroup_member WHERE usergroupid = 'COLLECTOR'
 SELECT ug.usertxncode 
 FROM sys_usergroup_member ug 
 WHERE ug.user_objid = $P{userid}
-FROM sys_usergroup_member WHERE usergroupid = 'COLLECTOR'
+AND usergroupid = 'COLLECTOR'
