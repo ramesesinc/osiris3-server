@@ -46,5 +46,3 @@ INNER JOIN cashbook cb ON cb.objid = cbe.parentid
 WHERE remittanceid = $P{remittanceid}
 GROUP BY cb.fund_objid
 
-
-

@@ -22,7 +22,6 @@ class CashBookSubAcctLookupService extends AbstractListService {
 		list.each {
 			it.name = it.firstname + " " + it.lastname + "(" + it.subaccttype + ")"; 
 		}
-
 	}
 	
 	

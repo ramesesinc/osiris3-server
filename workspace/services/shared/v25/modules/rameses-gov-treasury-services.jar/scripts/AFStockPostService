@@ -4,7 +4,6 @@ import java.rmi.server.*;
 import com.rameses.services.extended.*;
 
 /***
-  This is called everytime  
 **/
 class AFStockPostService {
 
@@ -42,8 +41,6 @@ class AFStockPostService {
 		detail.prefix = o.prefix;
 		detail.suffix = o.suffix;
 		detail.unit = o.unit;
-		print "post -." + detail.objid;
-
 		em.create("afstockcontrol", detail );
 		em.create("afstockcontrol:detail", detail );
 		return detail;
@@ -136,7 +133,5 @@ class AFStockPostService {
 		return true;
 	}
 	
-	
-
 	
 }

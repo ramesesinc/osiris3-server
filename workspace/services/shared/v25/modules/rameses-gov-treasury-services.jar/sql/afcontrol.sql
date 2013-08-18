@@ -51,7 +51,6 @@ WHERE a.controlid = $P{objid}
 [changeMode]
 UPDATE afcontrol SET mode=$P{mode} WHERE objid=$P{objid}
 
-
 [findActiveControl]
 SELECT * 
 FROM afcontrol a
@@ -63,7 +62,6 @@ WHERE a.objid = $P{objid}
 SELECT ad.* FROM afcontrol_detail ad
 LEFT JOIN remittance_af rf ON rf.objid=ad.objid 
 WHERE controlid=$P{objid} ORDER BY startseries
-
 
 [getConflictSeries]
 SELECT startseries,endseries,cr as qty
