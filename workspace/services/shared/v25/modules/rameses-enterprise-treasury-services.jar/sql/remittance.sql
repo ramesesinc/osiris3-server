@@ -116,7 +116,7 @@ from remittance_cashreceipt rc
    inner join cashreceiptpayment_check pc on pc.receiptid = rc.objid 
    left join cashreceipt_void crv on crv.receiptid = cr.objid 
 where remittanceid=$P{remittanceid}
-	and crv.objid is not null 
+	and crv.objid is null 
 
 
 [getNonCashPayments]
