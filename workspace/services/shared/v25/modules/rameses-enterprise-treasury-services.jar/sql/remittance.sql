@@ -62,6 +62,63 @@ WHERE r.receiptid IS NULL
 AND c.collector_objid = $P{collectorid}
 GROUP by af.af, af.stub 
 
+
+[getRCDCollectionType]
+select  
+	formno, min( receiptno) as fromseries, max(receiptno) as toseries, 
+	sum( case when crv.objid is null then cr.amount else 0.0 end ) as amount 
+from remittance_cashreceipt rc 
+   inner join cashreceipt cr on rc.objid = cr.objid 
+   left join cashreceipt_void crv on crv.receiptid = cr.objid 
+where remittanceid=$P{remittanceid}
+group by cr.controlid 
+
+
+[getRCDCollectionSummaries]
+select  
+	case 
+	    when a.objid in ( '51', '56') and aftype='serial' then CONCAT( 'AF#', a.objid, ': ', ri.fund_title ) 
+	    ELSE CONCAT( 'AF#',a.objid, ': ', a.description,' - ', ri.fund_title ) 
+	end as particulars, 
+	sum( case when crv.objid is null then cri.amount else 0.0 end ) as amount 
+from remittance_cashreceipt rc 
+   inner join cashreceipt cr on rc.objid = cr.objid 
+   left join cashreceipt_void crv on crv.receiptid = cr.objid 
+   inner join af a on a.objid = cr.formno 
+   inner join cashreceiptitem cri on cri.receiptid = cr.objid
+   inner join revenueitem ri on ri.objid = cri.item_objid 
+where remittanceid=$P{remittanceid}
+group by a.objid, ri.fund_objid 
+
+[getRCDRemittedForms]
+select 
+  afc.af, 
+  case when ad.qtybegin > 0 then concat(ad.qtybegin, '') else '' end as beginqty,
+  case when ad.qtybegin > 0 then concat(ad.startseries, '') else '' end as beginfrom,  
+  case when ad.qtybegin > 0 then concat(ad.endseries, '') else '' end as beginto,
+  case when ad.qtyissued > 0 then concat(ad.startseries, '')   else '' end as issuedfrom, 
+  case when ad.qtyissued > 0 then concat(ad.currentseries - 1, '') else '' end as issuedto, 
+  case when ad.qtyissued > 0 then concat(ad.qtyissued ,'') else '' end as issuedqty, 
+  case when ad.qtyreceived > 0 then concat(ad.startseries, '')   else '' end as receivedfrom, 
+  case when ad.qtyreceived > 0 then concat(ad.endseries, '') else '' end as receivedto, 
+  case when ad.qtyreceived > 0 then concat(ad.qtyreceived ,'') else '' end as receivedqty, 
+  case when ad.qtybalance = 50 then concat(ad.startseries,'')  else concat(ad.currentseries, '') end as endingfrom,
+  concat(ad.qtybalance,'') as endingqty,  concat(ad.endseries,'') as endingto 
+from remittance_af ra 
+   inner join afcontrol_detail ad on ad.objid = ra.objid 
+   inner join afcontrol afc on afc.objid = ad.controlid 
+where ra.remittanceid=$P{remittanceid}
+
+[getRCDOtherPayment]
+select  pc.particulars, pc.amount 
+from remittance_cashreceipt rc 
+   inner join cashreceipt cr on rc.objid = cr.objid 
+   inner join cashreceiptpayment_check pc on pc.receiptid = rc.objid 
+   left join cashreceipt_void crv on crv.receiptid = cr.objid 
+where remittanceid=$P{remittanceid}
+	and crv.objid is not null 
+
+
 [getNonCashPayments]
 SELECT cc.*
 FROM remittance r
