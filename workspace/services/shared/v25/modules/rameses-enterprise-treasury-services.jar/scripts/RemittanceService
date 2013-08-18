@@ -86,4 +86,10 @@ class RemittanceService  {
 		return o;
 	}
 
+
+	@ProxyMethod
+	public def open( o ) {
+		return em.read( "remittance", o );
+	}
+
 }
