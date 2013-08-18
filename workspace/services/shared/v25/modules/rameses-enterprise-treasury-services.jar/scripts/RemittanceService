@@ -54,6 +54,7 @@ class RemittanceService  {
 		o.dtposted = dateSvc.serverDate;
 
 		o.collector = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE ];
+		print o.liquidatingofficer;
 
 		em.create( "remittance", o );
 
@@ -79,7 +80,7 @@ class RemittanceService  {
 				detail.refno = o.txnno;
 				detail.refdate = o.dtposted;
 				detail.reftype = "remittance";
-				detail.amount = o.amount;
+				detail.amount = it.amount;
 				detail.particulars = "REMITTANCE";
 				cashBook.postCR( detail );
 		}

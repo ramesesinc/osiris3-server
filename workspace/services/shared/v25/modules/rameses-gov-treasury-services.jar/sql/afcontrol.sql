@@ -51,8 +51,18 @@ WHERE a.controlid = $P{objid}
 [changeMode]
 UPDATE afcontrol SET mode=$P{mode} WHERE objid=$P{objid}
 
+
+[findActiveControl]
+SELECT * 
+FROM afcontrol a
+INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
+INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
+WHERE a.objid = $P{objid}
+
 [getDetailsList]
-SELECT * FROM afcontrol_detail WHERE controlid=$P{objid} ORDER BY startseries
+SELECT ad.* FROM afcontrol_detail ad
+LEFT JOIN remittance_af rf ON rf.objid=ad.objid 
+WHERE controlid=$P{objid} ORDER BY startseries
 
 
 [getConflictSeries]

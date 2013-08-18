@@ -4,7 +4,8 @@ user_objid as objid,
 user_username as username, 
 user_lastname as lastname,
 user_firstname as firstname,
-jobtitle
+jobtitle as title,
+jobtitle 
 FROM sys_usergroup_member WHERE usergroupid = 'COLLECTOR'
 
 

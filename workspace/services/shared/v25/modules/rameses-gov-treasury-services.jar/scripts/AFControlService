@@ -117,10 +117,12 @@ class AFControlService {
 		postSvc.postCancel( [controlid:o.objid] );
 	}	
 	
+
 	@ProxyMethod
-	public def getDetailsList( def o ) {
-		return em.sqlContext.createNamedQuery("afcontrol:getDetailsList").setParameters(o).resultList;
+	public def open( def o ) {
+		o = em.sqlContext.createNamedQuery("afcontrol:findActiveControl").setParameters(o).singleResult;
+		o.details = em.sqlContext.createNamedQuery("afcontrol:getDetailsList").setParameters(o).resultList;
+		return o;
 	}	
 
-	
 }

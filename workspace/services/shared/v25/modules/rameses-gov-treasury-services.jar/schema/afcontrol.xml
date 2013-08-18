@@ -29,7 +29,7 @@
 		<field name="objid" primary="true" />
 		<field name="controlid" required="true"/>
 		<field name="refdate"  />
-		<field name="reftype"  required="true" pattern="ISSUED|TRANSFER|FORWARD"/>
+		<field name="reftype"  required="true" />
 		<field name="collector_objid" required="true"/>
 		<field name="collector_name" required="true"/>
 		<field name="collector_title" required="true"/>
@@ -45,11 +45,17 @@
 		<field name="cancelledseries" />
 	</element>
 	
-	<element name="subcollector_detail" tablename="afcontrol_subcollector_detail">
-		<field name="assignee_objid"/>
-		<field name="assignee_name"/>
-		<field name="assignee_title"/>
-		
+	<element name="transfer" tablename="afcontrol_transfer">
+		<field name="objid" primary="true"/>
+		<field name="txnno"/>
+		<field name="dtposted" required="true"/>
+		<field name="controlid" required="true"/>
+		<field name="user_objid" required="true"/>
+		<field name="user_name" required="true"/>
+		<field name="from_objid" required="true"/>
+		<field name="from_name" required="true"/>
+		<field name="to_objid" required="true"/>
+		<field name="to_name" required="true"/>
 	</element>
-	
+
 </schema>
