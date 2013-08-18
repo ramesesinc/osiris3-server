@@ -68,10 +68,11 @@ class AFControlService {
 		return m;
 	}
 	
-	
+	 
 	@ProxyMethod
 	public def getOpenControlList( def o ) {
 		if(!o.af) throw new Exception("AFControlService.getOpenControlList requires af parameter");
+		if(!o.txnmode) throw new Exception("AFControlService.getOpenControlList requires af parameter");
 		o.userid = env.USERID;
 		return em.sqlContext.createNamedQuery("afcontrol:getOpenControlList").setParameters( o ).resultList;
 	}
