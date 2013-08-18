@@ -1,5 +1,9 @@
 [getList]
-SELECT * FROM remittance 
+SELECT * 
+FROM remittance 
+WHERE txnno = $P{txnno}
+  OR collector_name LIKE $P{searchtext} 
+ORDER BY collector_name, txnno DESC 
 
 [getUnremittedForCollector]
 SELECT af.af as formno, af.stub as stub, 
