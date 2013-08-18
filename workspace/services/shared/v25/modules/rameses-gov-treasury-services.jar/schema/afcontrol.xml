@@ -43,6 +43,7 @@
 		<field name="qtycancelled" required="true"/>
 		<field name="qtybalance" required="true"/>
 		<field name="cancelledseries" />
+		<field name="remittanceid" />
 	</element>
 	
 	<element name="subcollector_detail" tablename="afcontrol_subcollector_detail">
