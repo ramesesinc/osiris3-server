@@ -46,9 +46,6 @@ class AFStockUtilService {
         if( (o.startseries+"").length() != (o.endseries+"").length() ) {
 			throw new Exception("Start series must be same length as end series" );
         }
-        if( (o.startseries+"").length() != m.serieslength ) {
-			throw new Exception("Series number length must be " + m.serieslength );
-        }
         if( ( (o.startseries-1) % m.unitqty) != 0 ) {
             throw new Exception("Start series must be divisible by " + m.unitqty);
         }
