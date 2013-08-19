@@ -65,6 +65,13 @@ class UserSecuritygroupService {
 		em.create('usergroup:member', entity); 
 	}
 
+	@ProxyMethod 
+	public void removeMembership( params ) { 
+		if (!params.objid) throw new Exception('Please specify objid'); 
+		if (!params.userid) throw new Exception('Please specify userid'); 
+
+		params.user_objid = params.userid;
+		def qry = em.sqlContext.createNamedExecutor('usersecuritygroup:removeMembership');
+		qry.setParameters(params).execute();
+	} 
 }
-
-

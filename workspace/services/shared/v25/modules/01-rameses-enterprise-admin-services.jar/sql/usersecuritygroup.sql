@@ -20,3 +20,6 @@ WHERE o.objid=$P{objid} AND o.orgclass=$P{orgclass}
 SELECT u.objid, u.username, u.firstname, u.lastname, u.jobtitle 
 FROM sys_user u 
 WHERE u.objid=$P{objid}  
+
+[removeMembership]
+DELETE FROM sys_usergroup_member WHERE objid=$P{objid} AND user_objid=$P{userid} 
