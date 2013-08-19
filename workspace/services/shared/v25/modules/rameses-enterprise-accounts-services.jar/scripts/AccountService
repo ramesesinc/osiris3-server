@@ -22,7 +22,7 @@ class AccountService extends AbstractCrudListService {
 			it.filetype = 'account'+it.type;
 			it.children = [  
 				[caption:'Account Group', filetype: 'account-group'],
-				[caption:'Account Detail', filetype: 'account-group'],
+				[caption:'Account Detail', filetype: 'account-detail'],
 			]
 		}
 		return list;
@@ -45,4 +45,11 @@ class AccountService extends AbstractCrudListService {
 		}
 	}
 	
+	public void afterCreate( entity ) {
+		if (entity.type) entity.filetype = 'account-'+entity.type;
+	}
+
+	public void afterUpdate( entity ) {
+		if (entity.type) entity.filetype = 'account-'+entity.type;
+	}	
 }
