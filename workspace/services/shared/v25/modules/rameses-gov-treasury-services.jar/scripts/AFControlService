@@ -121,8 +121,13 @@ class AFControlService {
 	@ProxyMethod
 	public def open( def o ) {
 		o = em.sqlContext.createNamedQuery("afcontrol:findActiveControl").setParameters(o).singleResult;
-		o.details = em.sqlContext.createNamedQuery("afcontrol:getDetailsList").setParameters(o).resultList;
+		o.details = getDetailsList(o)
 		return o;
 	}	
+
+	@ProxyMethod
+	public def getDetailsList( o ) {
+		return em.sqlContext.createNamedQuery("afcontrol:getDetailsList").setParameters(o).resultList;
+	}
 
 }
