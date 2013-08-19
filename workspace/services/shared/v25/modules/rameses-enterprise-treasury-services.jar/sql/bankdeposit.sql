@@ -43,3 +43,15 @@ INNER JOIN liquidation_cashier_fund lcf ON lr.liquidationid=lr.liquidationid
 INNER JOIN remittance_cashreceipt rc ON rc.remittanceid=lr.objid
 INNER JOIN cashreceiptpayment_check crp ON crp.receiptid=rc.objid
 WHERE lcf.cashier_objid=$P{cashierid}
+
+
+
+[getDepositSummaries]
+SELECT  be.*,
+	ba.fund_objid,
+	ba.fund_code,
+	ba.fund_title
+FROM bankdeposit_entry be
+	INNER JOIN bankaccount ba ON be.bankaccount_objid = ba.objid
+WHERE be.parentid = $P{objid}
+ORDER BY ba.fund_title 

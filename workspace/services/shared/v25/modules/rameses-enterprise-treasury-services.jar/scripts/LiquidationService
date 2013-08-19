@@ -89,6 +89,16 @@ class LiquidationService  {
 
 	@ProxyMethod
 	public def open( o ) {
-		return em.read( "liquidation", o);
+		o = em.read( "liquidation", o);
+		o.fundsummary = getFundSummaries(o)
+		return o
+	}
+
+
+	@ProxyMethod
+	public def getFundSummaries(o){
+		em.sqlContext.createNamedQuery('liquidation:getFundSummaries')
+				.setParameter('liquidationid', o.objid)
+				.resultList
 	}
 }	
