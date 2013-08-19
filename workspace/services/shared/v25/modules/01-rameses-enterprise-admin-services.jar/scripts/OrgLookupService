@@ -25,7 +25,7 @@ class OrgLookupService  {
 	@ProxyMethod
 	public def getList( def o ) {
 		if(!o.orgclass) throw new Exception("Please include an orgclass in OrgAdmin getList");
-		print "returned params " + o;
+
 		return em.sqlContext.createNamedQuery('org:getLookup').setParameters(o).resultList; 
 	}
 	
