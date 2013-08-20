@@ -1,0 +1,51 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+
+class SREAccountLookupService  {
+
+	@PersistenceContext('main')
+	def em;
+
+	@ProxyMethod
+	public List getColumns( params ) {
+		return [ 
+			[name:'code', caption:'Acct Code' ],
+			[name:'title', caption:'Acct Title' ] 
+		]; 
+	} 
+	
+
+	def searchTypes = [
+		[filter:' t.code LIKE $P{searchtext} AND t.type=$P{type} ', orderby:' t.code '], 
+		[filter:' t.title LIKE $P{searchtext} AND t.type=$P{type} ', orderby:' t.title ']
+	];
+
+	@ProxyMethod
+	public List getList( params ) {
+		params.searchtext = removeLeadingChar(params.searchtext, '%')+'%'; 
+		params.type = 'detail';
+		
+		def qry = em.sqlContext.createNamedQuery('sreaccount:lookup'); 
+		for (o in searchTypes) {
+			def list = qry.setParameters(params).setVars(o).resultList;
+			if (list.isEmpty()) continue; 
+
+			return list;
+		} 
+		//otherwise return an empty list
+		return []; 
+	} 
+	
+    private String removeLeadingChar(String text, def ch) {
+    	if (text == null) return "";
+
+        while (true) { 
+            if (!text.startsWith(ch+"")) break; 
+            
+            text = text.substring(1); 
+        } 
+        return text; 
+    } 
+}
