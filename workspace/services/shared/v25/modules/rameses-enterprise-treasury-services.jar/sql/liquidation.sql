@@ -38,3 +38,7 @@ GROUP BY a.fund_objid, a.fund_code, a.fund_title
 INSERT INTO liquidation_remittance (objid, liquidationid)
 SELECT $P{liquidationid}, r.objid
 FROM remittance r WHERE r.objid IN (${ids})
+
+
+[getFundSummaries]
+SELECT * FROM liquidation_cashier_fund WHERE liquidationid = $P{liquidationid}

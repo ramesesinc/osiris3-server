@@ -38,6 +38,9 @@ class RemittanceService  {
 		o.amount = o.items.sum{ it.amount };	
 		o.totalcash = o.items.sum{ it.totalcash };	
 		o.totalnoncash = o.items.sum{ it.totalnoncash };	
+		o.checks = em.sqlContext.createNamedQuery( "remittance:getUnremittedChecks")
+			.setParameters( [collectorid: env.USERID]).resultList;
+		
 		return o;
 	}
 
@@ -61,7 +64,8 @@ class RemittanceService  {
 		def m = [remittanceid: o.objid, collectorid: o.collector.objid ];
 		em.sqlContext.createNamedExecutor( "remittance:collectReceipts").setParameters(m).execute();
 		em.sqlContext.createNamedExecutor( "remittance:collectAFControl").setParameters(m).execute();
-
+		em.sqlContext.createNamedExecutor( "remittance:collectChecks").setParameters(m).execute();
+		
 		//post new entry in afcontrol to update new balance
 		def list = em.sqlContext.createNamedQuery("remittance:getRemittedAFControlIdsForPosting").setParameters(m).resultList;
 		list.each {	
@@ -89,7 +93,9 @@ class RemittanceService  {
 
 	@ProxyMethod
 	public def open( o ) {
-		return em.read( "remittance", o );
+		o = em.read( "remittance", o );
+		o.checks = em.sqlContext.createNamedQuery("remittance:getRemittedChecks").setParameters(o).resultList;
+		return o;
 	}
 
 	@ProxyMethod
