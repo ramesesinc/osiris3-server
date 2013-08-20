@@ -9,6 +9,9 @@ class RemittanceReportService  {
 	@PersistenceContext("main")
 	def em; 
 
+	@Service("NumberService")
+	def numSvc;
+
 	@ProxyMethod 
 	def getRCDReportData( remittanceid ) {
 		def remittance = em.read('remittance:remittance', [objid: remittanceid] )
@@ -22,6 +25,8 @@ class RemittanceReportService  {
 		//not yet implemented : waiting for sir elmo's db structure 
 		remittance.nonserialremittances = []
 		remittance.nonserialsummary = []
+
+		remittance.amountinwords = numSvc.doubleToWords( remittance.amount).toUpperCase()
 
 		return remittance 	
 
