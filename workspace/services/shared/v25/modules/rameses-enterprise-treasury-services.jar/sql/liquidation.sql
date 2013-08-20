@@ -112,3 +112,7 @@ group by ri.fund_objid
 select fund_objid as fundid, fund_title as fundname 
 from liquidation_cashier_fund 
 where liquidationid=$P{liquidationid}
+
+[getFundSummaries]
+SELECT * FROM liquidation_cashier_fund WHERE liquidationid = $P{liquidationid}
+

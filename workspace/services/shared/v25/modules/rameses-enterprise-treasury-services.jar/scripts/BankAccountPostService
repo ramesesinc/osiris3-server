@@ -4,7 +4,7 @@ import java.rmi.server.*;
 import com.rameses.common.*
 import com.rameses.services.extended.*
 
-class CashBookPostService {
+class BankAccountPostService  {
 
 	@PersistenceContext("main")
 	def em;
@@ -24,19 +24,24 @@ class CashBookPostService {
 	
 	@ProxyMethod
 	public def postDR( def o ) {
-		if(!o.subacctid)  throw new Exception("subacctid is required in cashbook posting");
-		if(!o.fundid) throw new Exception("fundid is required in cashbook posting");
+		if(!o.objid) throw new Exception("Objid is required");
+		if(!o.amount)  throw new Exception("Amount is required");
+		if(!o.refid) throw new Exception("Refid is required");
+		if(!o.reftype) throw new Exception("Reftype is required");
 
-		def cb = em.sqlContext.createNamedQuery( "cashbook:findBySubAcctFund" ).setParameters( o ).singleResult;
-		if(!cb)
-			throw new Exception("Posting failed. There is no associated cashbook for fund: " + o.fundtitle + ". Please contact the treasurer"); 
-		
+		def cb = em.read( "bankaccount", o );
+		if(cb.forwardbalance==null) cb.forwardbalance = 0;
+		if(cb.beginbalance==null) cb.beginbalance = 0;
+		if(cb.totaldr==null) cb.totaldr = 0;
+		if(cb.totalcr==null) cb.totalce = 0;
+		if(cb.endbalance==null) cb.endbalance = 0;
+
 		def balance = cb.endbalance;
 		cb.totaldr += o.amount;
 		cb.endbalance = (cb.beginbalance + cb.forwardbalance + cb.totaldr) - cb.totalcr;
 		
 		def detail = [:];
-		detail.objid = "CSHBK"+new UID();
+		detail.objid = "BNKACCTE"+new UID();
 		detail.parentid = cb.objid;
 		detail.pageno = cb.currentpageno;
 		detail.lineno = cb.currentlineno;
@@ -49,35 +54,33 @@ class CashBookPostService {
 		detail.dr = o.amount;	
 		detail.cr = 0;
 		detail.runbalance = cb.endbalance;
-		em.create("cashbook:detail", detail);
+		em.create("bankaccount:detail", detail);
 		
 		moveNextPage( cb );
-		em.update( "cashbook", cb );
+		em.update( "bankaccount", cb );
 		return true;
 	}
 
 	@ProxyMethod
 	public def postCR( def o ) {
-		if(!o.subacctid)  throw new Exception("subacctid is required in cashbook posting");
-		if(!o.fundid) throw new Exception("fundid is required in cashbook posting");
+		if(!o.objid) throw new Exception("Objid is required");
+		if(!o.amount)  throw new Exception("Amount is required");
+		if(!o.refid) throw new Exception("Refid is required");
+		if(!o.reftype) throw new Exception("Reftype is required");
 
-		def cb = em.sqlContext.createNamedQuery( "cashbook:findBySubAcctFund" ).setParameters( o ).singleResult;
-		if(!cb)
-			throw new Exception("Posting failed. There is no associated cashbook for fund: " + o.fundtitle + ". Please contact the treasurer"); 
+		def cb = em.read( "bankaccount", o );
+		if(cb.forwardbalance==null) cb.forwardbalance = 0;
+		if(cb.beginbalance==null) cb.beginbalance = 0;
+		if(cb.totaldr==null) cb.totaldr = 0;
+		if(cb.totalcr==null) cb.totalce = 0;
+		if(cb.endbalance==null) cb.endbalance = 0;
 		
-		if(!o.amount) 
-			throw new Exception("Amount is required");
-		if(!o.refid) 
-			throw new Exception("Refid is required");
-		if(!o.reftype) 
-			throw new Exception("Reftype is required");
-
 		def balance = cb.endbalance;
 		cb.totalcr += o.amount;
 		cb.endbalance = (cb.beginbalance + cb.forwardbalance + cb.totaldr) - cb.totalcr;
 		
 		def detail = [:];
-		detail.objid = "CSHBK"+new UID();
+		detail.objid = "BNKACCTE"+new UID();
 		detail.parentid = cb.objid;
 		detail.pageno = cb.currentpageno;
 		detail.lineno = cb.currentlineno;
@@ -90,10 +93,10 @@ class CashBookPostService {
 		detail.dr = 0;
 		detail.cr = o.amount;	
 		detail.runbalance = cb.endbalance;
-		em.create("cashbook:detail", detail);
+		em.create("bankaccount:detail", detail);
 		
 		moveNextPage( cb );
-		em.update( "cashbook", cb );
+		em.update( "bankaccount", cb );
 		return true;
 	}
 	

@@ -18,11 +18,11 @@ class AccountService extends AbstractCrudListService {
 		def sql = (p.root) ? 'account:getRootNodes' : 'account:getChildNodes';
 		def list = em.sqlContext.createNamedQuery(sql).setParameters(p).resultList;	
 		list.each { 
-			it.caption = it.code + "(" + it.title + ") ";
+			it.caption = it.code + " (" + it.title + ") ";
 			it.filetype = 'account'+it.type;
 			it.children = [  
 				[caption:'Account Group', filetype: 'account-group'],
-				[caption:'Account Detail', filetype: 'account-group'],
+				[caption:'Account Detail', filetype: 'account-detail'],
 			]
 		}
 		return list;
@@ -45,4 +45,11 @@ class AccountService extends AbstractCrudListService {
 		}
 	}
 	
+	public void afterCreate( entity ) {
+		if (entity.type) entity.filetype = 'account-'+entity.type;
+	}
+
+	public void afterUpdate( entity ) {
+		if (entity.type) entity.filetype = 'account-'+entity.type;
+	}	
 }

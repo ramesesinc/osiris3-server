@@ -9,3 +9,15 @@ ORDER BY ba.code
 
 [changeState-approved]
 UPDATE bankaccount SET state=$P{newstate} WHERE objid=$P{objid} 
+
+
+[getEntries]
+SELECT refdate,refno,reftype,particulars,dr,cr,runbalance,pageno,lineno 
+FROM bankaccount_entry 
+WHERE parentid=$P{objid} AND pageno = $P{page}
+order by pageno, lineno 
+
+[getListByFund]
+SELECT ba.*
+FROM bankaccount ba 
+WHERE ba.fund_objid = $P{fundid}
