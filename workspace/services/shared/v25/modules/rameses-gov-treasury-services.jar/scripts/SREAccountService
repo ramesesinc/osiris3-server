@@ -5,34 +5,35 @@ import com.rameses.common.*
 
 import com.rameses.services.extended.*
 
-class AccountService extends AbstractCrudListService {
+class SREAccountService extends AbstractCrudListService { 
 
-	@PersistenceContext('main')
+	@PersistenceContext("main")
 	def em;
 
-	String schemaName = 'account';
+	String schemaName = "sreaccount"
 	
 	@ProxyMethod
 	public def getNodes( params ) {
+		def qry = null;
 		def sqlname = (params.root? 'getRootNodes': 'getChildNodes');
-		def list = em.sqlContext.createNamedQuery(schemaName+':'+sqlname).setParameters(params).resultList;	
+		def list = em.sqlContext.createNamedQuery(schemaName+':'+sqlname).setParameters(params).resultList;	 
 		list.each { 
 			it.caption = it.code + " (" + it.title + ") ";
 			it.filetype = schemaName+it.type;
 			it.children = [  
-				[caption:'Account Group', filetype: 'account-group'],
-				[caption:'Account Detail', filetype: 'account-detail']
-			]
-		}
-		return list;
-	}	
+				[caption:'Account Group', filetype: schemaName+'-group'], 
+				[caption:'Account Detail', filetype: schemaName+'-detail'] 
+			] 
+		} 
+		return list; 
+	} 
 	
 	@ProxyMethod
-	public def getColumns( def o ) {
+	public def getColumns( params ) {
 		def cols = [
 			[name:'code', caption:'Acct Code' ],
 			[name:'title', caption:'Acct Title' ],
-			[name:'type', caption:'Type' ] 
+			[name:'type', caption:'Type' ],
 		];
 		return cols;
 	}
@@ -70,8 +71,7 @@ class AccountService extends AbstractCrudListService {
 		return []; 		
 	}
 
-
-	public void afterList( def p, def list ) {
+	public void afterList( params, list ) {
 		list.each { 
 			it.filetype = schemaName+'-'+it.type;
 		}
@@ -83,12 +83,7 @@ class AccountService extends AbstractCrudListService {
 
 	public void afterUpdate( entity ) {
 		if (entity.type) entity.filetype = schemaName+'-'+entity.type;
-	} 
-
-	public void beforeOpen( params ) {
-		println 'beforeOpen-> ' + params;
-	}
-
+	}	
 
     private String removeLeadingChar(String text, def ch) {
     	if (text == null) return "";

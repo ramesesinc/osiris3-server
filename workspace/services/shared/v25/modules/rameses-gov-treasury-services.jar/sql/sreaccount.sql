@@ -1,17 +1,15 @@
 [getRootNodes]
-SELECT a.*
-FROM account a 
+SELECT a.* FROM sreaccount a 
 WHERE a.parentid IS NULL and a.type='group' 
-ORDER BY a.code
+ORDER BY a.code 
 
 [getChildNodes]
-SELECT a.*
-FROM account a 
-WHERE a.parentid=$P{objid} and a.type='group'
-ORDER BY a.code
+SELECT a.* FROM sreaccount a 
+WHERE a.parentid=$P{objid} and a.type='group' 
+ORDER BY a.code 
 
 [getList]
-SELECT * FROM account WHERE parentid=$P{objid} ORDER BY code 
+SELECT * FROM sreaccount WHERE parentid=$P{objid} ORDER BY code
 
 [search]
 SELECT t.* FROM sreaccount t  
@@ -22,4 +20,4 @@ ORDER BY t.title
 SELECT t.* FROM sreaccount t WHERE ${filter} ORDER BY t.title 
 
 [changeState-approved]
-UPDATE account SET state='APPROVED' WHERE objid=$P{objid} 
+UPDATE sreaccount SET state='APPROVED' WHERE objid=$P{objid} 
