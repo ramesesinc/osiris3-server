@@ -7,22 +7,21 @@ import com.rameses.services.extended.*
 
 class AccountService extends AbstractCrudListService {
 
-	@PersistenceContext("main")
+	@PersistenceContext('main')
 	def em;
 
-	String schemaName = "account"
+	String schemaName = 'account';
 	
 	@ProxyMethod
-	public def getNodes( def p ) {
-		def qry = null;
-		def sql = (p.root) ? 'account:getRootNodes' : 'account:getChildNodes';
-		def list = em.sqlContext.createNamedQuery(sql).setParameters(p).resultList;	
+	public def getNodes( params ) {
+		def sqlname = (params.root? 'getRootNodes': 'getChildNodes');
+		def list = em.sqlContext.createNamedQuery(schemaName+':'+sqlname).setParameters(params).resultList;	
 		list.each { 
 			it.caption = it.code + " (" + it.title + ") ";
-			it.filetype = 'account'+it.type;
+			it.filetype = schemaName+it.type;
 			it.children = [  
 				[caption:'Account Group', filetype: 'account-group'],
-				[caption:'Account Detail', filetype: 'account-detail'],
+				[caption:'Account Detail', filetype: 'account-detail']
 			]
 		}
 		return list;
@@ -31,25 +30,74 @@ class AccountService extends AbstractCrudListService {
 	@ProxyMethod
 	public def getColumns( def o ) {
 		def cols = [
-			[name:'icon', caption:'', type:'icon', width:30, resizable:false ],
 			[name:'code', caption:'Acct Code' ],
 			[name:'title', caption:'Acct Title' ],
-			[name:'type', caption:'Type' ],
+			[name:'type', caption:'Type' ] 
 		];
 		return cols;
 	}
 	
+
+	public def getList( params ) { 
+		params.searchtext = removeLeadingChar(params.searchtext, '%')+'%'; 
+		if (params.name == 'search') {
+			def list = getSearch(params); 
+			afterList( params, list );
+			return list;
+		}
+		else 
+			return super.getList(params);
+	} 
+
+
+	private def searchTypes = [
+		[filter:' t.code LIKE $P{searchtext} AND '], 
+		[filter:' t.title LIKE $P{searchtext} AND ']
+	];	
+
+	private def getSearch( params ) {
+		def qry = em.sqlContext.createNamedQuery(schemaName+':search'); 
+		qry.setFirstResult(params._start? params._start: 0); 
+		qry.setMaxResults(params._limit? params._limit: 10); 
+
+		for (o in searchTypes) {
+			def list = qry.setParameters(params).setVars(o).resultList;
+			if (list.isEmpty()) continue; 
+
+			return list;
+		} 
+		//otherwise return an empty list
+		return []; 		
+	}
+
+
 	public void afterList( def p, def list ) {
 		list.each { 
-			it.filetype = 'account-'+it.type;
+			it.filetype = schemaName+'-'+it.type;
 		}
 	}
 	
 	public void afterCreate( entity ) {
-		if (entity.type) entity.filetype = 'account-'+entity.type;
+		if (entity.type) entity.filetype = schemaName+'-'+entity.type;
 	}
 
 	public void afterUpdate( entity ) {
-		if (entity.type) entity.filetype = 'account-'+entity.type;
-	}	
+		if (entity.type) entity.filetype = schemaName+'-'+entity.type;
+	} 
+
+	public void beforeOpen( params ) {
+		println 'beforeOpen-> ' + params;
+	}
+
+
+    private String removeLeadingChar(String text, def ch) {
+    	if (text == null) return "";
+
+        while (true) { 
+            if (!text.startsWith(ch+"")) break; 
+            
+            text = text.substring(1); 
+        } 
+        return text; 
+    }	
 }

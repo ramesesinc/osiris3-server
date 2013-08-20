@@ -5,22 +5,46 @@ import com.rameses.common.*
 
 class DetailAccountLookupService  {
 
-	@PersistenceContext("main")
+	@PersistenceContext('main')
 	def em;
 
 	@ProxyMethod
 	public def getColumns( def o ) {
 		return[
 			[name:'code', caption:'Acct Code' ],
-			[name:'title', caption:'Acct Title' ],
+			[name:'title', caption:'Acct Title' ] 
 		];
 	}
 	
-	@ProxyMethod
-	public def getList( def o ) {
-		o.type = "detail";
-		return em.sqlContext.createNamedQuery('account:lookupAccount').setParameters(o).resultList;
-	}
-	
+	def searchTypes = [
+		[filter:' t.code LIKE $P{searchtext} AND t.type=$P{type} '], 
+		[filter:' t.title LIKE $P{searchtext} AND t.type=$P{type} '] 
+	];
 
+	@ProxyMethod
+	public List getList( params ) {
+		params.searchtext = removeLeadingChar(params.searchtext, '%')+'%'; 
+		params.type = 'detail';
+		
+		def qry = em.sqlContext.createNamedQuery('account:lookup'); 
+		for (o in searchTypes) {
+			def list = qry.setParameters(params).setVars(o).resultList;
+			if (list.isEmpty()) continue; 
+
+			return list;
+		} 
+		//otherwise return an empty list
+		return []; 
+	} 
+	
+    private String removeLeadingChar(String text, def ch) {
+    	if (text == null) return "";
+
+        while (true) { 
+            if (!text.startsWith(ch+"")) break; 
+            
+            text = text.substring(1); 
+        } 
+        return text; 
+    } 
 }

@@ -11,10 +11,15 @@ WHERE a.parentid=$P{objid} and a.type='group'
 ORDER BY a.code
 
 [getList]
-SELECT * FROM account WHERE parentid=$P{objid} ORDER BY code
+SELECT * FROM account WHERE parentid=$P{objid} ORDER BY code 
 
-[lookupAccount]
-SELECT * FROM account WHERE type=$P{type} ORDER BY code
+[search]
+SELECT t.* FROM sreaccount t  
+WHERE ${filter} t.parentid IS NOT NULL 
+ORDER BY t.title 
+
+[lookup]
+SELECT t.* FROM sreaccount t WHERE ${filter} ORDER BY t.title 
 
 [changeState-approved]
 UPDATE account SET state='APPROVED' WHERE objid=$P{objid} 
