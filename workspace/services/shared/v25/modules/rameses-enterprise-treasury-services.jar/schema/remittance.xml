@@ -28,5 +28,9 @@
 		<field name="remittanceid" required="true"/>
 	</element>
 	
+	<element name="checkpayment" tablename="remittance_checkpayment">
+		<field name="objid" primary="true"/>
+		<field name="remittanceid" required="true"/>
+	</element>
 	
 </schema>
