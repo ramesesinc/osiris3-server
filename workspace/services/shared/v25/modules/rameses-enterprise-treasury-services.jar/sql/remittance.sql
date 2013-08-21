@@ -69,9 +69,11 @@ WHERE ad.collector_objid = $P{collectorid}
 [getRemittedFundTotals]
 SELECT cb.fund_objid AS fundid, SUM(( cbe.dr - cbe.cr )) AS amount
 FROM remittance_cashreceipt c
+LEFT JOIN cashreceipt_void cv ON c.objid = cv.receiptid 
 INNER JOIN cashbook_entry cbe ON cbe.refid = c.objid
 INNER JOIN cashbook cb ON cb.objid = cbe.parentid
 WHERE remittanceid = $P{remittanceid}
+AND cv.objid IS NULL
 GROUP BY cb.fund_objid
 
 [getRemittedChecks]
