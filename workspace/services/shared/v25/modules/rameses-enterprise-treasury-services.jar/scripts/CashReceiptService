@@ -24,24 +24,41 @@ class CashReceiptService  {
 	@Service("CashBookPostService")
 	def cashBookSvc;
 	
+	@Service("CollectorLookupService")
+	def collectorSvc;
+
 	/**
 	* note: setting of collector is in the CashReceiptInterceptor of gov. module.
 	* it is gotten during getNextReceiptInfo
 	*/
 	@ProxyMethod
 	public def init( def entity ) {
+		entity.objid = "RCT"+new java.rmi.server.UID();
 		if(!entity.receiptdate) {
 			entity.receiptdate =  dateService.serverDate;
 		}	
-		entity.objid = "RCT"+new java.rmi.server.UID();
-        entity.items = [];
+		else {
+			def currdate = dateService.serverDate; 
+			entity.receiptdate = dateService.parse( 'yyyy-MM-dd',entity.receiptdate)
+        	if( entity.receiptdate > currdate ) throw new Exception('Advance date is not allowed.')
+		}
+
+		//if collector was not set, check if user is a collector.
+		if(!entity.collector) {
+			def c = collectorSvc.findCollector( [userid: env.USERID] );
+			if(!c)
+				throw new Exception("You must be a member of collector group. Please contact admin");
+			entity.collector = [ objid:c.objid, name:c.firstname + " " +c.lastname, title:c.title];
+		}
+		entity.org = [objid:env.ORGID, name:env.ORGNAME];
+		entity.items = [];
         entity.amount = 0;
 		entity.totalcash = 0;
         entity.totalnoncash = 0;
         entity.balancedue = 0;
         entity.cashchange = 0;
         entity.totalcredit = 0;
-        entity.paymentitems = [];		
+        entity.paymentitems = [];	
 		return entity;
 	}	
 
@@ -63,10 +80,10 @@ class CashReceiptService  {
 
 		if(!p.payer) p.payer = [:];  //if there is no id, we need still to add bec. it is an object.
 
-		p.org = [objid:env.ORGID, name:env.ORGNAME];
+		
 		p.txndate = dateService.serverDate;
 		p.user = [objid: env.USERID, name:env.USER];
-		p.state = "OPEN";
+		p.state = "POSTED";
 		em.create("cashreceipt", p ); 
 		p.items.each { x->
 			x.objid = "RCTI"+ new UID();
@@ -95,18 +112,24 @@ class CashReceiptService  {
 			entry.amount = v.sum{ it.amount };
 			cashBookSvc.postDR( entry ); 
 		}
-		
 		return formatReport(p);
 	}	
 		
 	@ProxyMethod
 	public def formatReport( def p ) {
-		p.payerdetails = p.payer.name + "\n" + p.payer.address;
+		p.payerdetails = p.paidby + "\n" + p.paidbyaddress;
 		p.amountinwords = numSvc.doubleToWords( p.amount );
 		return p;
 	}
 	
-	
+	@ProxyMethod 
+	public def open(def o) {
+		def x = em.sqlContext.createNamedQuery("cashreceipt:getCashReceiptInfo").setParameters(o).singleResult;
+		x.voided = x.voided.intValue();
+		x.items = em.sqlContext.createNamedQuery( "cashreceipt:getItems").setParameters(o).resultList;
+		x.paymentitems = em.sqlContext.createNamedQuery( "cashreceipt:getCheckPayments").setParameters(o).resultList;
+		return formatReport(x);
+	}	
 
 		
 }
