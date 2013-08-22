@@ -26,4 +26,9 @@ class CollectorLookupService extends AbstractListService {
 		}
 	}	
 
+	@ProxyMethod
+	public def findCollector( def o ) {
+		return em.sqlContext.createNamedQuery("collector:findCollector").setParameters(o).singleResult;
+	}
+
 }

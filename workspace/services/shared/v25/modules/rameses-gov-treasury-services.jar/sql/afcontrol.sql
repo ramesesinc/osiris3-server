@@ -33,10 +33,8 @@ AND (ad.collector_objid=$P{userid})
 AND a.mode = $P{txnmode}
 ORDER BY currentseries
 
-
 [getNextReceiptInfo]
-SELECT a.objid as controlid,prefix,suffix,currentseries as series,
-stub,collector_objid,collector_name,collector_title
+SELECT a.objid as controlid,prefix,suffix,currentseries as series, stub
 FROM afcontrol a
 INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
 INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
