@@ -20,9 +20,9 @@ class LiquidationListService extends AbstractListService {
 			[name:"txnno", caption:"Liq No", width:120, resizable:false],
 			[name:"dtposted", caption:"Liq Date", width:120, resizable:false],
 			[name:"liquidatingofficer.name", caption:"Liquidating Officer"],
-			[name:"totalcash", caption:"Total Cash"],
-			[name:"totalnoncash", caption:"Total Noncash"],
-			[name:"amount", caption:"Amount"]
+			[name:"totalcash", caption:"Total Cash", type:"decimal"],
+			[name:"totalnoncash", caption:"Total Noncash", type:"decimal"],
+			[name:"amount", caption:"Amount", type:"decimal"]
 		];	
 	}	
 	

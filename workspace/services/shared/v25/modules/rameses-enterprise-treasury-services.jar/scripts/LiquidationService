@@ -25,7 +25,6 @@ class LiquidationService  {
 	public def init() {
 		def o = [objid: "LIQ"+new UID(), cashier:[:]];	
 
-		println "env user id is ->" + env.USERID;
 		o.remittances = em.sqlContext.createNamedQuery("liquidation:getUnliquidatedRemittances")
 			.setParameters( [liquidatingofficerid: env.USERID]).resultList;
 		
@@ -40,6 +39,10 @@ class LiquidationService  {
 		o.fundsummary =  em.sqlContext.createNamedQuery("liquidation:getUnliquidatedFundSummary")
 			.setParameters( [liquidatingofficerid: env.USERID]).resultList;		
 
+		o.checks = em.sqlContext.createNamedQuery("liquidation:getUnliquidatedChecks")
+			.setParameters( [liquidatingofficerid: env.USERID]).resultList;	
+
+		println "unliqudiated checks->"+o.checks;		
 		return o;
 	}
 
@@ -61,11 +64,11 @@ class LiquidationService  {
 		em.create( "liquidation", o );
 
 
-		//update remittances				
-		o.remittances.each {
-			def m = [ objid:it.objid, liquidationid: o.objid ];
-			em.create("liquidation:remittance", m);
-		}
+		def ids = "'" + o.remittances*.objid.join("','") + "'";
+		def m = [liquidationid:o.objid];
+
+		em.sqlContext.createNamedExecutor( "liquidation:postLiquidateRemittance").setParameters(m).setVars([ids:ids]).execute();
+		em.sqlContext.createNamedExecutor( "liquidation:postLiquidateChecks").setParameters(m).setVars([ids:ids]).execute();
 
 		//update cashbook to add new entry
 		o.fundsummary.each {
@@ -91,7 +94,8 @@ class LiquidationService  {
 	public def open( o ) {
 		o = em.read( "liquidation", o);
 		o.fundsummary = getFundSummaries(o)
-		return o
+		o.checks = em.sqlContext.createNamedQuery("liquidation:getLiquidatedChecks").setParameters(o).resultList;
+		return o;
 	}
 
 
