@@ -43,6 +43,14 @@ class UsergroupMemberLookupService  {
 		return []; 
 	}
 
+	@ProxyMethod
+	public def find( params ) {
+		if (!params.usergroupid) throw new Exception('Please specify usergroupid'); 
+		if (!params.userid) throw new Exception('Please specify userid'); 
+
+		return em.sqlContext.createNamedQuery('usergroupmember:find').setParameters(params).singleResult; 
+	}	
+
     private String removeLeadingChar(String text, def ch) {
     	if (text == null) return "";
 
