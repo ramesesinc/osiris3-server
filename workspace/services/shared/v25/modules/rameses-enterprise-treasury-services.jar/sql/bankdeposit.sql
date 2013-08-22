@@ -55,3 +55,19 @@ FROM bankdeposit_entry be
 	INNER JOIN bankaccount ba ON be.bankaccount_objid = ba.objid
 WHERE be.parentid = $P{objid}
 ORDER BY ba.fund_title 
+
+[getFundSummaries]
+SELECT a.fund_objid,
+       a.fund_title,
+       SUM(a.amount) AS amount
+FROM
+( SELECT  
+	lcf.fund_objid,
+	lcf.fund_title,
+	lcf.amount
+FROM bankdeposit_liquidation bdl 
+	INNER JOIN liquidation_cashier_fund lcf ON bdl.objid=lcf.objid
+	INNER JOIN liquidation l ON lcf.liquidationid=l.objid
+WHERE bdl.bankdepositid = $P{objid}
+) a 
+GROUP BY a.fund_objid, a.fund_title

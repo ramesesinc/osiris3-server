@@ -121,6 +121,8 @@ class BankDepositService  {
 	@ProxyMethod
 	public def open( deposit ) {
 		deposit = em.read('bankdeposit', deposit)	
+		deposit.fundsummary = em.sqlContext.createNamedQuery('bankdeposit:getFundSummaries')
+				.setParameters(deposit).resultList
 		deposit.deposits = em.sqlContext.createNamedQuery('bankdeposit:getDepositSummaries')
 				.setParameters(deposit).resultList
 		return deposit
