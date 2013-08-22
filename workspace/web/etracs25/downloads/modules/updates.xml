@@ -31,6 +31,7 @@
 		<module file="shared/rameses-gov-lgu.jar" />
 		<module file="shared/rameses-gov-lgu-treasury.jar" />
 		<module file="shared/rameses-gov-treasury.jar" />
+		<module file="shared/rameses-rules-developer.jar" />
 
 		<!-- plugins -->
 		<module file="rameses-gov-etracs-rptis.jar" />

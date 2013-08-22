@@ -40,11 +40,11 @@ SELECT DISTINCT
 crp.objid, crp.checkno, crp.particulars, crp.amount  
 FROM liquidation_remittance lr
 INNER JOIN liquidation_cashier_fund lcf ON lr.liquidationid=lr.liquidationid
-INNER JOIN remittance_cashreceipt rc ON rc.remittanceid=lr.objid
-INNER JOIN cashreceiptpayment_check crp ON crp.receiptid=rc.objid
+INNER JOIN liquidation_checkpayment lc ON lc.liquidationid=lr.liquidationid
+INNER JOIN cashreceiptpayment_check crp ON crp.objid=lc.objid
+LEFT JOIN cashreceipt_void cv ON crp.receiptid = cv.receiptid 
 WHERE lcf.cashier_objid=$P{cashierid}
-
-
+AND cv.objid IS NULL 
 
 [getDepositSummaries]
 SELECT  be.*,
@@ -55,3 +55,19 @@ FROM bankdeposit_entry be
 	INNER JOIN bankaccount ba ON be.bankaccount_objid = ba.objid
 WHERE be.parentid = $P{objid}
 ORDER BY ba.fund_title 
+
+[getFundSummaries]
+SELECT a.fund_objid,
+       a.fund_title,
+       SUM(a.amount) AS amount
+FROM
+( SELECT  
+	lcf.fund_objid,
+	lcf.fund_title,
+	lcf.amount
+FROM bankdeposit_liquidation bdl 
+	INNER JOIN liquidation_cashier_fund lcf ON bdl.objid=lcf.objid
+	INNER JOIN liquidation l ON lcf.liquidationid=l.objid
+WHERE bdl.bankdepositid = $P{objid}
+) a 
+GROUP BY a.fund_objid, a.fund_title

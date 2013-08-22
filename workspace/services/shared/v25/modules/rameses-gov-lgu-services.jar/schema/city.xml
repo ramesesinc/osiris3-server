@@ -6,6 +6,8 @@
 		<field name="indexno" />
 		<field name="pin" />
 		<field name="name" />
+		<field name="fullname" />
+		<field name="address" />
 		<field name="previd" />
 		<field name="parentid" />
 		<field name="mayor_name" />

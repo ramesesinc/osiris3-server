@@ -16,17 +16,18 @@ class AFControlMgmtService extends AbstractListService {
 	@ProxyMethod
 	public def getColumns( def o ) {
 		return [
-			[name:'af', caption: 'AF No'],
-			[name:'mode', caption: 'Mode'],
-			[name:'currentseries', caption: 'Current Series', type:'integer'],
-			[name:'endseries', caption: 'End Series', type:'integer'],
-			[name:'stub', caption: 'Stub', type:'integer'],
+			[name:'af', caption: 'AF No', width:80, resizable:false],
+			[name:'mode', caption: 'Mode', width:80, resizable:false],
+			[name:'currentseries', caption: 'Current Series', type:'integer', width:80, resizable:false],
+			[name:'endseries', caption: 'End Series', type:'integer', width:80, resizable:false],
+			[name:'stub', caption: 'Stub', type:'integer', width:50, resizable:false],
 			[name:'collector.name', caption: 'Collector'],
 			[name:'qtyreceived', caption: 'Qty Received', type:'integer', width:100, resizable:false],
 			[name:'qtybegin', caption: 'Qty Beg.', type:'integer', width:100, resizable:false],
 			[name:'qtyissued', caption: 'Qty Issued', type:'integer', width:100, resizable:false],
 			[name:'qtycancelled', caption: 'Qty Cancelled', type:'integer', width:100, resizable:false],
 			[name:'qtybalance', caption: 'Qty Bal.', type:'integer', width:100, resizable:false],
+			[name:'active', caption: 'Active', type:'checkbox', width:40, resizable:false, checkedValue:1, uncheckedValue:0],
 		]
 	}
 	void beforeList(o) {

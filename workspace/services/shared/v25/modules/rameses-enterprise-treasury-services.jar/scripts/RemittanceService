@@ -95,6 +95,7 @@ class RemittanceService  {
 	public def open( o ) {
 		o = em.read( "remittance", o );
 		o.checks = em.sqlContext.createNamedQuery("remittance:getRemittedChecks").setParameters(o).resultList;
+		
 		return o;
 	}
 

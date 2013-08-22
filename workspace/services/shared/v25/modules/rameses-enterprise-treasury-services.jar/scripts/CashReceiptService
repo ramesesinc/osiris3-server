@@ -118,7 +118,7 @@ class CashReceiptService  {
 	@ProxyMethod
 	public def formatReport( def p ) {
 		p.payerdetails = p.paidby + "\n" + p.paidbyaddress;
-		p.amountinwords = numSvc.doubleToWords( p.amount );
+		p.amountinwords = numSvc.doubleToWords( p.amount ).toUpperCase() + " PESOS ONLY";
 		return p;
 	}
 	
