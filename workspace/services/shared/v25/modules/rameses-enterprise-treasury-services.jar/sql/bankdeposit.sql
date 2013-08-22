@@ -40,11 +40,11 @@ SELECT DISTINCT
 crp.objid, crp.checkno, crp.particulars, crp.amount  
 FROM liquidation_remittance lr
 INNER JOIN liquidation_cashier_fund lcf ON lr.liquidationid=lr.liquidationid
-INNER JOIN remittance_cashreceipt rc ON rc.remittanceid=lr.objid
-INNER JOIN cashreceiptpayment_check crp ON crp.receiptid=rc.objid
+INNER JOIN liquidation_checkpayment lc ON lc.liquidationid=lr.liquidationid
+INNER JOIN cashreceiptpayment_check crp ON crp.objid=lc.objid
+LEFT JOIN cashreceipt_void cv ON crp.receiptid = cv.receiptid 
 WHERE lcf.cashier_objid=$P{cashierid}
-
-
+AND cv.objid IS NULL 
 
 [getDepositSummaries]
 SELECT  be.*,

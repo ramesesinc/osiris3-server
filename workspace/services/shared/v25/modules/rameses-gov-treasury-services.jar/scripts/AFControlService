@@ -69,9 +69,11 @@ class AFControlService {
 	}
 	
 	 
+	/**
+	*  called during cash receipt, 
+	*/ 
 	@ProxyMethod
 	public def getOpenControlList( def o ) {
-		print o;
 		if(!o.af) throw new Exception("AFControlService.getOpenControlList requires af parameter");
 		if(!o.txnmode) throw new Exception("AFControlService.getOpenControlList requires txnmode parameter");
 		o.userid = env.USERID;
@@ -81,6 +83,9 @@ class AFControlService {
 	@ProxyMethod
 	public void activateControl( def o ) {
 		if(!o.objid) throw new Exception("AFControlService.activateControl requires objid parameter");
+		if( o.oldid ) {
+			deactivateControl( [objid: o.oldid] );
+		}
 		em.sqlContext.createNamedExecutor("afcontrol:activateControl").setParameters( o ).execute();
 	}
 	

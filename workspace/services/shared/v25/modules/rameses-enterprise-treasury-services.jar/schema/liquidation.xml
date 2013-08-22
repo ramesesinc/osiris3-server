@@ -21,6 +21,11 @@
 		<field name="liquidationid" required="true"/>
 	</element>
 
+	<element name="checkpayment" tablename="liquidation_checkpayment">
+		<field name="objid" primary="true"/>
+		<field name="liquidationid" required="true"/>
+	</element>
+
 	<element name="cashier_fund" tablename="liquidation_cashier_fund">
 		<field name="objid" primary="true"/>
 		<field name="liquidationid" required="true"/>

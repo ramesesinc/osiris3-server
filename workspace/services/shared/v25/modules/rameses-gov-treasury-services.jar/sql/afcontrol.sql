@@ -23,7 +23,19 @@ UPDATE afcontrol SET active=1 WHERE objid=$P{objid}
 UPDATE afcontrol SET active=0 WHERE objid=$P{objid}
 
 [getOpenControlList]
-SELECT a.objid, currentseries as startseries, endseries, stub 
+SELECT a.objid, currentseries as startseries, endseries, stub, active  
+FROM afcontrol a
+INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
+INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
+WHERE a.af=$P{af} 
+AND currentseries <= endseries 
+AND (ad.collector_objid=$P{userid}) 
+AND a.mode = $P{txnmode}
+AND a.subcollector_objid IS NULL
+ORDER BY currentseries
+
+[getSubcollectorOpenControlList]
+SELECT a.objid, currentseries as startseries, endseries, stub, active  
 FROM afcontrol a
 INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
 INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
@@ -32,6 +44,7 @@ AND currentseries <= endseries
 AND (ad.collector_objid=$P{userid}) 
 AND a.mode = $P{txnmode}
 ORDER BY currentseries
+
 
 [getNextReceiptInfo]
 SELECT a.objid as controlid,prefix,suffix,currentseries as series, stub
@@ -49,7 +62,7 @@ INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
 WHERE a.controlid = $P{objid}
 
 [changeMode]
-UPDATE afcontrol SET mode=$P{mode} WHERE objid=$P{objid}
+UPDATE afcontrol SET mode=$P{mode}, active=0 WHERE objid=$P{objid}
 
 [findActiveControl]
 SELECT * 

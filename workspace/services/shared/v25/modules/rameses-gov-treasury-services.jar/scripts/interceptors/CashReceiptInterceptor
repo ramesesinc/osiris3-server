@@ -19,7 +19,8 @@ class CashReceiptInterceptor {
 	@After(pattern="CashReceiptService.init")
 	public def loadNextSeries(def evt) { 
 		def result = evt.result;
-		def params = [af:result.formno, userid: result.collector.objid, txnmode:result.txnmode]; 	
+		def params = [af:result.formno, userid: result.collector.objid, txnmode:result.txnmode]; 
+
 		def m = afControlsvc.findActiveControlId( params );
 		if( !m) {
 			throw new Warning("select-afcontrol");
