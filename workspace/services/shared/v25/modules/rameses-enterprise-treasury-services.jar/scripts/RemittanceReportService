@@ -32,4 +32,36 @@ class RemittanceReportService  {
 
 	}
 
+	@ProxyMethod
+	def generateReportByCollectionType( rem, collectiontype  ) {
+		def data = rem.clone();
+		def params = [
+			remittanceid: data.objid, 
+			collectiontypeid : collectiontype ? collectiontype.objid : '%'
+		]
+
+		data.receipts = em.sqlContext.createNamedQuery('remittance:getReceiptsByRemittanceCollectionType').setParameters(params ).resultList
+		if( ! data.receipts ) throw new Exception("No record(s) found ");
+		return data;
+	}
+
+	@ProxyMethod 
+	def generateReportByFund( rem, fund ) {
+		def data = rem.clone();
+		def params = [ remittanceid: data.objid,  fundid : fund ? fund.objid : '%']
+		data.receipts = em.sqlContext.createNamedQuery('remittance:getReceiptsByRemittanceFund').setParameters(params ).resultList
+		if( ! data.receipts ) throw new Exception("No record(s) found ");
+		data.acctsummaries = em.sqlContext.createNamedQuery('remittance:getRevenueItemSummaryByFund').setParameters(params ).resultList
+		return data;
+	}
+
+	@ProxyMethod 
+	def generateReportByRevenueItem( rem, fund ) {
+		def data = rem.clone();
+		def params = [ remittanceid: data.objid,  fundid : fund ? fund.objid : '%']
+		data.acctsummaries = em.sqlContext.createNamedQuery('remittance:getRevenueItemSummaryByFund').setParameters(params ).resultList
+		if( ! data.acctsummaries ) throw new Exception("No record(s) found ");
+		return data;
+	}
+
 }

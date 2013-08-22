@@ -163,3 +163,45 @@ WHERE r.objid = $P{remittanceid}
   AND NOT EXISTS(SELECT * FROM cashreceipt_void WHERE receiptid = cc.receiptid)
 ORDER BY cc.bank, cc.checkno   
   
+
+[getReceiptsByRemittanceCollectionType]
+select 
+  cr.formno as afid, cr.receiptno as serialno, cr.txndate, paidby,
+  case when cv.objid is null then IFNULL( ct.title, cr.collectiontype_name) else '***VOIDED***' END AS collectiontype, 
+  case when cv.objid is null then cr.amount else 0.0 END AS amount
+from remittance_cashreceipt rem 
+   inner join cashreceipt cr on cr.objid = rem.objid 
+   left join cashreceipt_void cv on cv.receiptid = cr.objid 
+   left join collectiontype ct on ct.objid = cr.collectiontype_objid 
+where rem.remittanceid=$P{remittanceid} and cr.collectiontype_objid  like $P{collectiontypeid}
+ORDER BY afid, serialno 
+
+[getReceiptsByRemittanceFund]
+select 
+  cr.formno as afid, cr.receiptno as serialno, cr.txndate, ri.fund_title as fundname, cr.remarks as remarks, 
+  case when cv.objid is null then cr.paidby else '***VOIDED***' END AS payer,
+  case when cv.objid is null then cri.item_title else '***VOIDED***' END AS particulars,
+  case when cv.objid is null then cr.paidbyaddress else '' END AS payeraddress,
+  case when cv.objid is null then cri.amount else 0.0 END AS amount
+from remittance_cashreceipt rem 
+   inner join cashreceipt cr on cr.objid = rem.objid 
+   left join cashreceipt_void cv on cv.receiptid = cr.objid 
+   inner join cashreceiptitem cri on cri.receiptid = cr.objid 
+   inner join revenueitem ri on ri.objid = cri.item_objid
+where rem.remittanceid=$P{remittanceid} and ri.fund_objid like $P{fundid}
+ORDER BY afid, serialno, payer 
+
+
+[getRevenueItemSummaryByFund]
+select 
+  ri.fund_title as fundname, cri.item_objid as acctid, cri.item_title as acctname,
+  sum( cri.amount ) as amount 
+from remittance_cashreceipt rem 
+   inner join cashreceipt cr on cr.objid = rem.objid 
+   left join cashreceipt_void cv on cv.receiptid = cr.objid 
+   inner join cashreceiptitem cri on cri.receiptid = cr.objid 
+   inner join revenueitem ri on ri.objid = cri.item_objid
+where rem.remittanceid=$P{remittanceid} 
+  and ri.fund_objid like $P{fundid} and cv.objid is null 
+group by fundname, acctid, acctname 
+order by fundname, acctname 
