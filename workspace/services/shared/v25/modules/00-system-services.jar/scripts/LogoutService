@@ -7,7 +7,7 @@ class LogoutService
     public void logout( Map params ) { 
     	/*
 			Create an implementation of this method by providing an interceptor 
-    	*/
+    	*/    	
     } 
 
 }
