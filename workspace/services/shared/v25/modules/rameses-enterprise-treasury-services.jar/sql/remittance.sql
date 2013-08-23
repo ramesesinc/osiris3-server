@@ -207,3 +207,61 @@ where rem.remittanceid=$P{remittanceid}
   and ri.fund_objid like $P{fundid} and cv.objid is null 
 group by fundname, acctid, acctname 
 order by fundname, acctname 
+
+[getDistinctAccountSRE]
+select 
+  sre.objid, sre.code as acctcode, sre.title as accttitle 
+from remittance_cashreceipt rem 
+   inner join cashreceipt cr on cr.objid = rem.objid 
+   inner join cashreceiptitem cri on cri.receiptid = cr.objid 
+   inner join revenueitem ri on ri.objid = cri.item_objid 
+   left join revenueitem_sreaccount rs on rs.objid = ri.objid 
+   left join sreaccount sre on sre.objid = rs.acctid 
+where rem.remittanceid=$P{remittanceid} 
+ORDER BY acctcode
+
+[getSummaryOfCollectionSRE]
+select 
+  cr.formno as afid, cr.receiptno as serialno, 
+  case when crv.objid is null then cr.paidby else '*** VOIDED ***' end as paidby, 
+  cr.txndate, ${columnsql} 
+  case when crv.objid is null then 0 else 1 end as voided 
+from remittance_cashreceipt rem 
+   inner join cashreceipt cr on cr.objid = rem.objid 
+   left join cashreceipt_void crv on crv.receiptid = cr.objid 
+   inner join cashreceiptitem cri on cri.receiptid = cr.objid 
+   inner join revenueitem ri on ri.objid = cri.item_objid 
+   left join revenueitem_sreaccount rs on rs.objid = ri.objid 
+   left join sreaccount a on a.objid = rs.acctid 
+where rem.remittanceid=$P{remittanceid}
+GROUP BY afid, serialno, paidby,paidby, voided 
+ORDER BY afid, serialno 
+
+[getDistinctAccountNGAS]
+select 
+  n.objid, n.code as acctcode, n.title as accttitle 
+from remittance_cashreceipt rem 
+   inner join cashreceipt cr on cr.objid = rem.objid 
+   inner join cashreceiptitem cri on cri.receiptid = cr.objid 
+   inner join revenueitem ri on ri.objid = cri.item_objid 
+   left join revenueitem_account rs on rs.objid = ri.objid 
+   left join account n on n.objid = rs.acctid 
+where rem.remittanceid=$P{remittanceid}
+ORDER BY acctcode
+
+[getSummaryOfCollectionNGAS]
+select 
+  cr.formno as afid, cr.receiptno as serialno, 
+  case when crv.objid is null then cr.paidby else '*** VOIDED ***' end as paidby, 
+  cr.txndate, ${columnsql}
+  case when crv.objid is null then 0 else 1 end as voided 
+from remittance_cashreceipt rem 
+   inner join cashreceipt cr on cr.objid = rem.objid 
+   left join cashreceipt_void crv on crv.receiptid = cr.objid 
+   inner join cashreceiptitem cri on cri.receiptid = cr.objid 
+   inner join revenueitem ri on ri.objid = cri.item_objid 
+   left join revenueitem_account rs on rs.objid = ri.objid 
+   left join account a on a.objid = rs.acctid 
+where rem.remittanceid=$P{remittanceid}
+GROUP BY afid, serialno, paidby,paidby, voided 
+ORDER BY afid, serialno 

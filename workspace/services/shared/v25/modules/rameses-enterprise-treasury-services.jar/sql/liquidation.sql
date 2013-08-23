@@ -69,7 +69,7 @@ INNER JOIN cashreceiptpayment_check crpc ON crpc.objid=rc.objid
 LEFT JOIN cashreceipt_void cv ON crpc.receiptid=cv.receiptid
 WHERE rc.liquidationid = $P{objid}
 
-[getRCDMainInfo]
+[getLiquidationInfo]
 select 
   l.txnno, l.dtposted, l.liquidatingofficer_name, l.liquidatingofficer_title, 
   lc.fund_title, lc.cashier_name, 'CASHIER' as cashier_title, lc.amount
