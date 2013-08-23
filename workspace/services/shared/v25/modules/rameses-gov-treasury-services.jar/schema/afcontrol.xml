@@ -18,6 +18,10 @@
 		<field name="active" required="true"/>
 		<field name="cancelledseries" />
 		<field name="currentlineno" type="integer" required="true"/>
+		
+		<field name="subcollector_objid" />
+		<field name="subcollector_name" />
+		<field name="subcollector_title" />
 	</element>
 	
 	<element name="activedetail" tablename="afcontrol_activedetail">

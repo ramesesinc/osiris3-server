@@ -28,6 +28,10 @@
 		<field name="user_objid" required="true" />
 		<field name="user_name" required="true" />
 		<field name="remarks" />
+
+		<field name="subcollector_objid" />
+		<field name="subcollector_name" />
+		<field name="subcollector_title" />
 	</element>
 	
 	<element name="item" tablename="cashreceiptitem">

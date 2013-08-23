@@ -1,9 +1,11 @@
 [getList]
-SELECT * 
-FROM remittance 
-WHERE txnno = $P{txnno}
-  OR collector_name LIKE $P{searchtext} 
-ORDER BY collector_name, txnno DESC 
+SELECT r.*,
+CASE WHEN lr.objid IS NULL THEN 0 ELSE 1 END AS liquidated 
+FROM remittance r
+LEFT JOIN liquidation_remittance lr ON r.objid=lr.objid
+WHERE r.txnno = $P{txnno}
+  OR r.collector_name LIKE $P{searchtext} 
+ORDER BY r.collector_name, r.txnno DESC 
 
 [getUnremittedForCollector]
 SELECT af.af as formno, af.stub as stub, 

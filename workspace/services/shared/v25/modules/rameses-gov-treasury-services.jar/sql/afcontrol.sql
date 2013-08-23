@@ -34,8 +34,9 @@ AND a.mode = $P{txnmode}
 AND a.subcollector_objid IS NULL
 ORDER BY currentseries
 
-[getSubcollectorOpenControlList]
-SELECT a.objid, currentseries as startseries, endseries, stub, active  
+[getListForAssignment]
+SELECT a.objid, currentseries as startseries, endseries, stub, active,
+subcollector_name, subcollector_title, subcollector_objid
 FROM afcontrol a
 INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
 INNER JOIN afcontrol_detail ad ON av.detailid=ad.objid
@@ -43,8 +44,13 @@ WHERE a.af=$P{af}
 AND currentseries <= endseries 
 AND (ad.collector_objid=$P{userid}) 
 AND a.mode = $P{txnmode}
+AND (a.subcollector_objid IS NOT NULL OR a.active = 0)
 ORDER BY currentseries
 
+[assignSubcollector]
+UPDATE afcontrol SET subcollector_objid=$P{subcollectorid}, 
+subcollector_name=$P{subcollectorname},subcollector_title=$P{subcollectortitle}
+WHERE objid=$P{objid} 
 
 [getNextReceiptInfo]
 SELECT a.objid as controlid,prefix,suffix,currentseries as series, stub

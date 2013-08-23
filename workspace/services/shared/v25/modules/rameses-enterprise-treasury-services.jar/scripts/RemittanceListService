@@ -22,7 +22,8 @@ class RemittanceListService extends AbstractListService {
 			[name:"collector.name", caption:"Collector"],
 			[name:"totalcash", caption:"Total Cash", type:"decimal"],
 			[name:"totalnoncash", caption:"Total Noncash", type:"decimal"],
-			[name:"amount", caption:"Amount", type:"decimal"]
+			[name:"amount", caption:"Amount", type:"decimal"],
+			[name:"liquidated", caption:"Liquidated", type:"checkbox", checkedValue:1, uncheckedValue:0],
 		];	
 	}	
 

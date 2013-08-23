@@ -70,7 +70,7 @@ class AFControlService {
 	
 	 
 	/**
-	*  called during cash receipt, 
+	*  called during cash receipt selection of AF
 	*/ 
 	@ProxyMethod
 	public def getOpenControlList( def o ) {
@@ -80,6 +80,17 @@ class AFControlService {
 		return em.sqlContext.createNamedQuery("afcontrol:getOpenControlList").setParameters( o ).resultList;
 	}
 	
+	/**
+	*  called during cash receipt selection of AF for assignment to subcollectors.
+	*/ 
+	@ProxyMethod
+	public def getListForAssignment( def o ) {
+		if(!o.af) throw new Exception("AFControlService.getOpenControlList requires af parameter");
+		if(!o.txnmode) throw new Exception("AFControlService.getOpenControlList requires txnmode parameter");
+		o.userid = env.USERID;
+		return em.sqlContext.createNamedQuery("afcontrol:getListForAssignment").setParameters( o ).resultList;
+	}
+
 	@ProxyMethod
 	public void activateControl( def o ) {
 		if(!o.objid) throw new Exception("AFControlService.activateControl requires objid parameter");
@@ -89,6 +100,22 @@ class AFControlService {
 		em.sqlContext.createNamedExecutor("afcontrol:activateControl").setParameters( o ).execute();
 	}
 	
+	@ProxyMethod
+	public void assignSubcollector( def o ) {
+		def m = [ objid: o.objid ];	
+		if( o.subcollector ) {
+			m.subcollectorid=o.subcollector.objid;
+			m.subcollectorname= o.subcollector.name;
+			m.subcollectortitle = o.subcollector.jobtitle;
+		}	
+		else {
+			m.subcollectorid = null;
+			m.subcollectorname = null;
+			m.subcollectortitle = null;
+		}
+		em.sqlContext.createNamedExecutor("afcontrol:assignSubcollector").setParameters( m ).execute();
+	}
+
 	@ProxyMethod
 	public void deactivateControl( def o ) {
 		if(!o.objid) throw new Exception("AFControlService.deactivateControl requires objid parameter");

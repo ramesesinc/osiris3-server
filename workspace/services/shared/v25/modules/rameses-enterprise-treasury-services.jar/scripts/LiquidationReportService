@@ -15,7 +15,7 @@ class LiquidationReportService  {
 	@ProxyMethod 
 	def getRCDReportData( params ) {
 		def liquidation = em.sqlContext.createNamedQuery('liquidation:getRCDMainInfo').setParameters(params ).singleResult
-		if(! liquidation ) throw new Exception("Could not open liquidation with ojbid " + params.liquidationid )
+		if(! liquidation ) throw new Exception("Could not open liquidation with objid " + params.liquidationid )
 
 		liquidation.remittances = em.sqlContext.createNamedQuery('liquidation:getRCDRemittances').setParameters(params ).resultList
 		liquidation.collectionsummaries = em.sqlContext.createNamedQuery('liquidation:getRCDCollectionSummary').setParameters(params ).resultList

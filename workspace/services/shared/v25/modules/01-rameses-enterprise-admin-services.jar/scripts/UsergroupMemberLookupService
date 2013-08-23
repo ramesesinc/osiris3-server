@@ -27,6 +27,8 @@ class UsergroupMemberLookupService  {
 
 	@ProxyMethod
 	public List getList( params ) {
+		if(params._tag) params.usergroupid = params._tag;
+
 		params.searchtext = removeLeadingChar(params.searchtext, '%')+'%'; 
 
 		def qry = em.sqlContext.createNamedQuery('usergroupmember:lookup'); 
@@ -36,7 +38,10 @@ class UsergroupMemberLookupService  {
 		for (o in searchTypes) {
 			def list = qry.setParameters(params).setVars(o).resultList;
 			if (list.isEmpty()) continue; 
-
+			list.each {
+				it.name = it.firstname + " " + it.lastname;
+				it.title = it.jobtitle;
+			}
 			return list;
 		} 
 		//otherwise return an empty list
