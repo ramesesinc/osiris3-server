@@ -27,4 +27,10 @@ class BarangayLookupService{
 					.resultList 
 	}
 
+
+	@ProxyMethod
+	public def getById( objid ) {
+		return em.sqlContext.createNamedQuery('barangay:getById')
+				.setParameter('objid', objid).singleResult	
+	}	
 }

@@ -12,3 +12,7 @@ WHERE
 
 [search]
 SELECT * FROM barangay
+
+
+[getById]
+SELECT * FROM barangay WHERE objid = $P{objid}

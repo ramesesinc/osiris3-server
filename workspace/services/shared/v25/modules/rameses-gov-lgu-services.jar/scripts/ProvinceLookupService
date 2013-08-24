@@ -27,4 +27,10 @@ class ProvinceLookupService{
 					.resultList 
 	}
 
+	@ProxyMethod
+	public def getById( objid ) {
+		return em.sqlContext.createNamedQuery('province:getById')
+				.setParameter('objid', objid).singleResult	
+	}
+	
 }

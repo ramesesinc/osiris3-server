@@ -26,4 +26,11 @@ class CityLookupService {
 					.setMaxResults(params._limit)
 					.resultList 
 	}
+
+
+	@ProxyMethod
+	public def getById( objid ) {
+		return em.sqlContext.createNamedQuery('city:getById')
+				.setParameter('objid', objid).singleResult	
+	}
 }

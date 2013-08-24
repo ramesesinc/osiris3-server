@@ -27,4 +27,10 @@ class DistrictLookupService{
 					.resultList 
 	}
 
+		@ProxyMethod
+	public def getById( objid ) {
+		return em.sqlContext.createNamedQuery('district:getById')
+				.setParameter('objid', objid).singleResult	
+	}
+
 }
