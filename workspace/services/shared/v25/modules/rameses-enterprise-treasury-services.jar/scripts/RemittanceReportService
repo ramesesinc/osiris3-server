@@ -12,6 +12,9 @@ class RemittanceReportService  {
 	@Service("NumberService")
 	def numSvc;
 
+	@Service("DateService")
+	def dtsvc;
+
 	@ProxyMethod 
 	def getRCDReportData( remittanceid ) {
 		def remittance = em.read('remittance:remittance', [objid: remittanceid] )
@@ -62,6 +65,63 @@ class RemittanceReportService  {
 		data.acctsummaries = em.sqlContext.createNamedQuery('remittance:getRevenueItemSummaryByFund').setParameters(params ).resultList
 		if( ! data.acctsummaries ) throw new Exception("No record(s) found ");
 		return data;
+	}
+
+	@ProxyMethod 
+	def generateSummaryOfCollection(rem, chart) {
+		def acctlist = em.sqlContext.createNamedQuery('remittance:getDistinctAccount' + chart)
+							.setParameter('remittanceid', rem.objid )
+							.resultList 
+		
+		def colindex = 0
+		def columnsql = ''
+		def hasUnmapped = acctlist.find{ it.objid == null }
+		if(  hasUnmapped ) {
+			columnsql = " SUM( CASE WHEN a.objid IS NULL AND crv.objid is NULL THEN cri.amount ELSE NULL END ) AS col${colindex}, \n"
+			colindex++
+		}
+		acctlist.each { acct ->
+			if( acct.objid ) {
+				columnsql += " SUM( CASE WHEN a.objid = '$acct.objid' AND crv.objid is NULL THEN cri.amount ELSE NULL END ) AS col${colindex}, \n"
+				colindex++
+			}
+		}
+		columnsql += " SUM( CASE WHEN crv.objid is NULL THEN cri.amount ELSE NULL END ) AS col${colindex}, \n"
+			
+		def qry = em.sqlContext.createNamedQuery('remittance:getSummaryOfCollection' + chart )
+		
+		def items = qry.setVars([columnsql:columnsql])
+						.setParameter( 'remittanceid', rem.objid )
+						.resultList
+		
+		def header = [:]
+		colindex = 0
+		if( hasUnmapped ) {
+			header[ 'COL' + colindex ] = 'UNMAPPED'
+			colindex++
+		}
+		acctlist.collect{ acct ->
+			if( acct.objid ) {
+				header[ 'COL' + colindex ] = '(' + acct.acctcode + ')\n' + acct.accttitle 
+				colindex++
+			}
+		}
+		
+		header[ 'COL' + colindex ] = 'TOTAL'
+		//
+		//additional params
+		header.REPORTTITLE = 'SUMMARY OF CASH COLLECTIONS AND DEPOSITS BY ' + chart 
+		header.REMITTANCENO = rem.txnno
+		header.REMITTANCEDATE = dtsvc.format('MMMMM dd, yyyy', rem.dtposted)
+		header.REMITTANCEAMOUNT = rem.amount
+		header.COLLECTORNAME = rem.collector.name
+		header.COLLECTORTITLE = rem.collector.title
+		header.LIQUIDATINGOFFICER = rem.liquidatingofficer.name
+		header.LIQUIDATINGOFFICERTITLE = rem.liquidatingofficer.title
+		header.DATEPOSTED =  rem.dtposted 
+		header.AMTINWORDS = numSvc.doubleToWords( rem.amount )
+		
+		return [ header:header, items:items]
 	}
 
 }

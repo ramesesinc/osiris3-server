@@ -3,6 +3,7 @@ import com.rameses.util.*;
 import java.rmi.server.*;
 import com.rameses.common.*
 import com.rameses.services.extended.*
+import java.text.DecimalFormat;
 
 class LiquidationReportService  {
 
@@ -12,9 +13,11 @@ class LiquidationReportService  {
 	@Service("NumberService")
 	def numSvc;
 
+	def decformat = new DecimalFormat("#,##0.00");
+
 	@ProxyMethod 
 	def getRCDReportData( params ) {
-		def liquidation = em.sqlContext.createNamedQuery('liquidation:getRCDMainInfo').setParameters(params ).singleResult
+		def liquidation = em.sqlContext.createNamedQuery('liquidation:getLiquidationInfo').setParameters(params ).singleResult
 		if(! liquidation ) throw new Exception("Could not open liquidation with objid " + params.liquidationid )
 
 		liquidation.remittances = em.sqlContext.createNamedQuery('liquidation:getRCDRemittances').setParameters(params ).resultList
@@ -37,5 +40,23 @@ class LiquidationReportService  {
 		return list
 
 	}
+
+	@ProxyMethod 
+	def getReportByFund( params ) {
+		def data  = em.sqlContext.createNamedQuery('liquidation:getLiquidationInfo').setParameters(params ).singleResult
+		data.list = em.sqlContext.createNamedQuery("liquidation:getRCDRemittances").setParameters(params).resultList;	
+		println data.list;
+
+		def fundTotal = data.list.amount.sum()
+		if( ! fundTotal ) fundTotal = 0.0 
+		
+		data.amountinwords 	= numSvc.doubleToWords( fundTotal  ).toUpperCase() + ' PESOS' 
+		data.amountformatted	= decformat.format( fundTotal )
+							
+		return data;
+
+	}
+
+
 
 }

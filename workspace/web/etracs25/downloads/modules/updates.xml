@@ -36,6 +36,8 @@
 		<!-- plugins -->
 		<module file="rameses-gov-etracs-rptis.jar" />
 		<module file="rameses-gov-etracs-signatory-template.jar" />
+		<module file="rameses-gov-etracs-bpls.jar" />
+
     </modules>
 </app>
 
