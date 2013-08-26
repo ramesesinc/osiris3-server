@@ -1,0 +1,89 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class BankDepositReportService  {
+
+	@PersistenceContext("main")
+	def em; 
+
+	@Service("NumberService")
+	def numSvc;
+
+	@Service("DateService")
+	def dtsvc;
+
+	@ProxyMethod 
+	def generateRCDByFund( deposit, fund ) {
+		def data = deposit.clone();
+		def params = [bankdepositid: data.objid, fundname: fund.objid ]
+		data.collectionsummaries = em.sqlContext.createNamedQuery('bankdepositreport:getCollectionSummaryByAFAndFund').setParameters(params ).resultList
+		if( data.collectionsummaries ) {
+			data.amount = data.collectionsummaries.amount.sum()
+			data.amountinwords = numSvc.doubleToWords( data.amount )
+		}
+		data.remittancedeposits =  []
+		data.remittancedeposits.addAll( em.sqlContext.createNamedQuery('bankdepositreport:getCashFundSummary').setParameters(params ).resultList )
+		data.remittancedeposits.addAll(em.sqlContext.createNamedQuery('bankdepositreport:getCheckFundSummary').setParameters(params ).resultList)
+
+		data.remittedforms=[]
+		if('SEF'.equals(fund.title)) {
+			params.afid = '56'
+			data.remittedforms = em.sqlContext.createNamedQuery('bankdepositreport:getRemittedForms').setParameters(params ).resultList
+		}
+		data.nonserialremittances = [[:],[:]]
+		return data;
+	}
+
+	@ProxyMethod 
+	def generateRCDByBankAccount( deposit, bankaccount ) {
+		def data = [
+			dtposted: deposit.dtposted,
+            txnno : deposit.txnno,
+            cashiername: deposit.cashier.name,
+            cashiertitle: deposit.cashier.title 
+		]
+		def info = em.sqlContext.createNamedQuery('bankdepositreport:getDepositAmount')
+					.setParameters([bankdepositid: deposit.objid, bankaccountid: bankaccount.objid] )
+					.singleResult
+		
+		if( info) {
+			data.fund = info.fund
+			data.amount = info.amount 
+			data.amountinwords = numSvc.doubleToWords( info.amount )
+			if( info.totalcash > 0.0) {
+				data.cashier1 = deposit.cashier.name
+				data.depositref1 = info.bankcode + ' - Cash Deposit D/S _______________ '
+				data.depositamt1 = info.totalcash
+			}
+
+			if( info.totalnoncash > 0.0 && data.cashier1 ) {
+				data.cashier2 = deposit.cashier.name
+				data.depositref2 = info.bankcode + ' - Check Deposit D/S _______________ '
+				data.depositamt2 = info.totalnoncash
+			} else if ( info.totalnoncash > 0.0  ) { 
+				data.cashier1 = deposit.cashier.name
+				data.depositref1 = info.bankcode + ' - Check Deposit D/S _______________ '
+				data.depositamt1 = info.totalnoncash
+			}
+
+		}
+
+		return data;
+	}
+
+	@ProxyMethod 
+	def getFundlist( bankdepositid ) {
+		return em.sqlContext.createNamedQuery('bankdepositreport:getFundlist').setParameter('bankdepositid', bankdepositid ).resultList
+	}
+
+	@ProxyMethod 
+	def getBackAccountList( bankdepositid ){
+		return em.sqlContext.createNamedQuery('bankdepositreport:getBackAccountList').setParameter('bankdepositid', bankdepositid ).resultList
+
+	}
+
+	
+}

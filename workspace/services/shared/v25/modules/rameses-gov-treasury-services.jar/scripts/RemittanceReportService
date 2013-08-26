@@ -1,0 +1,187 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class RemittanceReportService  {
+
+	@PersistenceContext("main")
+	def em; 
+
+	@Service("NumberService")
+	def numSvc;
+
+	@Service("DateService")
+	def dtsvc;
+
+	@ProxyMethod 
+	def getRCDReportData( rem  ) {
+		def remittance = rem.clone()
+		remittance.collectiontype = em.sqlContext.createNamedQuery('remittancereport:getRCDCollectionType').setParameter('remittanceid', remittance.objid ).resultList
+		remittance.collectionsummaries = em.sqlContext.createNamedQuery('remittancereport:getRCDCollectionSummaries').setParameter('remittanceid', remittance.objid ).resultList
+		remittance.remittedforms = em.sqlContext.createNamedQuery('remittancereport:getRCDRemittedForms').setParameter('remittanceid', remittance.objid ).resultList
+		remittance.otherpayments = em.sqlContext.createNamedQuery('remittancereport:getRCDOtherPayment').setParameter('remittanceid', remittance.objid ).resultList
+
+		//not yet implemented : waiting for sir elmo's db structure 
+		remittance.nonserialremittances = []
+		remittance.nonserialsummary = []
+
+		remittance.amountinwords = numSvc.doubleToWords( remittance.amount).toUpperCase()
+
+		return remittance 	
+
+	}
+
+	@ProxyMethod
+	def generateReportByCollectionType( rem, collectiontype  ) {
+		def data = rem.clone();
+		def params = [
+			remittanceid: data.objid, 
+			collectiontypeid : collectiontype ? collectiontype.objid : '%'
+		]
+
+		data.receipts = em.sqlContext.createNamedQuery('remittancereport:getReceiptsByRemittanceCollectionType').setParameters(params ).resultList
+		if( ! data.receipts ) throw new Exception("No record(s) found ");
+		return data;
+	}
+
+	/***
+		still waiting for non serial to be finish
+	**/
+	@ProxyMethod 
+	def generateReportByFund( rem, fund ) {
+		def data = rem.clone();
+		def params = [ remittanceid: data.objid,  fundid : fund ? fund.objid : '%']
+		data.receipts = em.sqlContext.createNamedQuery('remittancereport:getReceiptsByRemittanceFund').setParameters(params ).resultList
+		if( ! data.receipts ) throw new Exception("No record(s) found ");
+		data.acctsummaries = em.sqlContext.createNamedQuery('remittancereport:getRevenueItemSummaryByFund').setParameters(params ).resultList
+		return data;
+	}
+
+
+	@ProxyMethod 
+	def generateDetailedReportByFund(rem, fund) {
+		def data = rem.clone() 
+		def params = [ remittanceid: data.objid,  fundid : fund ? fund.objid : '%']
+		data.serials = em.sqlContext.createNamedQuery('remittancereport:getSerialReceiptsByRemittanceFund').setParameters(params ).resultList
+		data.nonserial = []
+		return data;
+	}
+
+	@ProxyMethod 
+	def generateReportByRevenueItem( rem, fund ) {
+		def data = rem.clone();
+		def params = [ remittanceid: data.objid,  fundid : fund ? fund.objid : '%']
+		data.acctsummaries = em.sqlContext.createNamedQuery('remittancereport:getRevenueItemSummaryByFund').setParameters(params ).resultList
+		if( ! data.acctsummaries ) throw new Exception("No record(s) found ");
+		return data;
+	}
+
+	@ProxyMethod 
+	def generateSummaryOfCollection(rem, chart) {
+		def acctlist = em.sqlContext.createNamedQuery('remittancereport:getDistinctAccount' + chart)
+							.setParameter('remittanceid', rem.objid )
+							.resultList 
+		
+		def colindex = 0
+		def columnsql = ''
+		def hasUnmapped = acctlist.find{ it.objid == null }
+		if(  hasUnmapped ) {
+			columnsql = " SUM( CASE WHEN a.objid IS NULL AND crv.objid is NULL THEN cri.amount ELSE NULL END ) AS col${colindex}, \n"
+			colindex++
+		}
+		acctlist.each { acct ->
+			if( acct.objid ) {
+				columnsql += " SUM( CASE WHEN a.objid = '$acct.objid' AND crv.objid is NULL THEN cri.amount ELSE NULL END ) AS col${colindex}, \n"
+				colindex++
+			}
+		}
+		columnsql += " SUM( CASE WHEN crv.objid is NULL THEN cri.amount ELSE NULL END ) AS col${colindex}, \n"
+			
+		def qry = em.sqlContext.createNamedQuery('remittancereport:getSummaryOfCollection' + chart )
+		
+		def items = qry.setVars([columnsql:columnsql])
+						.setParameter( 'remittanceid', rem.objid )
+						.resultList
+		
+		def header = [:]
+		colindex = 0
+		if( hasUnmapped ) {
+			header[ 'COL' + colindex ] = 'UNMAPPED'
+			colindex++
+		}
+		acctlist.collect{ acct ->
+			if( acct.objid ) {
+				header[ 'COL' + colindex ] = '(' + acct.acctcode + ')\n' + acct.accttitle 
+				colindex++
+			}
+		}
+		
+		header[ 'COL' + colindex ] = 'TOTAL'
+		//
+		//additional params
+		header.REPORTTITLE = 'SUMMARY OF CASH COLLECTIONS AND DEPOSITS BY ' + chart 
+		header.REMITTANCENO = rem.txnno
+		header.REMITTANCEDATE = dtsvc.format('MMMMM dd, yyyy', rem.dtposted)
+		header.REMITTANCEAMOUNT = rem.amount
+		header.COLLECTORNAME = rem.collector.name
+		header.COLLECTORTITLE = rem.collector.title
+		header.LIQUIDATINGOFFICER = rem.liquidatingofficer.name
+		header.LIQUIDATINGOFFICERTITLE = rem.liquidatingofficer.title
+		header.DATEPOSTED =  rem.dtposted 
+		header.AMTINWORDS = numSvc.doubleToWords( rem.amount )
+		
+		return [ header:header, items:items]
+	}
+
+	// edit after the cash ticket will be done
+	@ProxyMethod
+	def generateReportByCashTicket( entity ) {
+		def data = entity.clone()
+		data.cashticketsummaries = []
+		if( ctamount <= 0.0 ) throw new Exception('There are no cash ticket collections.')
+		data.amount = ( data.cashticketsummaries ? cashticketsummaries.amount.sum() : 0.0 )
+		data.amountInWords = numSvc.doubleToWords( data.amount )
+		data.ctamount = data.amount 
+		data.collectiontype= em.sqlContext.createNamedQuery('remittancereport:getRCDCollectionType').setParameter('remittanceid', entity.objid ).resultList
+
+		return data;
+
+	}
+
+	@ProxyMethod 
+	def generateAbstractOfRPTCollection(entity) {
+		//still checking the data..
+		def items = []
+
+		if( ! items ) throw new Exception('No records found.')
+
+		def header = [:]
+		header.TITLE = 'ABSTRACT OF REAL PROPERTY TAX COLLECTION'
+		header.PERIOD = ''
+		header.REMITTANCENO = entity.txnno
+		header.REMITTANCEDATE = dtsvc.format('MMMMM dd, yyyy', entity.dtposted )
+		header.REMITTANCEAMOUNT = entity.amount
+		header.COLLECTORNAME = entity.collector.name
+		header.COLLECTORTITLE = entity.collector.title
+		header.LIQUIDATINGOFFICER = entity.liquidatingofficer.name
+		header.LIQUIDATINGOFFICERTITLE = entity.liquidatingofficer.title
+		header.DATEPOSTED =  entity.dtposted 
+		header.AMTINWORDS = numSvc.convertDouble( entity.amount )
+
+		return  [ header  : header, items  	: items]
+	}
+
+
+	@ProxyMethod 
+	def getFundlist( remittanceid ) {
+		return em.sqlContext.createNamedQuery('remittancereport:getFundlist').setParameter('remittanceid', remittanceid ).resultList
+	}
+
+	@ProxyMethod 
+	def getCollectiontypelist( remittanceid ) {
+		return em.sqlContext.createNamedQuery('remittancereport:getCollectionType').setParameter('remittanceid', remittanceid ).resultList
+	}
+
+}
