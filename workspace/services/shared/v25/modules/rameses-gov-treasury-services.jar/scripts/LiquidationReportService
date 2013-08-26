@@ -17,13 +17,13 @@ class LiquidationReportService  {
 
 	@ProxyMethod 
 	def getRCDReportData( params ) {
-		def liquidation = em.sqlContext.createNamedQuery('liquidation:getLiquidationInfo').setParameters(params ).singleResult
+		def liquidation = em.sqlContext.createNamedQuery('liquidationreport:getLiquidationInfo').setParameters(params ).singleResult
 		if(! liquidation ) throw new Exception("Could not open liquidation with objid " + params.liquidationid )
 
-		liquidation.remittances = em.sqlContext.createNamedQuery('liquidation:getRCDRemittances').setParameters(params ).resultList
-		liquidation.collectionsummaries = em.sqlContext.createNamedQuery('liquidation:getRCDCollectionSummary').setParameters(params ).resultList
-		liquidation.remittedforms = em.sqlContext.createNamedQuery('liquidation:getRCDRemittedForms').setParameters(params ).resultList
-		liquidation.otherpayments = em.sqlContext.createNamedQuery('liquidation:getRCDOtherPayments').setParameters(params ).resultList
+		liquidation.remittances = em.sqlContext.createNamedQuery('liquidationreport:getRCDRemittances').setParameters(params ).resultList
+		liquidation.collectionsummaries = em.sqlContext.createNamedQuery('liquidationreport:getRCDCollectionSummary').setParameters(params ).resultList
+		liquidation.remittedforms = em.sqlContext.createNamedQuery('liquidationreport:getRCDRemittedForms').setParameters(params ).resultList
+		liquidation.otherpayments = em.sqlContext.createNamedQuery('liquidationreport:getRCDOtherPayments').setParameters(params ).resultList
 
 		//not yet implemented : waiting for sir elmo's db structure 
 		liquidation.nonserialremittances = []
@@ -34,7 +34,7 @@ class LiquidationReportService  {
 
 	@ProxyMethod 
 	def getFundlist( liquidationid ) {
-		def list = em.sqlContext.createNamedQuery('liquidation:getLiquidationFundlist')
+		def list = em.sqlContext.createNamedQuery('liquidationreport:getLiquidationFundlist')
 				.setParameter('liquidationid', liquidationid)
 				.resultList 
 		return list
@@ -43,10 +43,9 @@ class LiquidationReportService  {
 
 	@ProxyMethod 
 	def getReportByFund( params ) {
-		def data  = em.sqlContext.createNamedQuery('liquidation:getLiquidationInfo').setParameters(params ).singleResult
-		data.list = em.sqlContext.createNamedQuery("liquidation:getRCDRemittances").setParameters(params).resultList;	
-		println data.list;
-
+		def data  = em.sqlContext.createNamedQuery('liquidationreport:getLiquidationInfo').setParameters(params ).singleResult
+		data.list = em.sqlContext.createNamedQuery("liquidationreport:getRCDRemittances").setParameters(params).resultList;	
+		
 		def fundTotal = data.list.amount.sum()
 		if( ! fundTotal ) fundTotal = 0.0 
 		
@@ -57,6 +56,6 @@ class LiquidationReportService  {
 
 	}
 
-
+	
 
 }
