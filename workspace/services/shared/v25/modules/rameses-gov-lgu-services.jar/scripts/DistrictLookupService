@@ -27,10 +27,16 @@ class DistrictLookupService{
 					.resultList 
 	}
 
-		@ProxyMethod
+	@ProxyMethod
 	public def getById( objid ) {
 		return em.sqlContext.createNamedQuery('district:getById')
 				.setParameter('objid', objid).singleResult	
+	}
+
+	@ProxyMethod
+	public def getListByParentid( parentid ) {
+		return em.sqlContext.createNamedQuery('district:getListByParentid')
+				.setParameter('parentid', parentid).resultList	
 	}
 
 }
