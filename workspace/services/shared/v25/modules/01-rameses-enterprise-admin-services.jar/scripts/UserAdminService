@@ -8,10 +8,10 @@ import com.rameses.services.extended.*;
 
 class UserAdminService extends AbstractCrudListService {
 
-	@PersistenceContext("admin")
+	@PersistenceContext('admin')
 	def	em; 
 
-	String schemaName = "user";
+	String schemaName = 'user';
 	
 	@Env
 	def env;
@@ -35,15 +35,38 @@ class UserAdminService extends AbstractCrudListService {
 		o.pwd = Encoder.MD5.encode('etracs1234', o.username); 
 	}
 
-	public void beforeList( params ) {
-		if (!params.name) params.name = params.searchtext;
-
-		params.name = (params.name? params.name+'%': '%');
-	}
-
 	public void afterOpen( entity ) {
 		entity.usergroups = getUsergroups(entity); 
 	}
+
+
+	def searchTypes = [
+		[filter:' u.lastname LIKE $P{searchtext} '], 
+		[filter:' u.username LIKE $P{searchtext} '], 
+		[filter:' u.firstname LIKE $P{searchtext} '] 
+	];
+
+	public def getList( params ) {
+		params.searchtext = (params.searchtext? params.searchtext+'%': '%');
+
+		def qry = em.sqlContext.createNamedQuery(schemaName+':getList'); 
+		qry.setFirstResult(params._start? params._start: 0);
+		qry.setMaxResults(params._limit? params._limit: 10);
+
+		for (o in searchTypes) {
+			def list = qry.setParameters(params).setVars(o).resultList;
+			if (list.isEmpty()) continue;
+
+			list.each {
+				it.name = it.firstname + " " + it.lastname;
+				it.title = it.jobtitle;
+			}
+			return list;
+		} 
+		//otherwise return an empty list
+		return []; 		
+	}
+
 
 	@ProxyMethod 
 	public List getUsergroups( params ) {
