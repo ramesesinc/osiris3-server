@@ -1,5 +1,5 @@
 [getList]
-SELECT * FROM sys_user su WHERE name LIKE $P{name} 
+SELECT * FROM sys_user u WHERE ${filter} ORDER BY u.lastname,u.firstname 
 
 [changeState-approved]
 UPDATE sys_user SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT' 

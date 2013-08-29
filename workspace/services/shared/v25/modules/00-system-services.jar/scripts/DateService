@@ -138,20 +138,28 @@ class DateService {
 	@ProxyMethod(local=true)
 	public def getMonths() {
 		return [
-			[index:1, name:"JAN", caption:"January"],
-			[index:2, name:"FEB", caption:"February"],
-			[index:3, name:"MAR", caption:"March"],
-			[index:4, name:"APR", caption:"April"],
-			[index:5, name:"MAY", caption:"May"],
-			[index:6, name:"JUN", caption:"June"],
-			[index:7, name:"JUL", caption:"July"],
-			[index:8, name:"AUG", caption:"August"],
-			[index:9, name:"SEP", caption:"September"],
-			[index:10, name:"OCT", caption:"October"],
-			[index:11, name:"NOV", caption:"November"],
-			[index:12, name:"DEC", caption:"December"]
+			[index:1, name:"JAN", caption:"January", qtr:1],
+			[index:2, name:"FEB", caption:"February", qtr:1],
+			[index:3, name:"MAR", caption:"March", qtr:1],
+			[index:4, name:"APR", caption:"April", qtr:2],
+			[index:5, name:"MAY", caption:"May", qtr:2],
+			[index:6, name:"JUN", caption:"June", qtr:2],
+			[index:7, name:"JUL", caption:"July", qtr:3],
+			[index:8, name:"AUG", caption:"August", qtr:3],
+			[index:9, name:"SEP", caption:"September", qtr:3],
+			[index:10, name:"OCT", caption:"October", qtr:4],
+			[index:11, name:"NOV", caption:"November", qtr:4],
+			[index:12, name:"DEC", caption:"December", qtr:4]
 		];
 	}
+
+
+	@ProxyMethod
+    public List getMonthsByQtr( qtr ) { 
+        if( ! qtr ) return getMonths()
+        return getMonths().findAll{ it.qtr == qtr }
+    }
+
 	
 	@ProxyMethod(local=true)
 	public def getQtrs() {

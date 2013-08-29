@@ -20,11 +20,26 @@ class BarangayLookupService{
 	public def getList( params ) {
 		params.searchtext = (params.searchtext? params.searchtext: '')
 		params.name = params.searchtext + '%'
-		return em.sqlContext.createNamedQuery('barangay:lookup')
-					.setParameters(params)
-					.setFirstResult( params._start )
-					.setMaxResults(params._limit)
-					.resultList 
+		def qry = em.sqlContext.createNamedQuery('barangay:lookup')
+
+		if (params._start != null)
+			qry.setFirstResult( params._start )
+		if (params._limit)
+			qry.setMaxResults(params._limit)
+			
+		return qry.setParameters(params).resultList 
 	}
 
+
+	@ProxyMethod
+	public def getById( objid ) {
+		return em.sqlContext.createNamedQuery('barangay:getById')
+				.setParameter('objid', objid).singleResult	
+	}	
+
+	@ProxyMethod
+	public def getListByParentid( parentid ) {
+		return em.sqlContext.createNamedQuery('barangay:getListByParentid')
+				.setParameter('parentid', parentid).resultList	
+	}
 }
