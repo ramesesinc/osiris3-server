@@ -1,0 +1,9 @@
+import com.rameses.annotations.*;
+import com.rameses.common.*;
+
+class RuleService 
+{	
+	@PersistenceContext('system')
+	def em;
+
+}
