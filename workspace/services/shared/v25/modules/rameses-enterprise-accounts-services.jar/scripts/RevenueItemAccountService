@@ -27,4 +27,5 @@ class RevenueItemAccountService extends AbstractCrudListService {
 		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
 	}
 	
+	
 }

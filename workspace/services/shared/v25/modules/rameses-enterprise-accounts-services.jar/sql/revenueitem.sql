@@ -30,3 +30,7 @@ SELECT
 FROM revenueitem r 
 LEFT JOIN cashbook cb ON cb.fund_objid=r.fund_objid AND cb.subacct_objid = $P{collectorid}
 WHERE r.objid IN ( ${filter} )
+
+[findSingleEntry]
+SELECT r.objid, r.code, r.title, r.fund_objid, r.fund_code, r.fund_title 
+FROM revenueitem r WHERE objid=$P{objid}
