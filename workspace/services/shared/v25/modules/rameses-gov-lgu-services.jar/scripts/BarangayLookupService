@@ -36,4 +36,10 @@ class BarangayLookupService{
 		return em.sqlContext.createNamedQuery('barangay:getById')
 				.setParameter('objid', objid).singleResult	
 	}	
+
+	@ProxyMethod
+	public def getListByParentid( parentid ) {
+		return em.sqlContext.createNamedQuery('barangay:getListByParentid')
+				.setParameter('parentid', parentid).resultList	
+	}
 }
