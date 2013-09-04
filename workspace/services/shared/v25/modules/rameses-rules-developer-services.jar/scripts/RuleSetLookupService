@@ -1,0 +1,27 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+import com.rameses.services.extended.*;
+
+
+class RuleSetLookupService extends AbstractListService  {
+
+	@PersistenceContext('admin')
+	def	em; 
+
+	String schemaName = 'ruleset';
+		
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return[
+			[name:'title', caption:'Ruleset'] 
+		];
+	}
+	
+	public void beforeList( params ) {	
+		params.searchtext = (params.searchtext? params.searchtext+'%': '%');
+	}
+	
+}

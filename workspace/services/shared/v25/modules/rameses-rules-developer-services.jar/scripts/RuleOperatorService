@@ -1,0 +1,29 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+import com.rameses.services.extended.*;
+
+class RuleOperatorService extends ActiveCrudService {
+
+	@ActiveDB(em='main', value='ruleoperator')
+	def em;
+
+	@ProxyMethod
+	public def getNodes( params ) { 
+		def list = em.getAll(); 
+		list.each { 
+			it.caption = it.description; 
+		} 
+		return list; 
+	} 
+
+	@ProxyMethod
+	public def getSymbols( params ) { 
+		def list = em.getSymbols(params);  
+		list.each { it._filetype = 'ruleoperator-symbol' }
+		return list; 
+	} 
+
+}

@@ -1,0 +1,36 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+import com.rameses.services.extended.*;
+
+class RuleGroupLookupService {
+
+	@ActiveDB(em='admin', value='rulegroup')
+	def	rulegroup; 
+		
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return[ 
+			[name:'title', caption:'Rulegroup'] 
+		]; 
+	} 
+	
+
+	def searchTypes = [
+		[filter: ' AND rg.name LIKE $P{searchtext} '], 
+		[filter: ' AND rg.title LIKE $P{searchtext} ']  
+	];
+
+	@ProxyMethod 
+	public def getList( params ) {	
+		params.searchtext = (params.searchtext? params.searchtext: '')+'%';
+		for (o in searchTypes) {
+			params.putAll(o); 
+			def list = rulegroup.getLookupList(params);
+			if (!list.isEmpty()) return list; 
+		} 
+		return []; 
+	}	
+}
