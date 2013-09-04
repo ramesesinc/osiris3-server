@@ -1,8 +1,8 @@
 [create]
 INSERT INTO specialaccountsetting 
-	(objid, item_objid, amount)
+	(objid, collectiontypeid, item_objid, amount)
 VALUES
-	($P{objid}, $P{item_objid}, $P{amount})
+	($P{objid}, $P{collectiontypeid}, $P{item_objid}, $P{amount})
 
 [update]	
 UPDATE specialaccountsetting SET
@@ -18,7 +18,7 @@ SELECT
 	ri.fund_objid AS item_fund_objid
 FROM specialaccountsetting ss 
 	INNER JOIN revenueitem ri ON ss.item_objid = ri.objid 
-WHERE ss.objid = $P{objid}	
+WHERE ss.collectiontypeid = $P{collectiontypeid}	
 
 [delete]
 DELETE FROM specialaccountsetting WHERE objid = $P{objid}
