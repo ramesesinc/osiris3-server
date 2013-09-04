@@ -1,0 +1,8 @@
+<schema>
+
+	<element name="devruleoperator" tablename="sys_operator">
+		<field name="name" primary="true"/>
+		<field name="description" required="true"/>
+	</element>
+	
+</schema>

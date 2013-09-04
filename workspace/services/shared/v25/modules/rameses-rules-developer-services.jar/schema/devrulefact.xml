@@ -1,0 +1,11 @@
+<schema>
+
+	<element name="devrulefact" tablename="sys_fact">
+		<field name="name" primary="true"/>
+		<field name="classname" required="true"/>
+		<field name="description" required="true"/>
+		<field name="ruleset" required="true"/>
+		<field name="rulegroup"/>
+	</element>
+	
+</schema>
