@@ -97,6 +97,9 @@ class CashReceiptService  {
 			em.create(pmtschema, x);
 		}
 		
+		if( p.items.find{ !it.item.fund } )
+			throw new Exception("All items must have a fund");
+
 		//summarize receipts by fund, locate the fund and update 
 		def z = p.items.groupBy{ it.item.fund.objid };
 		z.each { k,v->
