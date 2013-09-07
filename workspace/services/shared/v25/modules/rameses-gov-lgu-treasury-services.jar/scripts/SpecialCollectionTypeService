@@ -9,16 +9,24 @@ class SpecialCollectionTypeService {
 	def em;
 
 	@ProxyMethod
-	public def open( objid ) {
+	public def open( collectiontypeid ) {
 		return em.sqlContext.createNamedQuery('specialcollectiontype:read')
-					.setParameter('objid', objid )
+					.setParameter('collectiontypeid', collectiontypeid )
 					.singleResult	
+	}
+	
+	@ProxyMethod
+	public def openList( collectiontypeid ) {
+		return em.sqlContext.createNamedQuery('specialcollectiontype:read')
+					.setParameter('collectiontypeid', collectiontypeid )
+					.resultList	
 	}
 
 	@ProxyMethod
 	public void create( ct ) {
 		em.sqlContext.createNamedExecutor('specialcollectiontype:create')
-			.setParameter('objid', ct.objid )
+			.setParameter('objid', ct.specialacctobj )
+			.setParameter('collectiontypeid', ct.objid)
 			.setParameter('item_objid', ct.item.objid)
 			.setParameter('amount', ct.amount)
 			.execute()	
@@ -27,7 +35,7 @@ class SpecialCollectionTypeService {
 	@ProxyMethod
 	public void update( ct ) {
 		em.sqlContext.createNamedExecutor('specialcollectiontype:update')
-			.setParameter('objid', ct.objid )
+			.setParameter('objid', ct.specialacctobj )
 			.setParameter('item_objid', ct.item.objid)
 			.setParameter('amount', ct.amount)
 			.execute()	

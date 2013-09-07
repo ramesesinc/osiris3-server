@@ -1,0 +1,25 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+import com.rameses.services.extended.*;
+
+
+class RuleSetService extends ActiveCrudListService { 
+
+	@ActiveDB(value='devruleset', em='admin')
+	def em;
+
+	@ProxyMethod
+	public def getColumns( params ) {
+		return[ 
+			[name:'name', caption:'Name'], 
+			[name:'title', caption:'Title'], 
+			[name:'packagename', caption:'Package Name'], 
+			[name:'domain', caption:'Domain'], 
+			[name:'role', caption:'Role'] 
+		]; 
+	} 
+
+}

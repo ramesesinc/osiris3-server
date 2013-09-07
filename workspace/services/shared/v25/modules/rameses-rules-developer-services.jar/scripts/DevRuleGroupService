@@ -1,0 +1,17 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+import com.rameses.services.extended.*;
+
+class RuleGroupService extends ActiveCrudListService {
+
+	@ActiveDB(value='devrulegroup', em='admin')
+	def em;
+
+
+	void afterList(params, list) {
+		list.each { it._filetype = 'devrulegroup' } 
+	}
+}
