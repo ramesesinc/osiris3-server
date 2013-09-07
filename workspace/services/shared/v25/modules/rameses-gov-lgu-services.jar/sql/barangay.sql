@@ -20,5 +20,5 @@ SELECT * FROM barangay WHERE objid = $P{objid}
 [getListByParentid]
 SELECT b.objid, b.state, b.indexno, b.pin, b.name 
 FROM barangay b 
-WHERE b.parentid=$P{parentid}  
+WHERE b.parentid LIKE $P{parentid}  
 ORDER BY b.name 

@@ -20,11 +20,13 @@ class DistrictLookupService{
 	public def getList( params ) {
 		params.searchtext = (params.searchtext? params.searchtext: '')
 		params.name = params.searchtext + '%'
-		return em.sqlContext.createNamedQuery('district:lookup')
-					.setParameters(params)
-					.setFirstResult( params._start )
-					.setMaxResults(params._limit)
-					.resultList 
+		def qry = em.sqlContext.createNamedQuery('district:lookup')
+		if (params._start != null)
+			qry.setFirstResult( params._start )
+		if (params._limit != null)
+			qry.setMaxResults(params._limit)
+
+		return qry.setParameters(params).resultList 
 	}
 
 	@ProxyMethod
