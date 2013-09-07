@@ -18,6 +18,8 @@ class EntityService extends AbstractCrudListService {
 
 	String schemaName = "entity";
 
+	String pagingKeys = 'e.objid'
+
 	@ProxyMethod
 	public def getColumns( params ) {
 		def columns = [
@@ -100,8 +102,10 @@ class EntityService extends AbstractCrudListService {
 
 		def qryname = 'entity'+(params.type? params.type.toLowerCase(): ''); 
 		def qry = em.sqlContext.createNamedQuery(qryname+':getList').setParameters(params);	
+		qry.setPagingKeys('e.objid')
 		qry.setFirstResult(params._start? params._start: 0); 
 		qry.setMaxResults(params._limit? params._limit: 20); 
+
 		return qry.resultList;
 	}
 
