@@ -18,6 +18,7 @@ class EntityLookupService extends AbstractListService {
 	}
 	
 	public def getList( params ) {
+		if (!params.searchtext || params.searchtext.toString().trim().length() == 0) throw new Exception('Please specify a search criteria.')
 		params.name = (params.searchtext? params.searchtext+'%': '%'); 
 		def sqlname = (params._tag == 'create_multiple'? 'lookup': 'getList'); 
 		def qry = em.sqlContext.createNamedQuery(schemaName+':'+sqlname).setParameters(params); 

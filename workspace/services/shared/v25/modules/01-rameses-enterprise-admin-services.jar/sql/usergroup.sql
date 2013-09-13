@@ -1,5 +1,5 @@
 [getRootNodes]
-SELECT DISTINCT 
+SELECT DISTINCT
 	ug.domain as caption, ug.domain as domain, '' as usergroupid, 'domain' as filetype 
 FROM sys_usergroup ug 
 	LEFT JOIN sys_usergroup_admin uga ON ug.objid=uga.usergroupid 
@@ -8,7 +8,7 @@ WHERE
 
 
 [getChildNodes]
-SELECT DISTINCT 
+SELECT DISTINCT
 	ug.title as caption, ug.domain as domain, ug.objid as usergroupid, 
 	'usergroup-folder' as filetype, ug.orgclass 
 FROM sys_usergroup ug 
@@ -18,7 +18,7 @@ WHERE
 	(uga.user_objid=$P{userid} OR 'root'=$P{userid} OR 'sa'=$P{userid}) 
 
 [getList]
-SELECT DISTINCT 
+SELECT DISTINCT
 	ugm.objid, ugm.user_username, ugm.user_lastname, ugm.user_firstname, 
 	ugm.org_name, sg.name AS securitygroup 
 FROM sys_usergroup ug 
