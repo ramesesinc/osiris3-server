@@ -1,0 +1,8 @@
+<schema>
+	<element name="cashticket" tablename="cashticket">
+		<field name="objid" primary="true"/>
+		<field name="denomination" required="true" />
+	</element>
+
+	
+</schema>

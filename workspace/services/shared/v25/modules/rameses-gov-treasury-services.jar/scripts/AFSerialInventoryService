@@ -1,0 +1,124 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+class AFSerialInventoryService {
+
+	@ActiveDB("afserial_inventory")
+	def afcontrol;
+
+	@Service("DateService")
+	def dateSvc;
+
+	@Env
+	def env;
+
+	private def initDetail(def o) {
+		def m = [:];
+		m.objid = "AFDETAIL"+ new UID();
+		m.refid = o.refid;
+		m.refno = o.refno;
+		m.reftype = o.reftype;
+		m.refdate = o.refdate;
+		m.txndate = dateSvc.serverDate;
+		m.qtyreceived = 0;
+		m.qtybegin = 0;
+		m.qtyissued= 0;
+		m.qtycancelled = 0;
+		m.qtyending = 0;
+		return m;
+	}
+
+
+	@ProxyMethod
+	public def postReceipt(def o)	{
+		def m = [:];
+		m.objid = "AFCTRL"+new UID();
+		m.txntype = o.txntype;
+		m.afid = o.afid;
+		m.startseries = o.startseries;
+		m.endseries = o.endseries;
+		m.startstub = o.startstub;
+		m.endstub = o.endstub;
+		m.unit = o.unit;
+		m.prefix = o.prefix;
+		m.suffix = o.suffix;
+		m.currentseries = o.startseries;
+		m.currentstub = o.startstub;
+		m.qtyin = o.qty;
+		m.qtyout = 0;
+		m.qtycancelled = 0;
+		m.qtybalance = o.qty;
+		m.currentlineno = 1;
+		m.respcenter = o.respcenter;
+		afcontrol.create( m );
+		
+		def detail = initDetail(o);
+		detail.controlid = m.objid;
+		detail.lineno = m.currentlineno;
+		detail.txntype = o.txntype;
+		detail.receivedstartseries= o.startseries;
+		detail.receivedendseries = o.endseries;
+		detail.endingstartseries = o.startseries;
+		detail.endingendseries = o.endseries;
+		detail.qtyreceived = o.qty;
+		detail.qtyending = o.qty;
+		detail.remarks = o.remarks;
+		afcontrol.create( detail, "detail" );
+		return m;
+	}
+
+
+	@ProxyMethod
+	public def postIssue(def o)	{
+		def head = afcontrol.read( [objid: o.controlid]);
+		if(head.currentseries!= o.startseries)
+			throw new Exception("Data may have changed. Please run process again");
+
+		head.qtyout = o.qty;
+		head.qtybalance -= o.qty;
+		head.currentseries = o.endseries + 1;
+		if(head.startstub != head.endstub ) {
+			head.currentstub = o.endstub + 1;
+		}
+		head.currentlineno+=1;
+
+		afcontrol.update( head );
+
+		def detail = initDetail(o);
+		detail.controlid = head.objid;
+		detail.lineno = head.currentlineno;
+		detail.txntype = o.txntype;
+		detail.issuedstartseries = o.startseries;
+		detail.issuedendseries = o.endseries;
+		detail.endingstartseries = (o.endseries==head.endseries)? head.endseries: o.endseries+1; 
+		detail.endingendseries = head.endseries; 
+		detail.qtyissued = o.qty;
+		detail.qtyending = head.qtybalance;
+		detail.remarks = o.remarks;
+		afcontrol.create( detail, "detail" );
+	}
+
+	@ProxyMethod
+	public def postBegin(def o)	{
+		def head = afcontrol.read( [objid: o.controlid]);
+		head.currentlineno+=1;
+		afcontrol.update( head );
+		def detail = initDetail(o);
+		detail.controlid = head.objid;
+		detail.lineno = head.currentlineno;
+		detail.txntype = o.txntype;
+		detail.beginstartseries = o.startseries;
+		detail.beginendseries = o.endseries;
+		detail.endingstartseries = o.startseries 
+		detail.endingendseries = o.endseries; 
+		detail.qtybegin = o.qty;
+		detail.qtyending = head.qtybalance;
+		detail.remarks = o.remarks;
+		afcontrol.create( detail, "detail" );
+	}
+
+
+}
+

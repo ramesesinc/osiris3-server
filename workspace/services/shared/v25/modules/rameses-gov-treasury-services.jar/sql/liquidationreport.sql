@@ -8,11 +8,11 @@ where l.objid =$P{liquidationid} and lc.fund_objid=$P{fundname}
 
 [getRCDRemittances]
 select 
-    r.collector_name as collectorname, r.txnno, r.dtposted, lcf.amount 
+    r.collector_name as collectorname, r.txnno, r.dtposted, rf.amount 
 from liquidation_remittance lr 
-  inner join liquidation_cashier_fund lcf on lcf.liquidationid = lr.liquidationid 
-  inner join remittance r on r.objid = lr.objid 
-where lr.liquidationid = $P{liquidationid}  and lcf.fund_objid =$P{fundname} 
+inner join remittance r on r.objid = lr.objid
+inner join remittance_fund rf ON rf.remittanceid=r.objid 
+where lr.liquidationid = $P{liquidationid}  and rf.fund_objid =$P{fundname} 
 
 [getRCDCollectionSummary]
 select  
@@ -30,7 +30,6 @@ from liquidation_remittance  lr
    inner join revenueitem ri on ri.objid = cri.item_objid 
 where lr.liquidationid=$P{liquidationid} and ri.fund_objid =$P{fundname}
 group by a.objid, ri.fund_objid 
-
 
 [getRCDRemittedForms]
 select 

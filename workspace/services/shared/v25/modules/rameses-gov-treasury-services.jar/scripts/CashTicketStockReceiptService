@@ -6,14 +6,18 @@ import com.rameses.services.extended.*;
 /***
   This contains queries for checking availability of accountable forms
 **/
-class CashTicketService {
+class CashTicketStockReceiptService {
 
 
-	@PersistenceContext("main")
+	@ActiveDB("cashticket")
 	def em;
 	
-
-	
-
+	/**
+	* this is called during stockreceipt issuance in details.
+	*/
+	@ProxyMethod
+	public def getInfo(def o) {
+		return em.findStockReceiptInfo( o );
+	}
 
 }

@@ -1,4 +1,5 @@
-[getList]
+
+[getActiveList]
 SELECT * 
 FROM afcontrol a
 INNER JOIN afcontrol_activedetail av ON av.controlid=a.objid
@@ -103,12 +104,4 @@ WHERE controlid=$P{controlid}
 AND startseries >= $P{startseries} 
 AND endseries <= $P{endseries} 
 AND reftype='CANCEL'
-
-
-
-
-
-
-
-
 

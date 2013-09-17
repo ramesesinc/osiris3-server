@@ -1,0 +1,14 @@
+<schema>
+
+
+	<element  tablename="afserial_control">
+		<field name="controlid" primary="true" />
+		<field name="txnmode" primary="true" />
+		<field name="assignee_objid" primary="true" />
+		<field name="assignee_name" required="true" />
+		<field name="currentseries" required="true" />
+		<field name="qtyissued" required="true" />
+		<field name="active" required="true" />
+	</element>
+
+</schema>
