@@ -4,13 +4,11 @@ import java.rmi.server.*;
 import com.rameses.common.*
 import com.rameses.services.extended.*;
 
-class FundService extends AbstractCrudListService {
+class FundService extends ActiveCrudListService {
 
-	@PersistenceContext("main")
+	@ActiveDB("fund")
 	def em;
 	
-	String schemaName = "fund";
-
 	@ProxyMethod
 	public def getNodes( def p ) {
 		def list;
@@ -18,8 +16,12 @@ class FundService extends AbstractCrudListService {
 			list = [ [caption:'Funds', folder:true]];
 		}
 		else {
-			def sql = (!p.objid) ? 'fund:getRootNodes' : 'fund:getChildNodes';
-			list = em.sqlContext.createNamedQuery(sql).setParameters(p).resultList;	
+			if(!p.objid) {
+				list = em.getRootNodes(p);
+			}
+			else {
+				list = em.getChildNodes(p);
+			}
 			list.each {  it.caption = it.code + "(" + it.title + ") "; }
 		}
 		return list;

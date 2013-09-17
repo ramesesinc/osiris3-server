@@ -4,13 +4,11 @@ import java.rmi.server.*;
 import com.rameses.common.*;
 import com.rameses.services.extended.*;
 
-class RevenueItemAccountService extends AbstractCrudListService {
+class RevenueItemAccountService extends ActiveCrudListService {
 
-	@PersistenceContext("main")
+	@ActiveDB("revenueitem")
 	def em;
 
-	String schemaName = "revenueitem";
-	
 	@ProxyMethod
 	public def getColumns( def o ) {
 		return[
