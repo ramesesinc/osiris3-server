@@ -1,0 +1,30 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+
+class SlaughterAccountLookupService  {
+
+	@PersistenceContext('main')
+	def em;
+
+	@ProxyMethod
+	public def getColumns( def o ) {
+		return[
+			[name:'item.code', caption:'Item Code', width:100, resizable:false ],
+			[name:'item.title', caption:'Item Title' ],
+		];
+	}
+
+	@ProxyMethod
+	public def getList( Map m ) {
+		if(m.searchtext == null ) m.searchtext = "";
+		m.code = m.searchtext.trim() + "%";
+		m.title = m.searchtext.trim() + "%";
+		
+		return em.sqlContext.createNamedQuery('slaughterreceipt:getLookup')
+				 .setParameters(m)
+				 .setMaxResults(50)
+				 .resultList;	
+	}
+}

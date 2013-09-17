@@ -1,0 +1,23 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class SlaughterReceiptInterceptor {
+
+	@Service('SpecialCollectionTypeService')
+	def svc
+	
+	@PersistenceContext("main")
+	def em
+	
+	@After(pattern="CashReceiptService.post", eval="#{result.formno=='57'}")
+	public def postToSpecificTable(def evt) { 
+		def cs = [:];
+		cs.putAll( evt.result );	
+		cs.item_objid = cs.items[0].item.objid;
+		cs.item_code = cs.items[0].item.code;
+		cs.item_title = cs.items[0].item.title;
+		em.create("cashreceiptslaughter:cashreceiptslaughter", cs);
+	}
+
+}
