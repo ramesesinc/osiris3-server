@@ -11,6 +11,7 @@ class TerminalAdminService extends AbstractListService {
 	def	em; 
 
 	String schemaName = 'terminal';
+	String pagingKeys = 'terminalid'
 
 	@ProxyMethod
 	public def getColumns( params ) {
