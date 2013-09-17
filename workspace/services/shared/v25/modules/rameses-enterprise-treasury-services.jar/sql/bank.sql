@@ -1,5 +1,5 @@
 [getList]
 SELECT * FROM bank 
 
-[changeState-approved]
+[approve]
 UPDATE bank SET state='APPROVED' WHERE objid=$P{objid}

@@ -15,6 +15,13 @@ FROM sys_usergroup_member ug
 WHERE ug.user_objid = $P{userid}
 AND usergroupid = 'COLLECTOR'
 
+[findUserTxnCode]
+SELECT ug.usertxncode 
+FROM sys_usergroup_member ug 
+WHERE ug.user_objid = $P{userid}
+AND usergroupid = 'COLLECTOR'
+
+
 [findCollector]
 SELECT 
 user_objid as objid, 
