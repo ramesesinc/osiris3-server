@@ -16,6 +16,8 @@ class StatementOfRevenueService
 	@Service('DateService')
 	def dtSvc 
 
+	def PADDING_SIZE = 6
+
 
 	@ProxyMethod
 	public def generateReport( params ) {
@@ -28,12 +30,6 @@ class StatementOfRevenueService
 		buildDateFilter(params)
 
 		def revenue = getRevenueAccount(params.charttype)
-		/*
-		getAccountsByParent(revenue, params).each{
-			buildAccount(result, it, params)
-		}
-		*/
-
 		buildAccount(result, revenue, params)
 
 		return [
@@ -45,29 +41,33 @@ class StatementOfRevenueService
 
 	void buildAccount(result, account, params){
 		params.idx += 1
-		def padding = ''.padLeft(params.idx*5,' ')
+		def padding = ''.padLeft(params.idx * PADDING_SIZE,' ')
 		account.title = padding + account.title
 		account.amount = 0.0
+		account.level = params.idx 
 		result << account
 		params.accountid = account.objid 
 		account.amount = getAmountByAccountId(params)
 		getAccountsByParent(account, params).each{
 			buildAccount(result, it, params)
 		}
-
+		
 		params.idx -= 1
 
+		/*
 		//insert summary
 		if ( account.type == 'group'){ 
-			padding = ''.padLeft((params.idx-2)*5,' ')
+			def idx = params.idx-2
+			padding = ''.padLeft(idx * PADDING_SIZE,' ')
 			def subitems = result.findAll{it.parentid == account.objid}
 			def subtotal = subitems.sum{ 
 				def total = (it.amount != null ? it.amount : 0.0)
 				total += (it.subtotal != null ? it.subtotal : 0.0)
 			}
 			def parentid = (account.parentid ? account.parentid : account.objid)
-			result << [title:padding + account.title + ' TOTAL:',amount:0.0, subtotal:subtotal, parentid:parentid, type:'summary' ]
+			result << [title:padding + account.title + ' TOTAL:',amount:0.0, subtotal:subtotal, parentid:parentid, type:'summary', level:idx ]
 		}
+		*/
 	}
 
 	/*params:  fromdate, todate, accountid */
