@@ -39,6 +39,7 @@ class BarangayLookupService{
 
 	@ProxyMethod
 	public def getListByParentid( parentid ) {
+		if (!parentid) parentid = '%'
 		return em.sqlContext.createNamedQuery('barangay:getListByParentid')
 				.setParameter('parentid', parentid).resultList	
 	}
