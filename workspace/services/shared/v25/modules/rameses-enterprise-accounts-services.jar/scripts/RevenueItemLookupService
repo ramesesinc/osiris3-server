@@ -49,7 +49,9 @@ class RevenueItemLookupService  {
 				throw new Exception("RevenueItemLookupService.error. You need to pass itemids parameters");
 			vars = [filter: "'" + m.itemids.join("','") + "'" ];	
 		}
-		return em.sqlContext.createNamedQuery(sqlName).setParameters(m).setVars(vars).setMaxResults(50).resultList;	
+		def qry = em.sqlContext.createNamedQuery(sqlName).setParameters(m).setVars(vars).setMaxResults(50);
+		qry.setPagingKeys("r.objid")
+		return qry.resultList;	
 	}
 	
 }
