@@ -22,8 +22,7 @@ class StockRequestService extends ActiveCrudListService {
 	public def getNodes( def o ) {
 		return [
 			[state:'OPEN', caption:'Open' ],
-			[state:'CLOSED', caption:'Issued' ],
-			[state:'CLOSED', caption:'Received' ],
+			[state:'CLOSED', caption:'Closed' ]
 		];
 	}
 
