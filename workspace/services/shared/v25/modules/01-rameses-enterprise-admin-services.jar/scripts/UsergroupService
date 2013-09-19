@@ -17,6 +17,8 @@ class UsergroupService extends AbstractCrudListService {
 	String schemaName = "usergroup";
 	String subSchemaName = "member";
 	
+	String pagingKeys = 'ug.objid'
+
 	@ProxyMethod
 	public def getNodes( def o ) {
 		o.userid = env.USERID;

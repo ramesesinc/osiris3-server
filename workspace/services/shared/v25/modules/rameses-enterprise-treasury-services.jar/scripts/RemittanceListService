@@ -10,6 +10,7 @@ class RemittanceListService extends AbstractListService {
 	def em; 
 
 	String schemaName = "remittance";
+	String pagingKeys = "r.objid"
 
 	@Env
 	def env;

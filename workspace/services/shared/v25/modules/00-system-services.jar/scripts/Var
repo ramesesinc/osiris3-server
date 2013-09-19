@@ -48,7 +48,6 @@ class Var {
 		if( param?._start ) qry.setFirstResult( param._start );
 		if( param?._limit ) qry.setMaxResults( param._limit );
 		if( param.category ) qry.setParameter( 'category', param.category );
-		
 		def list = qry.resultList;
 
 		return list
