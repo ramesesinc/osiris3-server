@@ -1,5 +1,5 @@
 [getList]
-SELECT DISTINCT e.*, emu.fullname 
+SELECT e.*, emu.fullname 
 FROM entitymember em 
 	INNER JOIN entitymultiple emu ON em.entityid=emu.objid 
 	INNER JOIN entity e ON emu.objid=e.objid 
