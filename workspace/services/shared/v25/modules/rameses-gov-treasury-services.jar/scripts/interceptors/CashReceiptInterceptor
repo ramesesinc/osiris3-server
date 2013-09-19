@@ -4,42 +4,38 @@ import java.rmi.server.*;
 
 class CashReceiptInterceptor {
 
-	@PersistenceContext("main")
-	def em
+	@ActiveDB("afserial_control")
+	def em;
 
-	@Env
-	def env;
-	
-	@Service("AFControlService")
-	def afControlsvc;
-	
-	@Service("AFControlPostService")
-	def postSvc;
-	
+	@ActiveDB("stockitem")
+	def stockitem;
+
 	@After(pattern="CashReceiptService.init")
 	public def loadNextSeries(def evt) { 
 		def result = evt.result;
-		def params = [af:result.formno, userid: result.collector.objid, txnmode:result.txnmode]; 
 
-		def m = afControlsvc.findActiveControlId( params );
-		if( !m) {
-			throw new Warning("select-afcontrol");
+		//check if formno is cashticket or afserial
+		def t = stockitem.findItemType( [objid:result.formno] ).type;
+		if(t == "AFSERIAL") {
+			def params = [afid:result.formno, userid: result.collector.objid, txnmode:result.txnmode]; 
+			def m = em.findActiveControlForCashReceipt( params );
+			if( !m) {
+				throw new Warning("select-afcontrol");
+			}
+			result.stub = m.stub;
+			result.receiptno = ((m.prefix)?m.prefix:'') + m.currentseries + ((m.suffix)?m.suffix:'');
+			result.controlid = m.controlid;
+			result.series = m.currentseries;
 		}
-		def c = afControlsvc.getNextReceiptInfo( m );
-		result.putAll(c);
+		else {
+			throw new Exception("Cashticket not supported!");
+		}
 	}
 
 	@After(pattern="CashReceiptService.post")
 	public def postAFControl(def evt) { 
 		def result = evt.result;
-		def m = [:];
-		m.refid = result.objid;
-		m.reftype = "CASHRECEIPT";
-		m.refdate = result.receiptdate;
-		m.series = result.series;
-		m.controlid = result.controlid;
-		postSvc.postReceipt(m);
-		
+		em.updateNextSeries([controlid:result.controlid]);
 	}
 
 	

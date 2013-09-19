@@ -4,9 +4,9 @@ import java.rmi.server.*;
 import com.rameses.common.*
 import com.rameses.services.extended.*
 
-class RevenueItemService extends AbstractCrudListService {
+class CollectionTypeService extends ActiveCrudListService {
 
-	@PersistenceContext("main")
+	@ActiveDB("collectiontype")
 	def em;
 
 	String schemaName = "collectiontype";
@@ -29,13 +29,13 @@ class RevenueItemService extends AbstractCrudListService {
 	//this is impt for associating handlers. Used by collection type.
 	@ProxyMethod
 	public def getFormTypes() {
-		return [];
+		return em.getFormTypes();
 	}
 
 	//used by cash receipt initial
 	@ProxyMethod
-	public def getCollectionTypes() {
-		return getList([:])
+	public def getCollectionTypes(def o) {
+		return em.findAllByFormNo(o);
 	}
 		
 }

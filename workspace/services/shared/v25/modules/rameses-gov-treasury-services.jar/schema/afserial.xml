@@ -1,0 +1,7 @@
+<schema>
+	<element name="afserial" tablename="afserial">
+		<field name="objid" primary="true"/>
+		<field name="serieslength" required="true" />
+	</element>
+	
+</schema>

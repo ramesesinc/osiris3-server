@@ -6,7 +6,7 @@ import com.rameses.services.extended.*
 
 class LiquidationService  {
 
-	@PersistenceContext("main")
+	@ActiveDB("liquidation")
 	def em; 
 
 	@Env
@@ -21,13 +21,13 @@ class LiquidationService  {
 	@Service("CashBookPostService")
 	def cashBook;
 	
+	@ActiveDB("liquidatingofficer")
+	def liqOfficer;
+
 	@ProxyMethod
 	public def init() {
 		def o = [objid: "LIQ"+new UID(), cashier:[:]];	
-
-		o.remittances = em.sqlContext.createNamedQuery("liquidation:getUnliquidatedRemittances")
-			.setParameters( [liquidatingofficerid: env.USERID]).resultList;
-		
+		o.remittances = em.getUnliquidatedRemittances( [liquidatingofficerid: env.USERID]);
 		if(!o.remittances)
 			throw new Exception("No pending remittances to liquidate");
 
@@ -36,13 +36,8 @@ class LiquidationService  {
 		o.totalnoncash = o.remittances.sum{ it.totalnoncash };	
 
 		//get fund summary
-		o.fundsummary =  em.sqlContext.createNamedQuery("liquidation:getUnliquidatedFundSummary")
-			.setParameters( [liquidatingofficerid: env.USERID]).resultList;		
-
-		o.checks = em.sqlContext.createNamedQuery("liquidation:getUnliquidatedChecks")
-			.setParameters( [liquidatingofficerid: env.USERID]).resultList;	
-
-		println "unliqudiated checks->"+o.checks;		
+		o.fundsummary =  em.getUnliquidatedFundSummary( [liquidatingofficerid: env.USERID] );		
+		o.checks = em.getUnliquidatedChecks( [liquidatingofficerid: env.USERID] );	
 		return o;
 	}
 
@@ -51,30 +46,30 @@ class LiquidationService  {
 		if( o.fundsummary.find{ !it.cashier }   )
 			throw new Exception("There must be a cashier associated");
 
-		def z = em.sqlContext.createNamedQuery("liquidatingofficer:getUserTxnCode")
-			.setParameters( [userid: env.USERID]).singleResult;
+		def z = liqOfficer.findUserTxnCode( [userid: env.USERID] );
 
 		o.liquidatingofficer = [objid:env.USERID, name:env.FULLNAME, title: env.JOBTITLE ];	
 
 		def txncode = "LIQ";	
 		if(z?.usertxncode) txncode = z.usertxncode; 	
 		o.txnno = txncode + seqSvc.getNextFormattedSeries(txncode);
+		println o.txnno;
+
 		o.state = "OPEN";
 		o.dtposted = dateSvc.serverDate;
-		em.create( "liquidation", o );
-
+		em.create( o );
 
 		def ids = "'" + o.remittances*.objid.join("','") + "'";
 		def m = [liquidationid:o.objid];
-
-		em.sqlContext.createNamedExecutor( "liquidation:postLiquidateRemittance").setParameters(m).setVars([ids:ids]).execute();
-		em.sqlContext.createNamedExecutor( "liquidation:postLiquidateChecks").setParameters(m).setVars([ids:ids]).execute();
+		m.ids = ids;
+		em.postLiquidateRemittance(m);
+		em.postLiquidateChecks(m);
 
 		//update cashbook to add new entry
 		o.fundsummary.each {
 				it.objid = "LIQFUND"+new UID();
 				it.liquidationid = o.objid;
-				em.create( "liquidation:cashier_fund" , it);
+				em.create( it, "cashier_fund");
 				def detail = [:];
 				detail.fundid = it.fund.objid;
 				detail.subacctid = o.liquidatingofficer.objid; 
@@ -92,17 +87,14 @@ class LiquidationService  {
 
 	@ProxyMethod
 	public def open( o ) {
-		o = em.read( "liquidation", o);
-		o.fundsummary = getFundSummaries(o)
-		o.checks = em.sqlContext.createNamedQuery("liquidation:getLiquidatedChecks").setParameters(o).resultList;
+		o = em.read( o );
+		o.fundsummary = em.getFundSummaries(['liquidationid', o.objid]);
+		o.checks = em.getLiquidatedChecks(o);
 		return o;
 	}
 
-
 	@ProxyMethod
-	public def getFundSummaries(o){
-		em.sqlContext.createNamedQuery('liquidation:getFundSummaries')
-				.setParameter('liquidationid', o.objid)
-				.resultList
+	public def getFundSummaries(o) {
+		return em.getFundSummaries(['liquidationid', o.objid]);
 	}
 }	

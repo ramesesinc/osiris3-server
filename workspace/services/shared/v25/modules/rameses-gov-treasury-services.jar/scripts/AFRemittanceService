@@ -1,0 +1,16 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+class AFRemittanceService  {
+
+	@ActiveDB("remittance_af")
+	def em;
+
+	@ProxyMethod
+	public def getRemittedAFSerial(o) {
+		def m = [objid: o.objid];
+		return em.getRemittedAFSerial(m);
+	}		
+}

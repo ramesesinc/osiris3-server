@@ -1,0 +1,59 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+
+class AFSerialStockReceiptService {
+
+	@ActiveDB("afserial_control")
+	def em;
+
+	@Env
+	def env;
+
+	@ProxyMethod
+	public def getOpenIssuanceList(def p) {
+		p.userid = env.USERID;
+		return em.getOpenIssuanceList(p);
+	}
+
+	@ProxyMethod
+	public def getAssigneeIssuanceList(def p) {
+		p.userid = env.USERID;
+		return em.getAssigneeIssuanceList(p);
+	}
+
+	@ProxyMethod
+	public void activateControl(def p) {
+		def m = [:];
+		m.txnmode = p.txnmode;
+		m.userid = env.USERID;
+		m.afid = p.afid;
+		def z = em.findActiveControlForActivation(m);
+		if(z) {
+			throw new Exception("A stub is currently active. Deactivate first existing stub");
+		}
+		else {
+			int test = em.reactivateControl(p);
+			if(test==0) {
+				em.activateControl(p);
+			}
+		}		
+	}
+
+	@ProxyMethod
+	public void deactivateControl(def p) {
+		em.deactivateControl(p);
+	}
+
+	@ProxyMethod
+	public void assignToSubcollector(def p) {
+		def m = [:];
+		m.objid = p.objid;
+		m.assigneeid = p.assignee.objid;
+		m.assigneename = p.assignee.name;
+		def test = em.reactivateAssignSubcollector(m);
+		if(test==0) {
+			em.activateAssignSubcollector(m);
+		}
+	}
+}

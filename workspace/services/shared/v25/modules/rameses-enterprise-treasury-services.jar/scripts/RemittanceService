@@ -6,8 +6,11 @@ import com.rameses.services.extended.*
 
 class RemittanceService  {
 
-	@PersistenceContext("main")
+	@ActiveDB("remittance")
 	def em; 
+
+	@ActiveDB("collector")
+	def collector; 
 
 	@Env
 	def env;
@@ -18,66 +21,44 @@ class RemittanceService  {
 	@Service("DateService")
 	def dateSvc;
 
-
-	@Service("AFControlPostService")
-	def afControl;
-
 	@Service("CashBookPostService")
 	def cashBook;
 	
-
 	@ProxyMethod
 	public def init() {
 		def o = [objid: "REM"+new UID()];	
-		o.items = em.sqlContext.createNamedQuery("remittance:getUnremittedForCollector")
-			.setParameters( [collectorid: env.USERID]).resultList;
-		
+		o.items = em.getUnremittedForCollector([collectorid: env.USERID]);
 		if(!o.items)
 			throw new Exception("No pending collection to remit");
 
 		o.amount = o.items.sum{ it.amount };	
 		o.totalcash = o.items.sum{ it.totalcash };	
 		o.totalnoncash = o.items.sum{ it.totalnoncash };	
-		o.checks = em.sqlContext.createNamedQuery( "remittance:getUnremittedChecks")
-			.setParameters( [collectorid: env.USERID]).resultList;
-		
+		o.checks = em.getUnremittedChecks( [collectorid: env.USERID] );
+		o.collector = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE ];
 		return o;
 	}
 
 	@ProxyMethod
 	public def post( o ) {
-		
-		def z = em.sqlContext.createNamedQuery("collector:getUserTxnCode")
-			.setParameters( [userid: env.USERID]).singleResult;
-
+		def z = collector.findUserTxnCode( [userid: o.collector.objid] );
 		def txncode = "REM";	
 		if(z?.usertxncode) txncode = z.usertxncode; 	
 		o.txnno = txncode + seqSvc.getNextFormattedSeries(txncode);
 		o.state = "OPEN";
 		o.dtposted = dateSvc.serverDate;
-
-		o.collector = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE ];
-
-		em.create( "remittance", o );
+		em.create( o );
 
 		//insert the cash receipts
 		def m = [remittanceid: o.objid, collectorid: o.collector.objid ];
-		em.sqlContext.createNamedExecutor( "remittance:collectReceipts").setParameters(m).execute();
-		em.sqlContext.createNamedExecutor( "remittance:collectAFControl").setParameters(m).execute();
-		em.sqlContext.createNamedExecutor( "remittance:collectChecks").setParameters(m).execute();
-		
-		//post new entry in afcontrol to update new balance
-		def list = em.sqlContext.createNamedQuery("remittance:getRemittedAFControlIdsForPosting").setParameters(m).resultList;
-		list.each {	
-			it.refdate = o.dtposted;	
-			afControl.postRemittance( it );	
-		}
+		em.collectReceipts(m);
+		em.collectChecks(m);
 		
 		//update cashbook to add new entry
-		def flist = em.sqlContext.createNamedQuery("remittance:getRemittedFundTotals").setParameters(m).resultList;
+		def flist = em.getRemittedFundTotals(m);
 		flist.each {
 				def detail = [:];
-				detail.fundid = it.fundid;
+				detail.fundid = it.fund.objid;
 				detail.subacctid = o.collector.objid; 
 				detail.refid = o.objid;
 				detail.refno = o.txnno;
@@ -86,24 +67,33 @@ class RemittanceService  {
 				detail.amount = it.amount;
 				detail.particulars = "REMITTANCE";
 				cashBook.postCR( detail );
+
+				def n = [:]
+				n.objid = "REMFUND"+new UID();
+				n.remittanceid = o.objid;
+				n.fund = it.fund;
+				n.amount = it.amount;
+				em.create( n, "remittance_fund" );
 		}
 		return o;
 	}
 
-
 	@ProxyMethod
 	public def open( o ) {
-		o = em.read( "remittance", o );
-		o.checks = em.sqlContext.createNamedQuery("remittance:getRemittedChecks").setParameters(o).resultList;
-		
+		o = em.read( o );
+		o.checks = em.getRemittedChecks(o);
 		return o;
 	}
 
 	@ProxyMethod
-	public def getNonCashPayments( objid ) {
-		return em.sqlContext.createNamedQuery('remittance:getNonCashPayments')
-				.setParameter('remittanceid', objid)
-				.resultList
+	public def getUnremittedReceipts(o) {
+		def m = [collectorid: o.collector.objid];
+		return em.getUnremittedReceipts(m);
+	}
+
+	@ProxyMethod
+	public def getRemittedReceipts(o) {
+		return em.getRemittedReceipts(o);
 	}
 
 }

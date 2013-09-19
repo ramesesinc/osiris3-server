@@ -7,15 +7,14 @@ WHERE ba.code LIKE $P{searchtext}
    OR ba.bank_name LIKE $P{searchtext}
 ORDER BY ba.code
 
-[changeState-approved]
-UPDATE bankaccount SET state=$P{newstate} WHERE objid=$P{objid} 
+[approve]
+UPDATE bankaccount SET state='APPROVED' WHERE objid=$P{objid} 
 
 
 [getEntries]
-SELECT refdate,refno,reftype,particulars,dr,cr,runbalance,pageno,lineno 
+SELECT refdate,refno,reftype,particulars,dr,cr,runbalance,lineno 
 FROM bankaccount_entry 
-WHERE parentid=$P{objid} AND pageno = $P{page}
-order by pageno, lineno 
+WHERE parentid=$P{objid} order by lineno 
 
 [getListByFund]
 SELECT ba.*

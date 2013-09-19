@@ -1,0 +1,46 @@
+<schema>
+
+	<!--
+	refid,reftype = reference id of transaction. example: stockreceipt	
+	qtyin,qtyout,qtybalance = is based on actual pieces. 
+	startseries,endseries=series assigned when afcontrol was created	
+	currentseries=updated during cancellation if number was affected, during issuance of receipt
+	beginseries=series the collector was using. first time when created, updated during transfer
+	lastremittedseries=updated everytime a remittance is done.
+	-->
+	<element name="cashticket_inventory" tablename="cashticket_inventory">
+		<field name="objid" primary="true"/>
+		<field name="afid" required="true"/>
+		<field name="respcenter_objid" required="true"/>
+		<field name="respcenter_name" required="true"/>
+		<field name="respcenter_type" required="true"/>
+		<field name="startstub" required="true" />
+		<field name="endstub" required="true" />
+		<field name="currentstub" required="true" />
+
+		<field name="qtyin" required="true" />
+		<field name="qtyout" required="true" />
+		<field name="qtycancelled" required="true" />
+		<field name="qtybalance" required="true" />
+		<field name="currentlineno" required="true"/>
+	</element>
+	
+	<element name="detail" tablename="cashticket_inventory_detail">
+		<field name="objid" primary="true" />
+		<field name="controlid" required="true" />
+		<field name="lineno" required="true" />
+		<field name="refid" required="true" />
+		<field name="refno" required="true" />
+		<field name="reftype" required="true" />
+		<field name="refdate" required="true" />
+		<field name="txndate" required="true" />
+		<field name="txntype" required="true" />
+		<field name="qtyin" required="true" />
+		<field name="qtyout" required="true" />
+		<field name="qtyending" required="true" />
+		<field name="qtycancelled" required="true" />
+		<field name="remarks" />
+	</element>
+		
+
+</schema>

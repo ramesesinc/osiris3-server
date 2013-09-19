@@ -8,12 +8,22 @@ class TemplateService {
 	@ProxyMethod 
 	public def get( String name, def params ) {
 		try {
-			return template.getResult("META-INF/templates/${name}.groovy", params );	
+			return template.render("META-INF/templates/${name}.groovy", params );	
 		}
 		catch(e) {
 			return null;
 		}
 	}
 	
+	@ProxyMethod 
+	public def render( String name, def params ) {
+		try {
+			return template.render(name, params ).toString();	
+		}
+		catch(e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
 	
 }

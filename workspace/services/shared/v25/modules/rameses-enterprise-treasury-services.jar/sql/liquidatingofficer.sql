@@ -13,3 +13,10 @@ SELECT ug.usertxncode
 FROM sys_usergroup_member ug 
 WHERE ug.user_objid = $P{userid}
 AND usergroupid = 'LIQUIDATING_OFFICER'
+
+
+[findUserTxnCode]
+SELECT ug.usertxncode 
+FROM sys_usergroup_member ug 
+WHERE ug.user_objid = $P{userid}
+AND usergroupid = 'LIQUIDATING_OFFICER'

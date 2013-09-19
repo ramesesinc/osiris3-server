@@ -2,13 +2,13 @@ import com.rameses.annotations.*
 import com.rameses.common.*
 import com.rameses.services.extended.*
 
-class BankAccountService extends AbstractCrudListService {
+class BankAccountService extends ActiveCrudListService {
 
-	@PersistenceContext('main')
+	@ActiveDB('bankaccount')
 	def em
 	
-	String schemaName = "bankaccount";
-	
+	def pagingKeys='ba.objid'
+
 	@ProxyMethod
 	public def getColumns(def m) {
 		return [
@@ -43,13 +43,12 @@ class BankAccountService extends AbstractCrudListService {
 		o.totaldr = 0;
 		o.totalcr = 0;
 		o.endbalance = 0;
-		o.currentpageno = 1;
 		o.currentlineno = 1;
 	}
 
 	@ProxyMethod
 	public def getEntries( o ) {
-		return em.sqlContext.createNamedQuery( "bankaccount:getEntries" ).setParameters(o).resultList;
+		return em.getEntries(o);
 	}
 	
 }

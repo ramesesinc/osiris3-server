@@ -2,12 +2,10 @@ import com.rameses.annotations.*
 import com.rameses.common.*
 import com.rameses.services.extended.*;
 
-class BankService extends AbstractCrudListService {
+class BankService extends ActiveCrudListService {
 
-	@PersistenceContext('main')
+	@ActiveDB('bank')
 	def em
-	
-	String schemaName = "bank";
 	
 	@ProxyMethod
 	public def getColumns(def p) {

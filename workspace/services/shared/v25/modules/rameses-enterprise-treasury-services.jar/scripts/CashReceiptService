@@ -97,8 +97,11 @@ class CashReceiptService  {
 			em.create(pmtschema, x);
 		}
 		
-		if( p.items.find{ !it.item.fund } )
-			throw new Exception("All items must have a fund");
+		def fundTest = p.items.findAll{ !it.item.fund?.objid };
+		if( fundTest ) {
+			String msg = fundTest*.item?.title.join(",");
+			throw new Exception("The following items must have a fund: \n" + msg);
+		}
 
 		//summarize receipts by fund, locate the fund and update 
 		def z = p.items.groupBy{ it.item.fund.objid };

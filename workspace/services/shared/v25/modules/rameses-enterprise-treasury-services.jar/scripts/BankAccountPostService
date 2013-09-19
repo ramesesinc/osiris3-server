@@ -6,22 +6,12 @@ import com.rameses.services.extended.*
 
 class BankAccountPostService  {
 
-	@PersistenceContext("main")
+	@ActiveDB("bankaccount")
 	def em;
 
-	int lines_per_page = 25;
+	@Service("DateService")
+	def dateSvc;
 
-	private void moveNextPage( o ) {
-		int lineno = o.currentlineno + 1;
-		int pageno = o.currentpageno;
-		if(lineno > lines_per_page ) {
-			lineno = 1;
-			pageno = pageno + 1;
-		}
-		o.currentlineno = lineno;
-		o.currentpageno = pageno;
-	}
-	
 	@ProxyMethod
 	public def postDR( def o ) {
 		if(!o.objid) throw new Exception("Objid is required");
@@ -29,7 +19,7 @@ class BankAccountPostService  {
 		if(!o.refid) throw new Exception("Refid is required");
 		if(!o.reftype) throw new Exception("Reftype is required");
 
-		def cb = em.read( "bankaccount", o );
+		def cb = em.read(  o );
 		if(cb.forwardbalance==null) cb.forwardbalance = 0;
 		if(cb.beginbalance==null) cb.beginbalance = 0;
 		if(cb.totaldr==null) cb.totaldr = 0;
@@ -43,9 +33,8 @@ class BankAccountPostService  {
 		def detail = [:];
 		detail.objid = "BNKACCTE"+new UID();
 		detail.parentid = cb.objid;
-		detail.pageno = cb.currentpageno;
 		detail.lineno = cb.currentlineno;
-		
+		detail.txndate = dateSvc.serverDate;
 		detail.refid = o.refid;
 		detail.refno = o.refno;
 		detail.refdate = o.refdate;
@@ -54,10 +43,10 @@ class BankAccountPostService  {
 		detail.dr = o.amount;	
 		detail.cr = 0;
 		detail.runbalance = cb.endbalance;
-		em.create("bankaccount:detail", detail);
+		em.create(detail, "detail");
 		
-		moveNextPage( cb );
-		em.update( "bankaccount", cb );
+		cb.currentlineno += 1;
+		em.update( cb );
 		return true;
 	}
 
@@ -68,7 +57,7 @@ class BankAccountPostService  {
 		if(!o.refid) throw new Exception("Refid is required");
 		if(!o.reftype) throw new Exception("Reftype is required");
 
-		def cb = em.read( "bankaccount", o );
+		def cb = em.read( o );
 		if(cb.forwardbalance==null) cb.forwardbalance = 0;
 		if(cb.beginbalance==null) cb.beginbalance = 0;
 		if(cb.totaldr==null) cb.totaldr = 0;
@@ -82,9 +71,8 @@ class BankAccountPostService  {
 		def detail = [:];
 		detail.objid = "BNKACCTE"+new UID();
 		detail.parentid = cb.objid;
-		detail.pageno = cb.currentpageno;
 		detail.lineno = cb.currentlineno;
-		
+		detail.txndate = dateSvc.serverDate;
 		detail.refid = o.refid;
 		detail.refno = o.refno;
 		detail.refdate = o.refdate;
@@ -93,10 +81,10 @@ class BankAccountPostService  {
 		detail.dr = 0;
 		detail.cr = o.amount;	
 		detail.runbalance = cb.endbalance;
-		em.create("bankaccount:detail", detail);
+		em.create(detail, "detail");
 		
-		moveNextPage( cb );
-		em.update( "bankaccount", cb );
+		cb.currentlineno += 1;
+		em.update( cb );
 		return true;
 	}
 	

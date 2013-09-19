@@ -19,13 +19,13 @@
 		<field name="totaldr" required="true"/>
 		<field name="totalcr" required="true"/>
 		<field name="endbalance" required="true"/>
-		<field name="currentpageno" required="true"/>
 		<field name="currentlineno" required="true"/>
 	</element>
 	
 	<element name="detail" tablename="cashbook_entry">
 		<field name="objid" primary="true"/>
 		<field name="parentid" required="true"/>
+		<field name="txndate"  required="true"/>
 		<field name="refid"  required="true"/>
 		<field name="reftype"  required="true"/>
 		<field name="refno"  required="true"/>
@@ -34,7 +34,6 @@
 		<field name="dr"  required="true"/>
 		<field name="cr"  required="true"/>
 		<field name="runbalance"  required="true"/>
-		<field name="pageno"  required="true"/>
 		<field name="lineno"  required="true"/>
 		<field name="postingrefid" />
 	</element>

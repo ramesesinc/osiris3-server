@@ -1,0 +1,81 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class AFSerialStockIssueInterceptor {
+
+	@Service("AFSerialInventoryService")
+	def afSerialSvc;
+
+	@ActiveDB("afserial_inventory")
+	def afInventorySvc;
+
+	@ActiveDB("stockitem")
+	def stockitem;
+
+	@After(pattern="StockIssueService.create", eval="#{args[0].itemclass == 'AF'}")
+	public void postReceipt( def evt ) { 
+		def o = evt.result;
+		def list = o.items.findAll{ it.qtyissued > 0 && it.item.type=='AFSERIAL' && it.items!=null };
+		for( z in list ) {
+			z.items.each {
+				def m = [:];		
+				m.controlid = it.controlid;
+				m.refid = o.objid;
+				m.reftype = "stockissue";	
+				m.refno = o.issueno;
+				m.refdate = o.dtfiled;
+				m.afid = z.item.objid;
+				m.unit = z.unit;
+				m.startseries = (it.startseries!=null)?it.startseries: 0;
+				m.endseries = (it.endseries!=null)?it.endseries: 0;
+				m.startstub = (it.startstub!=null)?it.startstub: 0;
+				m.endstub = (it.endstub!=null)?it.endstub: 0;
+				m.prefix = it.prefix;
+				m.suffix = it.suffix;
+				m.qty= it.qtyissued;
+				m.unitqty = it.unitqty;
+				m.itemclass = z.item.itemclass;
+				m.itemtype = z.item.type;
+				m.txntype = o.reqtype;
+				m.remarks = "ISSUED TO " + o.issueto.name
+				afSerialSvc.postIssue(m);
+
+				//break into each stub based on unitqty
+				def unitqty = m.unitqty;
+				int j = m.startseries;
+				int stub = m.startstub;
+				for(int i=m.startseries+unitqty; i<m.endseries+unitqty; i+=unitqty) {
+					def head = [:];
+					head.refid = m.refid;
+					head.reftype = "stockissue";	
+					head.refno = o.issueno;
+					head.refdate = o.dtfiled;
+				    head.startstub = stub;
+				    head.endstub = stub;
+				    head.afid = m.afid;
+				    head.currentstub = stub;
+					head.startseries = j;
+					head.endseries = (i-1);
+					head.currentseries = j;
+					head.prefix = m.prefix;
+					head.suffix = m.suffix;
+					head.qty = unitqty;
+					head.unit = m.unit;
+					head.remarks = "RECEIVED FROM ISSUE";
+					head.respcenter = o.issueto;
+					if(!head.respcenter.type) head.respcenter.type = 'COLLECTOR';
+					head.txntype = o.reqtype + "-RECEIPT";
+					afSerialSvc.postReceipt(head);
+					j = i;
+					stub+=1;
+				}
+			}
+		}
+	}
+
+	
+
+}

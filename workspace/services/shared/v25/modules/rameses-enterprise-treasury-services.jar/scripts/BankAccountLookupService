@@ -5,10 +5,8 @@ import com.rameses.services.extended.*;
 
 class BankAccountLookupService  {
 
-	@PersistenceContext("main")
+	@ActiveDB("bankaccount")
 	def em;
-
-	String schemaName = "bankaccount";
 
 	@ProxyMethod
 	public def getColumns(def m) {
@@ -23,9 +21,8 @@ class BankAccountLookupService  {
 
 	@ProxyMethod
 	public def getList(def o) {
-		println o;
 		def m = [fundid: o.fundid];	
-		return  em.sqlContext.createNamedQuery("bankaccount:getListByFund").setParameters(m).resultList;
+		return  em.getListByFund(m);
 	}
 
 }
