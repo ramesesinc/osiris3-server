@@ -20,14 +20,16 @@ class CashTicketInventoryInterceptor {
 	public def getCashticketAvailability(def evt) {
 		def result = evt.result;
 		def list = result.items.findAll{ it.qtyissued > 0 && it.item.type.equalsIgnoreCase("CASHTICKET")  };
+		def afid = null;
+		def qty = 0;
 		for(it in list ) {
-			def afid = it.item.objid;
+			afid = it.item.objid;
 			def unit = it.unit;
 
 			def qtyPerUnit = stockitem.findUnitQty( [itemid: afid, unit: unit] )?.qty;
 			if(qtyPerUnit==null)
 				throw new Exception("Qty per unit not found for "+it.item.objid);\
-			def qty = it.qtyissued;
+			qty = it.qtyissued;
 			
 			def availableList = inventorySvc.findAllAvailable([afid: afid]);
 			def buffer = [];
@@ -59,6 +61,8 @@ class CashTicketInventoryInterceptor {
 			it.items = buffer;
 			if(qty > 0 ) break;
 		}
+		if(qty > 0 ) 
+			throw new Exception("Not enough stock for " + afid);
 	}
 
 }

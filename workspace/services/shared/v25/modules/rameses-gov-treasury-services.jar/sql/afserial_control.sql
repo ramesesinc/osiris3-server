@@ -86,6 +86,11 @@ SET assignee_objid=$P{assigneeid},
    assignee_name=$P{assigneename}
 WHERE controlid=$P{objid}   
 
+[changeMode]
+UPDATE afserial_control 
+SET txnmode = $P{mode}
+WHERE controlid=$P{objid}
+
 [activateAssignSubcollector]
 INSERT INTO afserial_control (controlid, txnmode,assignee_objid, assignee_name, currentseries,qtyissued,active)
 SELECT objid, NULL, $P{assigneeid}, $P{assigneename}, currentseries, 0,1

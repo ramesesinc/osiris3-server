@@ -53,12 +53,17 @@ class CashReceiptService  {
 		entity.org = [objid:env.ORGID, name:env.ORGNAME];
 		entity.items = [];
         entity.amount = 0;
-		entity.totalcash = 0;
+        entity.totalcash = 0;
         entity.totalnoncash = 0;
         entity.balancedue = 0;
         entity.cashchange = 0;
         entity.totalcredit = 0;
         entity.paymentitems = [];	
+
+        if(	!entity.collectiontype.formtype) {
+        	throw new Exception("Collection type " + entity.collectiontype.name + " must have a formtype");
+        }
+        
 		return entity;
 	}	
 

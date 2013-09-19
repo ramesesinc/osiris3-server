@@ -8,10 +8,12 @@ ORDER BY name
 SELECT * FROM collectionform 
 
 [findAllByFormNo]
-SELECT * 
-FROM collectiontype
-WHERE formno = $P{formno}
-ORDER BY name
+SELECT c.*, cf.formtype  
+FROM collectiontype c
+INNER JOIN collectionform cf 
+ON c.formno=cf.objid 
+WHERE c.formno = $P{formno}
+ORDER BY c.name
 
 [approve]
 UPDATE collectiontype SET state='APPROVED' WHERE objid=$P{objid}
