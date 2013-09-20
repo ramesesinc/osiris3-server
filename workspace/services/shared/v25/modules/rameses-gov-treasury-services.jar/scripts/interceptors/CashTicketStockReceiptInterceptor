@@ -36,7 +36,7 @@ class CashTicketInventoryInterceptor {
 				m.respcenter = [objid:'AFO', name:'AFO', type:'AFO'];
 				m.txntype = "RECEIPT";
 				m.remarks = "PURCHASE RECEIPT"
-				cashTicketSvc.postDebit(m);
+				cashTicketSvc.postReceipt(m);
 			}	
 		}
 	}

@@ -31,7 +31,7 @@ class CashTicketInventoryService {
 
 
 	@ProxyMethod
-	public def postDebit(def o)	{
+	public def postReceipt(def o)	{
 		//if a startstub is specified, create new head, else find resp. center for the head
 		def head = null;
 		if(o.starstub) {
@@ -68,8 +68,11 @@ class CashTicketInventoryService {
 		detail.controlid = head.objid;
 		detail.lineno = head.currentlineno;
 		detail.txntype = o.txntype;
-		detail.qtyin = o.qty;
+		detail.qtyreceived = o.qty;
+		detail.qtyissued = 0;
+		detail.qtybegin = 0;
 		detail.qtyending = head.qtybalance;
+		detail.qtycancelled = 0;
 		detail.remarks = o.remarks;
 		cashTicketInventory.create( detail, "detail" );
 		return head;
@@ -77,9 +80,9 @@ class CashTicketInventoryService {
 
 
 	@ProxyMethod
-	public def postCredit(def o)	{
+	public def postIssue(def o)	{
 		def head = cashTicketInventory.read( [objid: o.controlid]);
-		if(head.currentstub!= o.startstub)
+		if(o.startstub && head.currentstub!= o.startstub)
 			throw new Exception("Data may have changed for "  + o.afid + ". Please run process again");
 
 		head.qtyout = o.qty;
@@ -92,13 +95,32 @@ class CashTicketInventoryService {
 		detail.controlid = head.objid;
 		detail.lineno = head.currentlineno;
 		detail.txntype = o.txntype;
-		detail.qtyout = o.qty;
+		detail.qtyreceived = 0;
+		detail.qtybegin = 0;
+		detail.qtyissued = o.qty;
 		detail.qtyending = head.qtybalance;
+		detail.qtycancelled = 0;
 		detail.remarks = o.remarks;
 		cashTicketInventory.create( detail, "detail" );
 	}
 
-
+	@ProxyMethod
+	public def postBegin(def o)	{
+		def head = cashTicketInventory.read( [objid: o.controlid]);
+		head.currentlineno+=1;
+		cashTicketInventory.update( head );
+		def detail = initDetail(o);
+		detail.controlid = head.objid;
+		detail.lineno = head.currentlineno;
+		detail.txntype = o.txntype;
+		detail.qtyreceived = 0;
+		detail.qtybegin = o.qty;
+		detail.qtyissued = 0; 
+		detail.qtyending = head.qtybalance;
+		detail.qtycancelled = 0;
+		detail.remarks = o.remarks;
+		cashTicketInventory.create( detail, "detail" );
+	}
 
 
 }

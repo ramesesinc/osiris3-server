@@ -4,5 +4,9 @@
 		<field name="denomination" required="true" />
 	</element>
 
+	<element name="cashreceipt" tablename="cashreceipt_cashticket">
+		<field name="objid" primary="true"/>
+		<field name="qtyissued" required="true" />
+	</element>
 	
 </schema>

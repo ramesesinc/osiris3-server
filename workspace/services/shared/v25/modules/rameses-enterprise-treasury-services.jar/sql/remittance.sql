@@ -22,7 +22,7 @@ AND c.collector_objid = $P{collectorid}
 GROUP by c.collector_objid, c.formno, c.controlid, c.collector_objid
 
 [getUnremittedReceipts]
-SELECT c.formno, c.receiptno, c.payer_name, c.receiptdate,
+SELECT c.formno, c.receiptno, c.paidby, c.receiptdate,
 CASE WHEN v.objid IS NULL THEN c.amount ELSE 0 END AS amount,
 CASE WHEN v.objid IS NULL THEN 0 ELSE 1 END AS voided
 FROM cashreceipt c 
@@ -86,7 +86,7 @@ INNER JOIN cashreceiptpayment_check crpc ON crpc.objid=rc.objid
 WHERE rc.remittanceid  = $P{objid}
 
 [getRemittedReceipts]
-SELECT c.formno, c.receiptno, c.payer_name, c.receiptdate,
+SELECT c.formno, c.receiptno, c.paidby, c.receiptdate,
 CASE WHEN v.objid IS NULL THEN c.amount ELSE 0 END AS amount,
 CASE WHEN v.objid IS NULL THEN 0 ELSE 1 END AS voided
 FROM cashreceipt c 

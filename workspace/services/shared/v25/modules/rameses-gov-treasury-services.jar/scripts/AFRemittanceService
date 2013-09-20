@@ -13,4 +13,10 @@ class AFRemittanceService  {
 		def m = [objid: o.objid];
 		return em.getRemittedAFSerial(m);
 	}		
+
+	@ProxyMethod
+	public def getRemittedCashTickets(o) {
+		def m = [objid: o.objid];
+		return em.getRemittedCashTickets(m);
+	}	
 }

@@ -26,8 +26,11 @@ class AFSerialStockReceiptService {
 	public void activateControl(def p) {
 		def m = [:];
 		m.txnmode = p.txnmode;
+		if(!m.txnmode)
+			throw new Exception("Please indicate txn mode first");
 		m.userid = env.USERID;
 		m.afid = p.afid;
+
 		def z = em.findActiveControlForActivation(m);
 		if(z) {
 			throw new Exception("A stub is currently active. Deactivate first existing stub");
@@ -43,6 +46,11 @@ class AFSerialStockReceiptService {
 	@ProxyMethod
 	public void deactivateControl(def p) {
 		em.deactivateControl(p);
+	}
+
+	@ProxyMethod
+	public void changeMode(def p) {
+		em.changeMode(p);
 	}
 
 	@ProxyMethod

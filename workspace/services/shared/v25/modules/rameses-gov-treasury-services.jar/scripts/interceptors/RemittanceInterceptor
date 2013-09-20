@@ -10,6 +10,12 @@ class RemittanceInterceptor {
 	@Service("AFSerialInventoryService")
 	def afSerialSvc;
 
+	@Service("CashTicketInventoryService")
+	def cashTicketSvc;
+
+	@ActiveDB("cashticket")
+	def cashticket;
+
 	@ActiveDB("remittance_af")
 	def remittanceAf;
 
@@ -24,24 +30,32 @@ class RemittanceInterceptor {
 			m.refno = o.txnno;
 			m.refdate = o.dtposted;
 			m.afid = it.formno;
-			m.startseries = (it.startseries!=null)?it.startseries: 0;
-			m.endseries = (it.endseries!=null)?it.endseries: 0;
-			m.qty= (it.endseries - it.startseries) + 1;
 			m.txntype = "REMITTANCE";
-			m.remarks = "REMITTANCE" 
-			m.startstub = 0;
-			m.endstub = 0;
-			afSerialSvc.postIssue(m);
+			m.remarks = "REMITTANCE"; 
+			if( it.startseries ) {
+				m.startseries = it.startseries;
+				m.endseries = it.endseries;
+				m.qty= (it.endseries - it.startseries) + 1;
+				m.startstub = 0;
+				m.endstub = 0;
+				afSerialSvc.postIssue(m);
+			}
+			else {
+				//determine the qty. we can do this by getting the formno
+				def g = cashticket.read( [objid: m.afid ]);
+				m.qty = (int) (it.amount / g.denomination);
+				cashTicketSvc.postIssue( m );
+			}
 		}
 
 		//update the remittanceid for all 
 		//for each controlid, find maximum ending balance and credit it as begin	
-		remittanceAf.updateRemittanceAF( [collectorid:o.collector.objid, remittanceid: o.objid] );
-
 		//group each af by control then insert max ending start and beginning
+
+		remittanceAf.updateRemittanceAF( [collectorid:o.collector.objid, remittanceid: o.objid] );
 		def list = remittanceAf.getRemittanceForBalanceForward([remittanceid: o.objid]);
 		list.each {
-			def m = [controlid: it.controlid];
+			def m = [:];
 			m.startseries = it.startseries;
 			m.endseries = it.endseries;
 			m.txntype = "FORWARD";
@@ -55,6 +69,23 @@ class RemittanceInterceptor {
 			m.refdate = o.dtposted;
 			m.afid = it.formno;
 			afSerialSvc.postBegin(m);
+		}
+
+		//process the cash ticket
+		remittanceAf.updateRemittanceCashTicket( [collectorid:o.collector.objid, remittanceid: o.objid] );
+		list = remittanceAf.getCashTicketRemittanceForBalanceForward([remittanceid: o.objid]);
+		list.each {
+			def m = [:];
+			m.txntype = "FORWARD";
+			m.remarks = "FORWARD BALANCE FROM REMITTANCE";
+			m.qty= it.qty;
+			m.controlid = it.controlid;
+			m.refid = o.objid;
+			m.reftype = "remittance";	
+			m.refno = o.txnno;
+			m.refdate = o.dtposted;
+			m.afid = it.formno;
+			cashTicketSvc.postBegin(m);
 		}
 	}
 	
