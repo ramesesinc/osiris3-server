@@ -16,6 +16,7 @@ class UsergroupService extends AbstractCrudListService {
 
 	String schemaName = "usergroup";
 	String subSchemaName = "member";
+	Stirng pagingKeys = "ugm.objid"
 	
 	String pagingKeys = 'ug.objid'
 
