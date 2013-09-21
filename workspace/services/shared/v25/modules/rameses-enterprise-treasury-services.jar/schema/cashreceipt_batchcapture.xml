@@ -1,0 +1,11 @@
+<schema>
+	
+	<element name="batchcapturereceipt" tablename="batchcapturereceipt" >
+		<field name="objid" primary="true"/>
+	</element>
+
+	<element name="entry" tablename="batchcapturereceipt_entry" >
+		<field name="objid" primary="true"/>
+	</element>
+	
+</schema>

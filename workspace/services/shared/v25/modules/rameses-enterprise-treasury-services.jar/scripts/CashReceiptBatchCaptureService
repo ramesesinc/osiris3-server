@@ -1,0 +1,20 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.services.extended.*;
+
+class CashReceiptBatchCaptureService  {
+
+	@ActiveDB("cashreceipt_batchcapture")
+	def em;
+
+	@ProxyMethod
+	public def init(def o) {
+		println "ENTER BATCH CAPTURE HERE";
+		//batch series to be intercepted
+		o.startseries = 0;
+		o.endseries = 0;
+		return o;
+	}
+
+}

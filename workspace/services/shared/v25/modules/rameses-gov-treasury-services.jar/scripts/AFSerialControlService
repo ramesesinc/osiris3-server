@@ -12,33 +12,48 @@ class AFSerialStockReceiptService {
 
 	@ProxyMethod
 	public def getOpenIssuanceList(def p) {
-		p.userid = env.USERID;
-		return em.getOpenIssuanceList(p);
+		def m = [af:p.formno,  txnmode:p.txnmode]; 
+		if(!p.collector) 
+			m.userid = env.USERID;
+		else	
+			m.userid = p.collector.objid
+		return em.getOpenIssuanceList(m);
 	}
 
 	@ProxyMethod
 	public def getAssigneeIssuanceList(def p) {
-		p.userid = env.USERID;
-		return em.getAssigneeIssuanceList(p);
+		def m = [:];
+		m.af = p.formno
+		if(!p.collector) 
+			m.userid = env.USERID;
+		else	
+			m.userid = p.collector.objid
+
+		return em.getAssigneeIssuanceList(m);
 	}
 
 	@ProxyMethod
 	public void activateControl(def p) {
 		def m = [:];
+		m.objid = p.objid;
 		m.txnmode = p.txnmode;
 		if(!m.txnmode)
 			throw new Exception("Please indicate txn mode first");
-		m.userid = env.USERID;
-		m.afid = p.afid;
+
+		m.afid = p.formno;
+		if(!p.collector) 
+			m.userid = env.USERID;
+		else	
+			m.userid = p.collector.objid
 
 		def z = em.findActiveControlForActivation(m);
 		if(z) {
 			throw new Exception("A stub is currently active. Deactivate first existing stub");
 		}
 		else {
-			int test = em.reactivateControl(p);
+			int test = em.reactivateControl(m);
 			if(test==0) {
-				em.activateControl(p);
+				em.activateControl(m);
 			}
 		}		
 	}

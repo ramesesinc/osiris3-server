@@ -8,8 +8,6 @@ class CollectionTypeService extends ActiveCrudListService {
 
 	@ActiveDB("collectiontype")
 	def em;
-
-	String schemaName = "collectiontype";
 	
 	@ProxyMethod
 	public def getColumns( def o ) {
