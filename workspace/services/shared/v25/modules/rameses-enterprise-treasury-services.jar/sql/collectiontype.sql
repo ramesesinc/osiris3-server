@@ -8,7 +8,7 @@ ORDER BY name
 SELECT * FROM collectionform 
 
 [findAllByFormNo]
-SELECT c.*, cf.formtype  
+SELECT c.*, cf.formtype 
 FROM collectiontype c
 INNER JOIN collectionform cf 
 ON c.formno=cf.objid 

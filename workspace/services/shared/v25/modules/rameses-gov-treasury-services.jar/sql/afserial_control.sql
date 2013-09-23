@@ -88,7 +88,7 @@ WHERE controlid=$P{objid}
 
 [changeMode]
 UPDATE afserial_control 
-SET txnmode = $P{mode}
+SET txnmode = $P{txnmode}
 WHERE controlid=$P{objid}
 
 [activateAssignSubcollector]
@@ -96,9 +96,22 @@ INSERT INTO afserial_control (controlid, txnmode,assignee_objid, assignee_name, 
 SELECT objid, NULL, $P{assigneeid}, $P{assigneename}, currentseries, 0,1
 FROM afserial_inventory WHERE objid=$P{objid}
 
-
 [updateNextSeries]
 UPDATE afserial_control 
 SET currentseries = currentseries + 1,
 qtyissued = qtyissued + 1
 WHERE controlid = $P{controlid}
+
+[findControlForBatch]
+SELECT 
+ac.controlid, 
+ac.currentseries AS startseries,
+ai.endseries AS endseries,
+ai.startstub AS stub, 
+ai.prefix,
+ai.suffix, 
+a.serieslength
+FROM afserial_control ac
+INNER JOIN afserial_inventory ai ON ai.objid=ac.controlid
+INNER JOIN afserial a ON ai.afid=a.objid
+WHERE ac.controlid = $P{controlid}
