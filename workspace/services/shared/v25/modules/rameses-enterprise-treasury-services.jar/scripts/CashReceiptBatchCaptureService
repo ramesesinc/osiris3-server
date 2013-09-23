@@ -3,18 +3,29 @@ import com.rameses.util.*;
 import java.rmi.server.*;
 import com.rameses.services.extended.*;
 
-class CashReceiptBatchCaptureService  {
+class CashReceiptBatchCaptureService extends ActiveCrudService  {
 
 	@ActiveDB("cashreceipt_batchcapture")
 	def em;
 
-	@ProxyMethod
-	public def init(def o) {
-		println "ENTER BATCH CAPTURE HERE";
-		//batch series to be intercepted
-		o.startseries = 0;
-		o.endseries = 0;
-		return o;
+	@Service("DateService")
+	def dateSvc;
+
+	public void beforeCreate(def o) {
+		o.objid = "BATCHCAPTURE"+new UID();
+	}
+
+	public void afterCreate(def o) {
+		def txndate = dateSvc.serverDate;
+		o.items.each {
+			it.objid = "RCT"+new UID();
+			it.parentid = o.objid;
+			it.collectiontype = o.collectiontype;
+			it.txndate = txndate;
+			it.totalcash = it.amount;
+			it.totalnoncash = 0;
+			em.save( it, "entry");
+		}
 	}
 
 }

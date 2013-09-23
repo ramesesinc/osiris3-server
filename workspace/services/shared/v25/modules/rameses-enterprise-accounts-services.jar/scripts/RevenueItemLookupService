@@ -6,7 +6,7 @@ import com.rameses.services.extended.*
 
 class RevenueItemLookupService  {
 
-	@PersistenceContext("main")
+	@ActiveDB("revenueitem")
 	def em;
 
 	@Env
@@ -22,36 +22,15 @@ class RevenueItemLookupService  {
 		];
 	}
 	
-	/**
-	* possible txn type values:
-	* cashreceipt : during online cash receipt.
-    * cashreceipt-extended : if there is special handling of cash receipts
-    *    in cashreceipt-exteneded. you need to pass itemids; 	
-	*/
 	@ProxyMethod
 	public def getList( Map m ) {
+		println "entering lookup revenue"
 		if(m.searchtext == null ) m.searchtext = "";
 		m.code = m.searchtext.trim() + "%";
 		m.title = m.searchtext.trim() + "%";
-		
-		if( !m.collectorid) {
-			m.collectorid = env.USERID;
-		}	
-		
-		String sqlName = "revenueitem:getLookup";
-		def vars = [:];	
-		if(m.txntype == "cashreceipt" ) {
-			sqlName = "revenueitem:getLookupBasicCashReceipt";
-		}
-		else if(m.txntype == "cashreceipt-extended") {
-			sqlName = "revenueitem:getLookupBasicCashReceipt";
-			if( !m.itemids ) 
-				throw new Exception("RevenueItemLookupService.error. You need to pass itemids parameters");
-			vars = [filter: "'" + m.itemids.join("','") + "'" ];	
-		}
-		def qry = em.sqlContext.createNamedQuery(sqlName).setParameters(m).setVars(vars).setMaxResults(50);
-		qry.setPagingKeys("r.objid")
-		return qry.resultList;	
+		m._pagingKeys = "r.objid";
+		m._limit = 50;
+		return em.getLookup(m);	
 	}
 	
 }

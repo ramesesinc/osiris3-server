@@ -110,7 +110,7 @@ ai.endseries AS endseries,
 ai.startstub AS stub, 
 ai.prefix,
 ai.suffix, 
-a.serieslength 
+a.serieslength
 FROM afserial_control ac
 INNER JOIN afserial_inventory ai ON ai.objid=ac.controlid
 INNER JOIN afserial a ON ai.afid=a.objid

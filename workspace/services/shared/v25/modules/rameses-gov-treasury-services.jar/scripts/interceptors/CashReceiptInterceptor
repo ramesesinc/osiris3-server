@@ -16,6 +16,9 @@ class CashReceiptInterceptor {
 	@ActiveDB("cashticket")
 	def cashTicket;
 
+	@ActiveDB("cashreceipt_batchcapture")
+	def batchCapture;
+
 	@Env
 	def env;
 
@@ -30,12 +33,20 @@ class CashReceiptInterceptor {
 		if( !m) {
 			throw new Warning("select-afcontrol");
 		}
+
+		//check first if there is existing batch serial info
+		def test = batchCapture.findBatch( [controlid: m.controlid ] );		
+		if(test)
+			throw new Exception("An open batch exists that hos not yet been posted.");
+
 		result.stub = m.stub;
 		result.receiptno = ((m.prefix)?m.prefix:'') + m.currentseries + ((m.suffix)?m.suffix:'');
 		result.controlid = m.controlid;
 		result.series = m.currentseries;
 		if(result.txnmode == 'CAPTURE') {
 			def b = em.findControlForBatch( [controlid: m.controlid ] );
+			if(b.hasbatch == 1) 
+				throw new Exception( "There is exiting batch control" );
 			if( b ) {
 				b.receiptdate = result.receiptdate;
 				b.txnmode = result.txnmode;
@@ -44,6 +55,7 @@ class CashReceiptInterceptor {
 				b.totalcash = 0;
 				b.totalnoncash = 0;
 				b.org = result.org;
+				b.formno = result.formno;
 				b.collectiontype = result.collectiontype;
 				b.controlid = b.controlid;
 				b.user =  [objid: env.USERID, name:env.USER];
