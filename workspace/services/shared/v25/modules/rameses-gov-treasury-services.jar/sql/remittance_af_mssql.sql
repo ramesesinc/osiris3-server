@@ -6,6 +6,14 @@ from  afserial_inventory_detail ad
 WHERE ad.remittanceid IS NULL 
 AND ai.respcenter_objid = $P{collectorid}
 
+[updateRemittanceCashTicket]
+UPDATE  ad 
+SET ad.remittanceid = $P{remittanceid}
+from cashticket_inventory_detail ad 
+  inner join cashticket_inventory ai on ad.controlid = ai.objid
+WHERE ad.remittanceid IS NULL 
+AND ai.respcenter_objid = $P{collectorid}
+
 [getRemittanceForBalanceForward]
 SELECT 
 controlid,
@@ -15,6 +23,13 @@ FROM afserial_inventory_detail ad
 WHERE ad.remittanceid = $P{remittanceid}
 GROUP BY ad.controlid
 
+[getCashTicketRemittanceForBalanceForward]
+SELECT controlid, (SUM(qtyreceived)+SUM(qtybegin)-SUM(qtyissued)-SUM(qtycancelled)) AS qty
+FROM cashticket_inventory_detail 
+WHERE remittanceid=$P{remittanceid}
+GROUP BY controlid
+
+
 [getRemittedAFSerial]
 SELECT a.*, 
     (a.receivedendseries-a.receivedstartseries+1) AS qtyreceived,
@@ -23,7 +38,7 @@ SELECT a.*,
     (a.endingendseries-a.endingstartseries+1) AS qtyending
 FROM
 (SELECT 
-   ai.afid AS formno,		
+   ai.afid AS formno,   
    MIN( ad.receivedstartseries ) AS receivedstartseries,
    MAX( ad.receivedendseries ) AS receivedendseries,
    MAX( ad.beginstartseries ) AS beginstartseries,
@@ -36,6 +51,21 @@ FROM afserial_inventory_detail ad
 INNER JOIN afserial_inventory ai ON ad.controlid=ai.objid
 WHERE ad.remittanceid = $P{objid}
 GROUP BY ai.afid, ad.controlid) a
+
+[getRemittedCashTickets]
+SELECT a.*, 
+    a.qtyreceived+a.qtybegin-a.qtyissued-a.qtycancelled AS qtyending
+FROM
+(SELECT 
+   ai.afid AS formno,   
+   SUM( ad.qtyreceived ) AS qtyreceived,
+   SUM( ad.qtybegin ) AS qtybegin,
+   SUM( ad.qtyissued ) AS qtyissued,
+   SUM( ad.qtycancelled ) AS qtycancelled
+FROM cashticket_inventory_detail ad 
+INNER JOIN cashticket_inventory ai ON ad.controlid=ai.objid
+WHERE ad.remittanceid = $P{objid}
+GROUP BY ai.afid) a
 
 
 [collectAFControl]
