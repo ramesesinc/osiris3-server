@@ -1,5 +1,5 @@
 [lookup]
-SELECT b.objid, b.state, b.indexno, b.pin, b.name, b.oldpin, b.oldindex 
+SELECT b.objid, b.state, b.indexno, b.pin, b.name, b.oldpin, b.oldindexno
 FROM barangay b 
 WHERE b.name LIKE $P{name}  
 ORDER BY b.name 
