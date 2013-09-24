@@ -26,14 +26,9 @@
 		<module file="shared/rameses-client-report.jar" />
 		<module file="shared/rameses-enterprise-accounts.jar" />
 		<module file="shared/rameses-enterprise-inventory.jar" />
-
 		<module file="shared/rameses-enterprise-admin.jar" />
 		<module file="shared/rameses-enterprise-entity.jar" />
 		<module file="shared/rameses-enterprise-treasury.jar" />
-		<module file="shared/rameses-gov-lgu.jar" />
-		<module file="shared/rameses-gov-lgu-treasury.jar" />
-		<module file="shared/rameses-gov-treasury.jar" />
-
 		<module file="shared/rameses-rules-developer.jar" />
 		<module file="shared/rulemgmt.jar" />
 
@@ -41,6 +36,9 @@
 		<module file="rameses-gov-etracs-rptis.jar" />
 		<module file="rameses-gov-etracs-signatory-template.jar" />
 		<module file="rameses-gov-etracs-bpls.jar" />
+		<module file="rameses-gov-lgu.jar" />
+		<module file="rameses-gov-lgu-treasury.jar" />
+		<module file="rameses-gov-treasury.jar" />
 
     </modules>
 </app>
