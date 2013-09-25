@@ -30,7 +30,6 @@
 		<module file="shared/rameses-enterprise-entity.jar" />
 		<module file="shared/rameses-enterprise-treasury.jar" />
 		<module file="shared/rameses-rules-developer.jar" />
-		<module file="shared/rulemgmt.jar" />
 
 		<!-- main-app -->
 		<module file="rameses-etracs-main.jar" />
