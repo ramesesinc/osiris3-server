@@ -32,6 +32,9 @@
 		<module file="shared/rameses-rules-developer.jar" />
 		<module file="shared/rulemgmt.jar" />
 
+		<!-- main-app -->
+		<module file="rameses-etracs-main.jar" />
+		
 		<!-- plugins -->
 		<module file="rameses-gov-etracs-rptis.jar" />
 		<module file="rameses-gov-etracs-signatory-template.jar" />
