@@ -3,13 +3,11 @@ import com.rameses.util.*;
 import java.rmi.server.*;
 import com.rameses.services.extended.*;
 
-class CollectorLookupService extends AbstractListService {
+class CollectorLookupService extends ActiveListService {
 
-	@PersistenceContext("main")
+	@ActiveDB("collector")
 	def em;
 
-	String schemaName = "collector";
-	
 	@ProxyMethod
 	public def getColumns( def p ) {
 		return [
@@ -25,10 +23,5 @@ class CollectorLookupService extends AbstractListService {
 			it.name = it.firstname + " " + it.lastname;
 		}
 	}	
-
-	@ProxyMethod
-	public def findCollector( def o ) {
-		return em.sqlContext.createNamedQuery("collector:findCollector").setParameters(o).singleResult;
-	}
 
 }
