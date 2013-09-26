@@ -1,0 +1,68 @@
+import com.rameses.annotations.*;
+import com.rameses.common.*;
+import java.rmi.server.UID;
+import com.rameses.util.*;
+
+class RuleLoaderService {
+
+	@PersistenceContext('system')
+	def em
+	
+	@Resource('RuleService')
+	def ruleSvc; 
+	
+	@Context
+	def appContext;
+	
+	@Resource('TemplateService')
+	def templateSvc; 
+	
+	@Cache
+	def cache;
+	
+	@Schedule
+	public def loadRules(tsk) {
+		println "LOADING RULES";
+		def rulesets = [];
+		
+		//scan first all rulesets
+		appContext.scanFiles( "rulesets", { map -> 
+			if( map.directory ) rulesets << map.filename;
+		} as ScanFileFilter  );
+		rulesets = rulesets.unique();
+		
+		def readers = null;
+		def loadrules = { m->
+			try {
+				readers << new InputStreamReader(m.url.openStream());
+			}
+			catch(e) {println "error load " + e.message; }
+		} as ScanFileFilter;
+		
+		//loading rule sequence. file facts and rules. db rules
+		rulesets.each { rs->
+			println "loading rule " + rs;
+			readers = [];
+			
+			appContext.scanFiles( "rulesets/"+rs+"/facts", loadrules, ".*\\.drl");
+
+			//load the database rules first before files	
+			def m = [name: rs, type:'rules'];
+			em.sqlContext.createNamedQuery("rulemgmt:get-rules").setParameters( m ).resultList.each { r->
+				try {
+					String s = "package " + r.packagename + "\n" + r.content;
+					readers << new java.io.StringReader( s );
+				}
+				catch(e) {
+					e.printStackTrace();
+				}
+			}
+			
+			appContext.scanFiles( "rulesets/"+rs+"/rules", loadrules, ".*\\.drl");
+			
+			ruleSvc.buildRuleContext(rs, readers);
+		}
+		
+		
+	}	
+}

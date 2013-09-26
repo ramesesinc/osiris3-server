@@ -1,0 +1,40 @@
+<schema>
+	<element name="rule" tablename="rule" >
+		<field name="objid" primary="true"/>
+		<field name="docstate" required="true" />
+		<field name="rulename" required="true" />
+		<field name="description" required="true" />
+		<field name="packagename" required="true" />
+		<field name="author" required="true" />
+		<field name="salience" type="integer" required="true" />
+		<field name="agendagroup" required="true" />
+		<field name="ruleset" required="true" />
+		<field name="effectivefrom" />
+		<field name="effectiveto" />
+		<complex name="conditions" ref="condition" type="list" serializer="default" />
+		<complex name="actions" ref="action" type="list" serializer="default" />
+	</element>
+	
+	<element name="condition">
+		<field name="name" required="true"/>
+		<field name="displaytext" required="true" />
+		<field name="factclass" required="true"/>
+		<complex name="constraints" ref="constraint" type="list" serializer="default" />
+	</element>
+	
+	<element name="constraint">
+		<field name="displaytext" required="true" />
+		<field name="fieldname" required="true" />
+		<field name="datatype"  />
+		<field name="varname"  />
+		<field name="operator" />
+	</element>
+	
+	<element name="action">
+		<field name="name" required="true"/>
+		<field name="displaytext" required="false" />
+	</element>
+	
+	
+</schema>
+

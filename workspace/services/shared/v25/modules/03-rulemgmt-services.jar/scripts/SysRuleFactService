@@ -1,0 +1,11 @@
+import com.rameses.annotations.*;
+import com.rameses.common.*;
+import com.rameses.services.extended.*;
+
+class RuleFactService extends AbstractCrudService 
+{	
+	@PersistenceContext('system')
+	def em;
+
+	String schemaName = 'rulefact';
+}
