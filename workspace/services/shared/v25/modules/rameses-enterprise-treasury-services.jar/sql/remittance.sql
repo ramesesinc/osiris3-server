@@ -22,9 +22,10 @@ AND c.collector_objid = $P{collectorid}
 GROUP by c.collector_objid, c.formno, c.controlid, c.collector_objid
 
 [getUnremittedReceipts]
-SELECT c.formno, c.receiptno, c.payer_name, c.receiptdate,
+SELECT c.formno, c.receiptno, c.paidby, c.receiptdate,
 CASE WHEN v.objid IS NULL THEN c.amount ELSE 0 END AS amount,
-CASE WHEN v.objid IS NULL THEN 0 ELSE 1 END AS voided
+CASE WHEN v.objid IS NULL THEN 0 ELSE 1 END AS voided,
+c.subcollector_name
 FROM cashreceipt c 
 LEFT JOIN remittance_cashreceipt r ON c.objid=r.objid
 LEFT JOIN cashreceipt_void v ON c.objid=v.receiptid
@@ -36,7 +37,8 @@ ORDER BY c.receiptno
 SELECT 
 crp.objid, crp.checkno, crp.particulars, 
 CASE WHEN cv.objid IS NULL THEN crp.amount ELSE 0 END AS amount,
-CASE WHEN cv.objid IS NULL THEN 0 ELSE 1 END AS voided
+CASE WHEN cv.objid IS NULL THEN 0 ELSE 1 END AS voided,
+cash.subcollector_name
 FROM cashreceipt cash 
 INNER JOIN cashreceiptpayment_check crp ON crp.receiptid=cash.objid
 LEFT JOIN cashreceipt_void cv ON crp.receiptid = cv.receiptid
@@ -86,7 +88,7 @@ INNER JOIN cashreceiptpayment_check crpc ON crpc.objid=rc.objid
 WHERE rc.remittanceid  = $P{objid}
 
 [getRemittedReceipts]
-SELECT c.formno, c.receiptno, c.payer_name, c.receiptdate,
+SELECT c.formno, c.receiptno, c.paidby, c.receiptdate,
 CASE WHEN v.objid IS NULL THEN c.amount ELSE 0 END AS amount,
 CASE WHEN v.objid IS NULL THEN 0 ELSE 1 END AS voided
 FROM cashreceipt c 

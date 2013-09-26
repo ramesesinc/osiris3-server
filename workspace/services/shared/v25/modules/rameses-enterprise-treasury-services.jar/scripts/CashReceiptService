@@ -24,8 +24,8 @@ class CashReceiptService  {
 	@Service("CashBookPostService")
 	def cashBookSvc;
 	
-	@Service("CollectorLookupService")
-	def collectorSvc;
+	@ActiveDB("collector")
+	def collector;
 
 	/**
 	* note: setting of collector is in the CashReceiptInterceptor of gov. module.
@@ -43,22 +43,21 @@ class CashReceiptService  {
         	if( entity.receiptdate > currdate ) throw new Exception('Advance date is not allowed.')
 		}
 
-		//if collector was not set, check if user is a collector.
-		if(!entity.collector) {
-			def c = collectorSvc.findCollector( [userid: env.USERID] );
-			if(!c)
-				throw new Exception("You must be a member of collector group. Please contact admin");
-			entity.collector = [ objid:c.objid, name:c.firstname + " " +c.lastname, title:c.title];
-		}
 		entity.org = [objid:env.ORGID, name:env.ORGNAME];
+		entity.user = [objid: env.USERID, name:env.USER];
 		entity.items = [];
         entity.amount = 0;
-		entity.totalcash = 0;
+        entity.totalcash = 0;
         entity.totalnoncash = 0;
         entity.balancedue = 0;
         entity.cashchange = 0;
         entity.totalcredit = 0;
         entity.paymentitems = [];	
+
+        if(	!entity.formtype) {
+        	throw new Exception("Form type is required. Check collection form");
+        }
+        
 		return entity;
 	}	
 
@@ -74,6 +73,8 @@ class CashReceiptService  {
 	
 	@ProxyMethod
 	public def post( def p ) {
+		if(!p.formtype)
+			throw new Exception("Form type is required");
 		//check if there are payment items with no type. throw error
 		def test = p.paymentitems.findAll{ !it.type };
 		if(test) throw new Exception("All payment items must have a type. Please review the code");
@@ -82,7 +83,7 @@ class CashReceiptService  {
 
 		
 		p.txndate = dateService.serverDate;
-		p.user = [objid: env.USERID, name:env.USER];
+		
 		p.state = "POSTED";
 		em.create("cashreceipt", p ); 
 		p.items.each { x->

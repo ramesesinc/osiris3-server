@@ -47,7 +47,7 @@ class UserSecuritygroupService {
 			securitygroupid: 	params.securitygroupid 
 		];
 
-		if (params.orgid) {
+		if (params.orgid) {			
 			qry = em.sqlContext.createNamedQuery('usersecuritygroup:getOrg');
 			entity.org = qry.setParameters([
 							objid: params.orgid, 

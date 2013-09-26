@@ -20,8 +20,13 @@ SELECT * FROM sys_orgclass
 [getList]
 SELECT * FROM sys_org WHERE orgclass IN (${orgclasses}) AND parentid=$P{parentid} order by name 
 
-[getLookup]
+[getLookup_old]
 SELECT o.* FROM sys_org o WHERE o.orgclass=$P{orgclass} ORDER BY o.name 
+
+[getLookup]
+SELECT o.* FROM sys_org o 
+WHERE o.name LIKE $P{name} AND o.parentid IS NOT NULL 
+ORDER BY o.name 
 
 [getRoot]
 SELECT * FROM sys_org WHERE parentid IS NULL 

@@ -1,2 +1,0 @@
-[getList]
-SELECT * FROM cashreceiptform 
