@@ -23,9 +23,9 @@ class UserLookupService  {
 	@ProxyMethod
 	public List getList( params ) {
 		if (!params.name) params.name = params.searchtext;
-		
 		params.name = params.name? params.name+'%': '%';
-		return em.sqlContext.createNamedQuery("user:getList").setParameters(params).resultList;	
+		def filter = [filter: '''u.username LIKE $P{name}''' ];
+		return em.sqlContext.createNamedQuery("user:getList").setParameters(params).setVars(filter).resultList;	
 	}
 }
 
