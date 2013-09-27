@@ -28,19 +28,32 @@ class RemittanceService  {
 	public def init() {
 		def o = [objid: "REM"+new UID()];	
 		o.items = em.getUnremittedForCollector([collectorid: env.USERID]);
-		if(!o.items)
-			throw new Exception("No pending collection to remit");
-
-		o.amount = o.items.sum{ it.amount };	
-		o.totalcash = o.items.sum{ it.totalcash };	
-		o.totalnoncash = o.items.sum{ it.totalnoncash };	
+		o.amount = 0;
+		o.totalcash = 0;
+		o.totalnoncash = 0;
+		if(o.items) {
+			o.amount = o.items.sum{ it.amount };	
+			o.totalcash = o.items.sum{ it.totalcash };	
+			o.totalnoncash = o.items.sum{ it.totalnoncash };	
+		}
 		o.checks = em.getUnremittedChecks( [collectorid: env.USERID] );
 		o.collector = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE ];
+		//used for checking
+		o.checksum = em.getUnremittedTotals( [collectorid: env.USERID] );
 		return o;
 	}
 
 	@ProxyMethod
 	public def post( o ) {
+		if( o.amount == 0 ) 
+			throw new Exception("There is no amount to remit");
+
+		//compare checksum. deny if changed
+		def checksum = o.checksum;
+		def checktest = em.getUnremittedTotals( [collectorid: env.USERID] );
+		if(checksum!=checktest)
+			throw new Exception("Changes have been made prior to remittance. Please redo transaction");
+
 		def z = collector.findUserTxnCode( [userid: o.collector.objid] );
 		def txncode = "REM";	
 		if(z?.usertxncode) txncode = z.usertxncode; 	

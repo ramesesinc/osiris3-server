@@ -18,8 +18,20 @@ FROM cashreceipt c
 LEFT JOIN remittance_cashreceipt r ON c.objid=r.objid
 LEFT JOIN cashreceipt_void v ON c.objid=v.receiptid
 WHERE r.objid IS NULL
+AND c.state = 'POSTED'
 AND c.collector_objid = $P{collectorid}
-GROUP by c.collector_objid, c.formno, c.controlid, c.collector_objid
+GROUP by c.collector_objid, c.formno, c.controlid
+
+[getUnremittedTotals]
+SELECT COUNT(*) AS itemcount, 
+SUM( CASE WHEN v.objid IS NULL THEN c.amount ELSE 0 END ) AS totals
+FROM cashreceipt c 
+LEFT JOIN remittance_cashreceipt r ON c.objid=r.objid
+LEFT JOIN cashreceipt_void v ON c.objid=v.receiptid
+WHERE r.objid IS NULL
+AND c.state = 'POSTED'
+AND c.collector_objid = $P{collectorid}
+GROUP by c.collector_objid
 
 [getUnremittedReceipts]
 SELECT c.formno, c.receiptno, c.paidby, c.receiptdate,
@@ -30,6 +42,7 @@ FROM cashreceipt c
 LEFT JOIN remittance_cashreceipt r ON c.objid=r.objid
 LEFT JOIN cashreceipt_void v ON c.objid=v.receiptid
 WHERE r.objid IS NULL
+AND c.state = 'POSTED'
 AND c.collector_objid = $P{collectorid}
 ORDER BY c.receiptno
 
@@ -44,6 +57,7 @@ INNER JOIN cashreceiptpayment_check crp ON crp.receiptid=cash.objid
 LEFT JOIN cashreceipt_void cv ON crp.receiptid = cv.receiptid
 LEFT JOIN remittance_cashreceipt rc ON rc.objid=cash.objid
 WHERE rc.objid IS NULL 
+AND cash.state = 'POSTED'
 AND cash.collector_objid = $P{collectorid}
 
 [collectReceipts]
@@ -52,6 +66,7 @@ SELECT c.objid, $P{remittanceid}
 FROM cashreceipt c 
 LEFT JOIN remittance_cashreceipt r ON c.objid=r.objid
 WHERE r.objid IS NULL 
+AND c.state = 'POSTED'
 AND c.collector_objid = $P{collectorid}
 
 [collectChecks]
@@ -64,6 +79,7 @@ INNER JOIN cashreceiptpayment_check crp ON crp.receiptid=cash.objid
 LEFT JOIN remittance_cashreceipt rc ON rc.objid=cash.objid
 LEFT JOIN cashreceipt_void cv ON crp.receiptid = cv.receiptid
 WHERE rc.remittanceid = $P{remittanceid}
+AND cash.state = 'POSTED'
 
 [getRemittedFundTotals]
 SELECT cb.fund_objid, cb.fund_title, SUM(( cbe.dr - cbe.cr )) AS amount
@@ -74,9 +90,6 @@ INNER JOIN cashbook cb ON cb.objid = cbe.parentid
 WHERE remittanceid = $P{remittanceid}
 AND cv.objid IS NULL
 GROUP BY cb.fund_objid, cb.fund_title
-
-
-
 
 [getRemittedChecks]
 SELECT 
@@ -90,7 +103,8 @@ WHERE rc.remittanceid  = $P{objid}
 [getRemittedReceipts]
 SELECT c.formno, c.receiptno, c.paidby, c.receiptdate,
 CASE WHEN v.objid IS NULL THEN c.amount ELSE 0 END AS amount,
-CASE WHEN v.objid IS NULL THEN 0 ELSE 1 END AS voided
+CASE WHEN v.objid IS NULL THEN 0 ELSE 1 END AS voided,
+c.subcollector_name
 FROM cashreceipt c 
 LEFT JOIN remittance_cashreceipt r ON c.objid=r.objid
 LEFT JOIN cashreceipt_void v ON c.objid=v.receiptid

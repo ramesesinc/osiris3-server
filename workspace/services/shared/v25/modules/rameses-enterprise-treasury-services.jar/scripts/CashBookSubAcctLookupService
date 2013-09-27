@@ -4,17 +4,17 @@ import java.rmi.server.*;
 import com.rameses.common.*
 import com.rameses.services.extended.*
 
-class CashBookSubAcctLookupService extends AbstractListService {
+class CashBookSubAcctLookupService extends ActiveListService {
 
-	@PersistenceContext("main")
+	@ActiveDB("cashbook_subaccount")
 	def em;
 
-	String schemaName = "cashbook_subaccount";	
 	@ProxyMethod
 	public def getColumns( def p ) {
 		return [
 			[name:"name", caption:"Account Name"],
-			[name:"subaccttype", caption:"Sub Account Type"]
+			[name:"subaccttype", caption:"Sub Account Type"],
+			[name:"org.name", caption:"Org"],
 		];	
 	}	
 	

@@ -59,6 +59,9 @@ class DesktopUserService
 		result.env.ORGNAME = orginfo?.name; 
 
 		def permissions = svc.getPermissions([userid: info.objid, orgname:env.CLIENTCODE]); 
+		if (env.CLIENTCODE != null && permissions.isEmpty()) 
+			throw new Exception("You don't have enough permissions for client code "+env.CLIENTCODE+". Please verify.");  
+
 		permissions?.each {
 			def key = it.domain+'.'+it.role; 
 			def lst = [];

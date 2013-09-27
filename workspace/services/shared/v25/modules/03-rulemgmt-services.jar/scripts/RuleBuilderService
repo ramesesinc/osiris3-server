@@ -1,0 +1,67 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+import com.rameses.io.*;
+
+
+class RuleBuilderService {
+
+	@Resource("TemplateService")
+	def tmpSvc;
+
+	@Service("RuleSupportService")
+	def ruleSupport;
+	
+	private def getVars(rule) {
+		def vars = [];
+		rule.conditions.each { c->
+			if( c.varname ) vars <<  [name:c.varname, datatype:c.factname];
+			c.constraints.each {ct-> 
+				if(ct.varname) {
+					def dtype = ct.datatype;
+					if( dtype == "dynamic") {
+					   dtype = ct.value?.datatype;
+					} 
+					vars << [name:ct.varname, datatype:dtype];
+				}
+			}
+		}
+		return vars;
+	}
+	
+	@ProxyMethod
+	public String buildRuleText( def rule ) {
+		String tmpRoot = "/rulesets/" + rule.ruleset + "/templates/";
+		String actionRoot = tmpRoot + "actions/";
+		String rulePath = "/scripts/rule-templates/";
+		
+		def vars = getVars(rule);
+		def factList = ruleSupport.getFacts(rule);
+		def actionList = ruleSupport.getActions(rule);
+		
+		String s = tmpSvc.render( rulePath + "rule.gtpl", [
+			rule:rule, 
+			vars: vars,
+			header: {
+				return tmpSvc.render( tmpRoot + "header.gtpl", [:] ).toString();
+			},
+			conditionHandler: {c,i->
+				def factDef = factList.find{ it.name == c.name };
+				return tmpSvc.render( rulePath + "condition.gtpl", 
+					[condition:c, index:i, factDef:factDef] 
+				).toString();
+			},
+			actionHandler: { a,i->
+				def actionDef = actionList.find{ it.name == a.name };
+				String temp = actionDef.template;		
+				return tmpSvc.render( actionRoot + temp +".gtpl", 
+					[action: a, index:i, actionDef: actionDef ] 
+				).toString(); 	
+			}
+		]);
+		return s;
+	}	
+	
+}
+

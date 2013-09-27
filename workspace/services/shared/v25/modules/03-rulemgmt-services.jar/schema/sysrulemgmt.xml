@@ -1,0 +1,19 @@
+<schema>
+
+	<element name="sysrulemgmt" tablename="sys_rule">
+		<field name="name" primary="true"/>
+		<field name="rulesetid" />
+		<field name="rulegroupid" />
+		<field name="title" />
+		<field name="description" />
+		<field name="salience" />
+		<field name="effectivefrom" />
+		<field name="effectiveto" />
+		<field name="dtfiled" />
+		<field name="user_objid" />
+		<field name="user_name" />
+		<complex name="conditions" serializer="default"/>
+		<complex name="actions" serializer="default"/>
+	</element>
+	
+</schema>
