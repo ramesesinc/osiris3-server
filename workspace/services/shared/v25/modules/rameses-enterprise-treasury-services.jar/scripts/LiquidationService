@@ -87,8 +87,8 @@ class LiquidationService  {
 
 	@ProxyMethod
 	public def open( o ) {
-		o = em.read( o );
-		o.fundsummary = em.getFundSummaries(['liquidationid', o.objid]);
+		o = em.read( [objid:o.objid] );
+		o.fundsummary = em.getFundSummaries(['liquidationid': o.objid]);
 		o.checks = em.getLiquidatedChecks(o);
 		return o;
 	}
