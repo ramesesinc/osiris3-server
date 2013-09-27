@@ -24,7 +24,6 @@ class RevenueItemLookupService  {
 	
 	@ProxyMethod
 	public def getList( Map m ) {
-		println "entering lookup revenue"
 		if(m.searchtext == null ) m.searchtext = "";
 		m.code = m.searchtext.trim() + "%";
 		m.title = m.searchtext.trim() + "%";
