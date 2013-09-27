@@ -28,12 +28,14 @@ class RemittanceService  {
 	public def init() {
 		def o = [objid: "REM"+new UID()];	
 		o.items = em.getUnremittedForCollector([collectorid: env.USERID]);
-		if(!o.items)
-			throw new Exception("No pending collection to remit");
-
-		o.amount = o.items.sum{ it.amount };	
-		o.totalcash = o.items.sum{ it.totalcash };	
-		o.totalnoncash = o.items.sum{ it.totalnoncash };	
+		o.amount = 0;
+		o.totalcash = 0;
+		o.totalnoncash = 0;
+		if(o.items) {
+			o.amount = o.items.sum{ it.amount };	
+			o.totalcash = o.items.sum{ it.totalcash };	
+			o.totalnoncash = o.items.sum{ it.totalnoncash };	
+		}
 		o.checks = em.getUnremittedChecks( [collectorid: env.USERID] );
 		o.collector = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE ];
 		//used for checking
