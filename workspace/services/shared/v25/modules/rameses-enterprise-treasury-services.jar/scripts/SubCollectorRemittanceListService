@@ -21,8 +21,6 @@ class SubCollectorRemittanceListService extends ActiveListService {
 			[name:"dtposted", caption:"Remittance Date", width:120, resizable:false],
 			[name:"collector.name", caption:"Collector"],
 			[name:"subcollector.name", caption:"Sub Collector"],
-			[name:"totalcash", caption:"Total Cash", type:"decimal"],
-			[name:"totalnoncash", caption:"Total Noncash", type:"decimal"],
 			[name:"amount", caption:"Amount", type:"decimal"]
 		];	
 	}	

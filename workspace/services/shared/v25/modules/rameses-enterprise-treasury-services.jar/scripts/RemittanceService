@@ -45,6 +45,9 @@ class RemittanceService  {
 
 	@ProxyMethod
 	public def post( o ) {
+		if( o.amount == 0 ) 
+			throw new Exception("There is no amount to remit");
+
 		//compare checksum. deny if changed
 		def checksum = o.checksum;
 		def checktest = em.getUnremittedTotals( [collectorid: env.USERID] );
