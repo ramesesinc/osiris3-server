@@ -22,6 +22,9 @@
 		<field name="org_objid" required="true" />
 		<field name="org_name" required="true" />
 		<field name="formno" required="true" />
+		<field name="formtype" required="true" />
+		<field name="stub" required="true" />
+
 		<field name="controlid" required="true" />
 		<field name="collectiontype_objid" required="true" />
 		<field name="collectiontype_name" required="true" />
