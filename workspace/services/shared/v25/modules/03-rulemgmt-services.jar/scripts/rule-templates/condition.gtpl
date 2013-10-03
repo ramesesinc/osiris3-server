@@ -26,8 +26,14 @@ condition.constraints.eachWithIndex { con, i->
 			else if( dtype == "string" && con.usevar == true) {
 				print con.value;
 			}	
+			else if( dtype == "decimal" && con.usevar == true ) {
+				print con.value;
+			}
 			else if( dtype == "decimal" && con.usevar == false ) {
 				print decFormatter.format(con.value);
+			}
+			else if( dtype == "integer" && con.usevar == true) {
+				print con.value;
 			}
 			else if( dtype == "integer" && con.usevar == false) {
 				print intFormatter.format(con.value);
