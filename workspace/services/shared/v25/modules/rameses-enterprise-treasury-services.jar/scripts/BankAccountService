@@ -7,7 +7,7 @@ class BankAccountService extends ActiveCrudListService {
 	@ActiveDB('bankaccount')
 	def em
 	
-	def pagingKeys='ba.objid'
+	String pagingKeys='ba.objid'
 
 	@ProxyMethod
 	public def getColumns(def m) {
