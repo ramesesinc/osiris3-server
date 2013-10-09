@@ -35,5 +35,20 @@ class CollectionTypeService extends ActiveCrudListService {
 	public def getCollectionTypes(def o) {
 		return em.findAllByFormNo(o);
 	}
+
+	@ProxyMethod
+	public def getFormTypesSerial() { 
+		return em.getFormTypesSerial(); 
+	}
+
+	@ProxyMethod
+	public def getFormTypesForBatch() { 
+		return em.getFormTypesForBatch(); 
+	}
+
+	@ProxyMethod
+	public def findAllByFormNoForBatch(def o) {
+		return em.findAllByFormNoForBatch(o);
+	}
 		
 }
