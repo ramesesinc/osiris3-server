@@ -1,9 +1,7 @@
 [getList]
 SELECT r.* 
 FROM revenueitem r 
-WHERE r.code LIKE $P{searchtext}
-  OR r.title LIKE $P{searchtext}
-  OR r.fund_title = $P{fund}
+WHERE r.title LIKE $P{searchtext} 
 ORDER BY r.title
 
 [changeState-approved]
