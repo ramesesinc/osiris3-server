@@ -14,6 +14,7 @@ UPDATE revenueitem SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT'
 SELECT r.* FROM revenueitem r 
 WHERE  (r.title LIKE $P{title}  OR r.code LIKE $P{code} ) 
 and r.state = 'APPROVED'
+ORDER BY r.title
 
 [findSingleEntry]
 SELECT r.objid, r.code, r.title, r.fund_objid, r.fund_code, r.fund_title 
