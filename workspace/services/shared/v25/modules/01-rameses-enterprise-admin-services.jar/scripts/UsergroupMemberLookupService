@@ -33,7 +33,7 @@ class UsergroupMemberLookupService  {
 
 		def qry = em.sqlContext.createNamedQuery('usergroupmember:lookup'); 
 		qry.setFirstResult(params._start? params._start: 0);
-		qry.setMaxResults(params._limit? params._limit: 10);
+		qry.setMaxResults(params._limit? params._limit: 150);
 		qry.setPagingKeys("u.objid")
 		for (o in searchTypes) {
 			def list = qry.setParameters(params).setVars(o).resultList;
