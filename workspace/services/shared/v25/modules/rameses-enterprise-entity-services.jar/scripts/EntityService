@@ -20,6 +20,8 @@ class EntityService extends AbstractCrudListService {
 
 	String pagingKeys = 'e.objid'
 
+	def INDEX_CHAR_COUNT = 300
+
 	@ProxyMethod
 	public def getColumns( params ) {
 		def columns = [
@@ -62,7 +64,14 @@ class EntityService extends AbstractCrudListService {
 			entity.name = entity.lastname+', '+entity.firstname; 
 			if (entity.middlename) entity.name += ' '+entity.middlename; 
 		} 
+		updateEntityNameInfo(entity)
 	} 
+
+	void updateEntityNameInfo(entity){
+		def len = entity.name.length()
+		if (len > INDEX_CHAR_COUNT) len = INDEX_CHAR_COUNT
+		entity.entityname = entity.name.substring(0, len)
+	}
 
 	public void afterCreate( entity ) { 
 		def type = entity.type.toLowerCase();
@@ -74,6 +83,7 @@ class EntityService extends AbstractCrudListService {
 
 	public void beforeUpdate( entity ) { 
 		if (!entity.type) throw new Exception('Please specify type'); 
+		updateEntityNameInfo(entity)
 	} 
 
 	public void afterUpdate( entity ) {
