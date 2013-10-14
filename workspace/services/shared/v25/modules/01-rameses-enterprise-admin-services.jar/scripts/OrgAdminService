@@ -64,7 +64,7 @@ class OrgAdminService extends AbstractCrudService {
 			}
 
 			def qry = em.sqlContext.createNamedQuery(sql)
-			qry.setPagingKeys('ug.objid')
+			qry.setPagingKeys('objid')
 			def list = qry.setParameters(params).resultList.unique();
 			list.each {
 				it.caption = it.name;
@@ -111,7 +111,7 @@ class OrgAdminService extends AbstractCrudService {
 		if (resmap.list) return resmap.list; 
 
 		def qry = em.sqlContext.createNamedQuery('org:getList').setVars(m).setParameters(m); 
-		qry.setPagingKeys('ug.objid')
+		qry.setPagingKeys('objid')
 		if (params._start) qry.setFirstResult(params._start);
 		if (params._limit) qry.setMaxResults(params._limit);
 
