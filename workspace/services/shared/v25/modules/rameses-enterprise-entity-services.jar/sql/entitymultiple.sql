@@ -2,8 +2,8 @@
 SELECT e.*, emu.fullname 
 FROM entitymultiple emu 
 	INNER JOIN entity e ON emu.objid=e.objid 
-WHERE e.name LIKE $P{name} 
-ORDER BY e.name 
+WHERE e.entityname LIKE $P{name} 
+ORDER BY e.entityname 
 
 
 [getMembers]
