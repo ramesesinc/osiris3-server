@@ -1,8 +1,7 @@
 [getList]
 SELECT r.*
-FROM subcollector_remittance r 
+FROM subcollector_remittance r
 where subcollector_objid like $P{subcollectorid}
-
 
 [getCollectors]
 SELECT 
@@ -46,8 +45,9 @@ AND cr.collector_objid = $P{collectorid}
 AND cr.subcollector_objid=$P{subcollectorid}
 
 [updateCashReceiptState]
-UPDATE cashreceipt cr  
+UPDATE cr  
 SET cr.state = 'POSTED'
+from  cashreceipt cr
 WHERE EXISTS (
 	SELECT csr.objid 
 	FROM subcollector_remittance_cashreceipt csr
