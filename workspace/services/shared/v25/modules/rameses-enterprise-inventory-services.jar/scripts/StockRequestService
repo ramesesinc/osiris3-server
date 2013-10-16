@@ -39,7 +39,7 @@ class StockRequestService extends ActiveCrudListService {
 	
 	
 	void beforeCreate( def o ) {
-		o.requester = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE];
+		// o.requester = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE];
 		o.org = [objid:env.ORGID, name:env.ORGNAME];
 		o.reqno = "RIS" + seqSvc.getNextFormattedSeries("RIS");
 		o.dtfiled = dateSvc.serverDate;
