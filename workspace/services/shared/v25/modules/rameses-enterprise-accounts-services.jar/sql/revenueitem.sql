@@ -4,6 +4,12 @@ FROM revenueitem r
 WHERE r.title LIKE $P{searchtext} 
 ORDER BY r.title
 
+[getListByCode]
+SELECT r.* 
+FROM revenueitem r 
+WHERE r.code LIKE $P{searchtext} 
+ORDER BY r.code
+ 
 [changeState-approved]
 UPDATE revenueitem SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT'
 
