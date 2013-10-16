@@ -82,7 +82,10 @@ class CashReceiptService  {
 		if(!p.payer) p.payer = [:];  //if there is no id, we need still to add bec. it is an object.
 
 		p.txndate = dateService.serverDate;
-		p.state = (p.subcollector?.objid) ? "DELEGATED" : "POSTED";
+		p.state = "POSTED"
+		if(p.subcollector?.objid ) p.state = "DELEGATED"
+		if(p.batchcapture) p.state = "CAPTURED"
+
 		em.create("cashreceipt", p ); 
 		p.items.each { x->
 			x.objid = "RCTI"+ new UID();
