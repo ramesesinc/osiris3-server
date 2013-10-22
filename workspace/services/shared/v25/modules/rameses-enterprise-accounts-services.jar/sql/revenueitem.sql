@@ -20,3 +20,15 @@ and r.state = 'APPROVED'
 [findSingleEntry]
 SELECT r.objid, r.code, r.title, r.fund_objid, r.fund_code, r.fund_title 
 FROM revenueitem r WHERE objid=$P{objid}
+
+[getAccountColumns]
+SELECT name, title, source from account_segment 
+WHERE objectname = 'revenueitem' 
+ORDER BY sortorder 
+
+[getAccountList]
+SELECT r.objid, r.code, r.title 
+${columns}
+FROM revenueitem r
+${sources}
+ORDER BY r.title

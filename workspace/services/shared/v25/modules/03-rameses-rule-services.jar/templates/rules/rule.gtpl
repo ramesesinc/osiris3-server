@@ -1,5 +1,21 @@
-<% 
-	
+<%
+    import java.text.SimpleDateFormat;
+
+	def prn_date = { rule->
+		if(rule.effectivefrom!=null || rule.effectiveto!=null) {
+			def dformat = new SimpleDateFormat("yyyyMMdd");
+			out.println("EffectiveDate(");
+			if(rule.effectivefrom!=null) { 
+				out.print( "numericDate >= " + dformat.format(rule.effectivefrom));
+				if(rule.effectiveto!=null) out.print(",");
+			}
+			if(rule.effectiveto!=null) { 
+				out.print( "numericDate <= " + dformat.format(rule.effectiveto));
+			}
+			out.print(")");
+		}
+	}
+
 	def prn_cond = { c->
 		c.constraints.eachWithIndex { ct,i->
 			if(i>0) out.print(",");
@@ -52,6 +68,7 @@ rule "${rule.name}"
 	salience ${rule.salience}
 	no-loop
 	when
+		<%prn_date(rule)%>
 		<%rule.conditions.each { cond-> %>
 		${ (cond.varname)?cond.varname + ':': '' } ${cond.fact.factclass} ( <%prn_cond(cond)%> )
 		<%}%>

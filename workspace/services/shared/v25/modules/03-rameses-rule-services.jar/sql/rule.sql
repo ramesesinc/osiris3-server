@@ -2,6 +2,7 @@
 SELECT * 
 FROM sys_rule 
 WHERE ruleset = $P{ruleset}
+${filter}
 
 [getRulesets]
 SELECT * FROM sys_ruleset

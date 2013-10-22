@@ -9,7 +9,7 @@
 		<field name="title" required="true"/>
 		<field name="description" />
 		<field name="salience" required="true"/>
-		<field name="effectivefrom" required="true"/>
+		<field name="effectivefrom" />
 		<field name="effectiveto" />
 		<field name="dtfiled" required="true"/>
 		<field name="user_objid" required="true"/>

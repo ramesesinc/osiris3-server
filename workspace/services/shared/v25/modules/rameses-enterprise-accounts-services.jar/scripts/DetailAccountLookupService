@@ -1,12 +1,15 @@
 import com.rameses.annotations.*;
 import com.rameses.util.*;
 import java.rmi.server.*;
-import com.rameses.common.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*;
 
-class DetailAccountLookupService  {
+class DetailAccountLookupService extends ActiveListService {
 
-	@PersistenceContext('main')
+	@ActiveDB('account')
 	def em;
+
+	String listMethod = "getLookup";
 
 	@ProxyMethod
 	public def getColumns( def o ) {
@@ -16,27 +19,11 @@ class DetailAccountLookupService  {
 		];
 	}
 	
-	def searchTypes = [
-		[filter:' t.code LIKE $P{searchtext} AND t.type=$P{type} '], 
-		[filter:' t.title LIKE $P{searchtext} AND t.type=$P{type} '] 
-	];
-
-	@ProxyMethod
-	public List getList( params ) {
+	public void beforeList(params) {
 		params.searchtext = removeLeadingChar(params.searchtext, '%')+'%'; 
 		params.type = 'detail';
-		
-		def qry = em.sqlContext.createNamedQuery('account:lookup'); 
-		for (o in searchTypes) {
-			def list = qry.setParameters(params).setVars(o).resultList;
-			if (list.isEmpty()) continue; 
+	}
 
-			return list;
-		} 
-		//otherwise return an empty list
-		return []; 
-	} 
-	
     private String removeLeadingChar(String text, def ch) {
     	if (text == null) return "";
 

@@ -26,18 +26,47 @@ class RuleMgmtService extends ActiveCrudListService {
 		return[
 			[name:'name', caption:'Rule Name', width:250, resizable:false ],
 			[name:'title', caption:'Title' ],
-			[name:'rulegroup', caption:'Rule Group', width:150, resizable:false ],
+			[name:'salience', caption:'Salience', width:80, resizable:false, type:'integer' ],
+			[name:'state', caption:'Status', width:80, resizable:false, alignment:'CENTER' ],
+			[name:'rulegroup', caption:'Rule Group', width:120, resizable:false ],
 			[name:'user.name', caption:'Author', width:150,  resizable:false],
-			[name:'dtfiled', caption:'Date Created', width:150,  resizable:false ]
+			[name:'dtfiled', caption:'Date Created', width:150,  resizable:false, type:'date' ],
+			[caption:'Effectivity', width:150, type:'label',
+				expression:'#{item.effectivefrom}-#{item.effectiveto}', resizable:false ],
 		];
 	}
 	
+	void beforeList(o) {
+		def b = new StringBuilder();
+		if( o.rulegroup ) {
+			b.append( ' AND rulegroup = $P{rulegroup} ' );
+		}
+		if( o.state ) {
+			b.append( ' AND state = $P{state} ' );
+		}
+		if( o.title ) {
+			o.title = '%'+o.title+'%';
+			b.append( ' AND title LIKE $P{title} ' );
+		}
+		o.filter = b.toString();
+	}
+
 	public void beforeCreate(def o) {
 		if(o.salience==null) o.salience = 0;
 		if(!o.effectivefrom) o.effectivefrom = dateSvc.serverDate;
 		o.dtfiled = dateSvc.serverDate;
 		o.user = [objid:env.USERID, name:env.USER];
 		o.state = 'DRAFT';
+	}
+
+	public void beforeUpdate(def o) {
+		if( o.effectivefrom!=null && o.effectiveto!=null) {
+            def dfrom = java.sql.Date.valueOf(o.effectivefrom);
+            def dto = java.sql.Date.valueOf(o.effectiveto);
+            if( dto.before(dfrom)) {
+                throw new Exception("To date must be greater than from date");
+            }
+        }
 	}
 
 	public Object open(Object o) {

@@ -13,13 +13,12 @@ ORDER BY a.code
 [getList]
 SELECT * FROM account WHERE parentid=$P{objid} ORDER BY code 
 
-[search]
-SELECT t.* FROM sreaccount t  
-WHERE ${filter} t.parentid IS NOT NULL 
-ORDER BY t.title 
+[getLookup]
+SELECT a.* FROM 
+(SELECT objid,code,title FROM account t WHERE t.code LIKE $P{searchtext} AND type=$P{type}
+UNION
+SELECT objid,code,title FROM account t WHERE t.title LIKE $P{searchtext} AND type=$P{type}) AS a
+ORDER BY a.title
 
-[lookup]
-SELECT t.* FROM sreaccount t WHERE ${filter} ORDER BY t.title 
-
-[changeState-approved]
+[approve]
 UPDATE account SET state='APPROVED' WHERE objid=$P{objid} 
