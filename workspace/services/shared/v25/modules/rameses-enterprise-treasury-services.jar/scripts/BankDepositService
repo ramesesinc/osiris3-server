@@ -114,6 +114,7 @@ class BankDepositService  {
 			m.particulars = "DEPOSITED BY " + env.FULLNAME;
 			bankBook.postDR( m );
 		}
+		return o;
 
 	}
 

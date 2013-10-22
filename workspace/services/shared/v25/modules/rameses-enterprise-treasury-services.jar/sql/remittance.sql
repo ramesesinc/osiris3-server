@@ -3,8 +3,8 @@ SELECT r.*,
 CASE WHEN lr.objid IS NULL THEN 0 ELSE 1 END AS liquidated 
 FROM remittance r
 LEFT JOIN liquidation_remittance lr ON r.objid=lr.objid
-WHERE r.txnno = $P{txnno}
-  OR r.collector_name LIKE $P{searchtext} 
+WHERE r.collector_objid = $P{collectorid} 
+	and r.txnno like $P{txnno}
 ORDER BY r.collector_name, r.txnno DESC 
 
 [getUnremittedForCollector]

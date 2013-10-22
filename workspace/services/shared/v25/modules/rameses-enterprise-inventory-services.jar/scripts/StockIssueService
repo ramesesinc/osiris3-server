@@ -19,10 +19,10 @@ class StockIssueService extends ActiveCrudService {
 	def env;
 
 	void beforeCreate( def o ) {
-		o.requester = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE];
+		// o.requester = [objid:env.USERID, name:env.FULLNAME, title:env.JOBTITLE];
 		o.org = [objid:env.ORGID, name:env.ORGNAME];
 		o.user = [objid:env.USERID, name:env.FULLNAME];
-		o.issueno = "RIV" + seqSvc.getNextFormattedSeries("RIV");
+		o.issueno = "IRAF" + seqSvc.getNextFormattedSeries("IRAF");
 		o.dtfiled = dateSvc.serverDate;
 		o.state = "CLOSED";
 	}

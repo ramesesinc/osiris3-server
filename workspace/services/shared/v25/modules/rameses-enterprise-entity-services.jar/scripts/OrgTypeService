@@ -6,11 +6,11 @@ import com.rameses.io.*;
 
 class OrgTypeService {
 
+	@Service('LOVService')
+	def lovSvc
+
 	@ProxyMethod
 	public def getList() {		
-		return [
-			[key:'SINGLEPROPERTORSHIP', value:'SINGLEPROPERTORSHIP'], 
-			[key:'CORPORATION', value:'CORPORATION'] 
-		]; 
+		return lovSvc.getKeyValues('BUSINESS_ORG_TYPES')
 	} 
 } 

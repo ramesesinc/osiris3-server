@@ -12,6 +12,7 @@ class RemittanceListService extends AbstractListService {
 	String schemaName = "remittance";
 	String pagingKeys = "r.objid"
 
+
 	@Env
 	def env;
 
@@ -29,8 +30,8 @@ class RemittanceListService extends AbstractListService {
 	}	
 
 	void beforeList(o) {
-		o.txnno = o.searchtext 
-		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+		o.txnno = (o.searchtext ? o.searchtext : '') +'%'
+		o.collectorid = env.USERID 
 	}
 	
 }

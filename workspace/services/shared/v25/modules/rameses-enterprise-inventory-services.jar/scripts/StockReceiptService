@@ -21,7 +21,7 @@ class StockReceiptService extends ActiveCrudService {
 	void beforeCreate( def o ) {
 		o.user = [objid:env.USERID, name:env.FULLNAME];
 		o.org = [objid:env.ORGID, name:env.ORGNAME];
-		o.receiptno = "RIV" + seqSvc.getNextFormattedSeries("RIV");
+		o.receiptno = "IRAF" + seqSvc.getNextFormattedSeries("IRAF");
 		o.dtfiled = dateSvc.serverDate;
 		o.state = "CLOSED";
 	}
