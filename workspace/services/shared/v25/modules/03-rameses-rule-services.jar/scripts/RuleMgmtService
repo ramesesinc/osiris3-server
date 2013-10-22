@@ -244,6 +244,12 @@ class RuleMgmtService extends ActiveCrudListService {
 		em.delete( o, "action" );
 	}
 
+	@ProxyMethod
+	public def viewRuleText( o ) {
+		o = open(o);
+		o.vars = em.getRuleVars(o); 
+		return  template.get( "rules/rule", [rule: o, templateSvc: template ] ).toString();
+	}
 
 	@ProxyMethod
 	public def deploy( o ) {
@@ -255,8 +261,6 @@ class RuleMgmtService extends ActiveCrudListService {
 		//	throw new Exception("Rule must be in approved state")
 		o.vars = em.getRuleVars(o); 
 		String ruletext =  template.get( "rules/rule", [rule: o, templateSvc: template ] );
-		//println ruletext;
-		//throw new Exception("alright stop");
 		try {
 			ruleSvc.addRulePackage( o.ruleset, new java.io.StringReader(ruletext) );
 			em.create( [objid:o.objid,ruletext:ruletext], "deployed");

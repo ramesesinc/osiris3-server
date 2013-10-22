@@ -4,7 +4,7 @@
 	def prn_date = { rule->
 		if(rule.effectivefrom!=null || rule.effectiveto!=null) {
 			def dformat = new SimpleDateFormat("yyyyMMdd");
-			out.println("EffectiveDate(");
+			out.print("EffectiveDate(");
 			if(rule.effectivefrom!=null) { 
 				out.print( "numericDate >= " + dformat.format(rule.effectivefrom));
 				if(rule.effectiveto!=null) out.print(",");
