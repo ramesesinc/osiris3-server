@@ -29,6 +29,7 @@ ORDER BY sortorder
 SELECT *
 FROM sys_rule_fact_field 
 WHERE parentid=$P{objid}
+ORDER BY sortorder
 
 [findRule]
 SELECT r.* 

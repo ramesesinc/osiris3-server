@@ -25,7 +25,9 @@ class RuleDeveloperService  {
 		o._deleted_fields?.each { 
 			em.delete(it, "fact_field");
 		}
+		int i= 1;
 		o.fields.each {
+			it.sortorder = (i++);
 			it.parentid = o.objid;
 			em.save( it, "fact_field" );
 		}
@@ -45,7 +47,9 @@ class RuleDeveloperService  {
 		o._deleted_params?.each { 
 			em.delete(it, "actiondef_param");
 		}
+		int i = 1;
 		o.params.each {
+			it.sortorder = (i++);
 			it.parentid = o.objid;
 			em.save( it, "actiondef_param")
 		}
