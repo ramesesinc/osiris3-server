@@ -90,10 +90,12 @@ WHERE p.parentid=$P{objid}
 ORDER BY ad.sortorder
 
 [findAllVarsByType]
-SELECT objid, varname AS name, datatype
-FROM sys_rule_condition_var 
-WHERE ruleid=$P{ruleid}
+SELECT var.objid, var.varname AS name, var.datatype
+FROM sys_rule_condition_var var
+INNER JOIN sys_rule_condition cond ON var.parentid=cond.objid
+WHERE cond.parentid=$P{ruleid}
 ${filter}
+ORDER BY var.pos
 
 [getActionDefParams]
 SELECT *

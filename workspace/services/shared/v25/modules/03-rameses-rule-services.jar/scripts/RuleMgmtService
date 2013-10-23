@@ -194,19 +194,19 @@ class RuleMgmtService extends ActiveCrudListService {
 		def builder = new StringBuilder();
 		if(opt.datatype) {
 			if(opt.datatype == 'number') {
-				builder.append( " AND (datatype='decimal' OR datatype='integer') " );
+				builder.append( " AND (var.datatype='decimal' OR var.datatype='integer') " );
 			}
 			else if(opt.datatype == "obj") {
-				builder.append( " AND NOT(datatype='decimal')" );
-				builder.append( " AND NOT(datatype='integer')" );
-				builder.append( " AND NOT(datatype='string')" );
+				builder.append( " AND NOT(var.datatype='decimal')" );
+				builder.append( " AND NOT(var.datatype='integer')" );
+				builder.append( " AND NOT(var.datatype='string')" );
 			}
 			else {
-				builder.append( ''' AND datatype=$P{datatype}''' );
+				builder.append( ''' AND var.datatype=$P{datatype}''' );
 			}
 		}
 		if( opt.pos ) {
-			builder.append( ''' AND pos < $P{pos} ''' );
+			builder.append( ''' AND cond.pos < $P{pos} ''' );
 		}
 		opt.filter = builder.toString();
 		return em.findAllVarsByType(opt);
