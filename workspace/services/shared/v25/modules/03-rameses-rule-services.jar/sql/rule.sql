@@ -128,3 +128,17 @@ FROM sys_rule_condition_var
 WHERE ruleid = $P{objid}
 ORDER BY pos
 
+[removeAllRuleConstraints]
+DELETE FROM sys_rule_condition_constraint WHERE parentid IN ( SELECT objid FROM sys_rule_condition WHERE parentid=$P{objid} ) 
+
+[removeAllRuleConditionVars]
+DELETE FROM sys_rule_condition_var WHERE ruleid = $P{objid}
+
+[removeAllRuleConditions]
+DELETE FROM sys_rule_condition WHERE parentid =$P{objid} 
+
+[removeAllRuleActionParams]
+DELETE FROM sys_rule_action_param WHERE parentid IN  ( SELECT objid FROM sys_rule_action WHERE parentid=$P{objid} ) 
+
+[removeAllRuleActions]
+DELETE FROM sys_rule_action WHERE parentid=$P{objid} 

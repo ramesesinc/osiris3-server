@@ -69,6 +69,14 @@ class RuleMgmtService extends ActiveCrudListService {
         }
 	}
 
+	public void beforeRemoveEntity(def o) {
+		em.removeAllRuleConstraints(o);
+		em.removeAllRuleActionParams(o);
+		em.removeAllRuleConditionVars(o);
+		em.removeAllRuleActions(o);
+		em.removeAllRuleConditions(o);
+	}
+
 	public Object open(Object o) {
 		o = em.findRule( o );
 		o.conditions = em.getRuleConditions(o);
@@ -118,7 +126,7 @@ class RuleMgmtService extends ActiveCrudListService {
 				parentid: o.objid, 
 				ruleid: o.parentid,
 				varname: o.varname,
-				datatype: o.fact.name,
+				datatype: o.fact.factclass,
 				pos: o.pos
 			];		
 			em.save( m, "var");
