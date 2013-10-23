@@ -45,7 +45,7 @@
 				r = "\"" + o.stringvalue + "\"";
 				break;
 			case "expression-expression":
-				r = "(new ActionExpression(\"${o.expr}\", bindings)).getDecimalValue()" ;
+				r = "(new ActionExpression(\"${o.expr}\", bindings))" ;
 				break;
 			case "expression-range":
 				r = "0.0";
