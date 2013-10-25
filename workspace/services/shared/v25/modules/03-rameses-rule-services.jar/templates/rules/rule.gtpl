@@ -44,8 +44,18 @@
 			case "message":	
 				r = "\"" + o.stringvalue + "\"";
 				break;
+			case "string":
+				r = "\"" + o.stringvalue + "\"";
+				break;
+			case "boolean":
+				if( o.booleanvalue == 1 || o.booleanvalue == true ) 
+					r = "true";
+				else
+					r = "false"	
+				break;
 			case "expression-expression":
-				r = "(new ActionExpression(\"${o.expr}\", bindings))" ;
+				String expr = o.expr.replace('\n', '').replace('\t', '');
+				r = "(new ActionExpression(\"${expr}\", bindings))" ;
 				break;
 			case "expression-range":
 				r = "0.0";
