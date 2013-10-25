@@ -5,7 +5,7 @@ import com.rameses.common.*
 
 class AccountSegmentService {
 
-	@PersistenceContext("main")
+	@ActiveDB("accountsegment")
 	def em;
 
 
@@ -13,14 +13,13 @@ class AccountSegmentService {
 	public def getSegments(def p) {
 		if(!p.objectname) throw new Exception("Please indicate objectname in AccountSegment.getSegments");
 			
-		//retrieve associated segments with account
-		def qry = em.sqlContext.createNamedQuery('accountsegment:fetchSegment');
-		
-		def list = em.sqlContext.createNamedQuery('accountsegment:getSegments').setParameters(p).resultList;
+		def list = em.getSegments(p);
 		list.each {
 			try {
-				def vars = [segment:it.name, source:it.source, objectname:p.objectname];
-				def result = qry.setParameters(p).setVars(vars).singleResult;
+				p.segment = it.name;
+				p.source = it.source;
+				p.objectname = p.objectname;
+				def result = em.findSegment(p);
 				if(result) {
 					it.value = result.code + "-" + result.title;
 					it.acctid = result.objid;
@@ -34,12 +33,10 @@ class AccountSegmentService {
 	@ProxyMethod
 	public def addSegment(def p) {
 		if(!p.objectname) throw new Exception("Please indicate objectname in AccountSegment.addSegment");
-		
-		def objectname = p.objectname;
-		def segment = p.segment;
-
-		def obj = [objid:p.objid, acctid:p.acctid];
-		em.save( objectname + ":" + segment + "-segment", obj );
+		if(!p.segment) throw new Exception("Please indicate segment in AccountSegment.addSegment");
+		if(!p.objid) throw new Exception("Please indicate objid in AccountSegment.addSegment");
+		em.removeSegment(p);
+		if(p.acctid) em.addSegment( p );
 	}
 	
 }
