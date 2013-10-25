@@ -115,6 +115,7 @@
 	<element name="actiondef" tablename="sys_rule_actiondef">
 		<field name="objid" primary="true"/>
 		<field name="name" required="true"/>
+		<field name="actionname" required="true"/>
 		<field name="sortorder" required="true"/>
 		<field name="ruleset" required="true"/>
 		<field name="title" required="true"/>

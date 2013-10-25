@@ -67,7 +67,7 @@ INNER JOIN sys_rule_fact_field f ON f.objid=c.field_objid
 WHERE c.parentid=$P{objid} ORDER BY c.pos
 
 [getRuleActions]
-SELECT a.*, ad.title AS actiondef_title 
+SELECT a.*, ad.title AS actiondef_title, ad.actionname AS actiondef_actionname 
 FROM sys_rule_action a
 INNER JOIN sys_rule_actiondef ad ON ad.objid=a.actiondef_objid
 WHERE a.parentid=$P{objid} ORDER BY a.pos

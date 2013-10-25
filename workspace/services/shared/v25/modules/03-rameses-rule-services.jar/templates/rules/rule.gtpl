@@ -108,7 +108,8 @@ rule "${rule.name}"
 			action.params.eachWithIndex{ parm,j->
 				out.println( "_p${i}.put( \"${parm.actiondefparam.name}\", ${prn_action_param(parm)} );" );
 			}
-			out.println( "action.execute( \"${action.actiondef.name}\",_p${i},drools);");
+			String actionName = action.actiondef.actionname 
+			out.println( "action.execute( \"${actionName}\",_p${i},drools);");
 		}	
 	}%>
 end
@@ -126,7 +127,8 @@ rule "${action.actiondef.name}_${i}_${j}"
 		Map bindings = rv.getBindings();
 		Map params = rv.getParams();
 		params.put( "amount", (new ActionExpression("${entry.value}", bindings)).getDecimalValue() );	
-		action.execute( "${action.actiondef.name}",params, drools);
+		String actionName = action.actiondef.actionname 
+		action.execute( "${actionName}",params, drools);
 end
 
 <% }}} %>
