@@ -22,3 +22,7 @@ ORDER BY a.title
 
 [approve]
 UPDATE account SET state='APPROVED' WHERE objid=$P{objid} 
+
+
+[getSubaccounts]
+SELECT a.* FROM account a WHERE a.parentid=$P{objid} AND a.type='subaccount' ORDER BY a.code

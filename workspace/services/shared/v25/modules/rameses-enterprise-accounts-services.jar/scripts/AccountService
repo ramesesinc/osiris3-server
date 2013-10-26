@@ -85,10 +85,6 @@ class AccountService extends AbstractCrudListService {
 		if (entity.type) entity.filetype = schemaName+'-'+entity.type;
 	} 
 
-	public void beforeOpen( params ) {
-		println 'beforeOpen-> ' + params;
-	}
-
 
     private String removeLeadingChar(String text, def ch) {
     	if (text == null) return "";
@@ -100,4 +96,16 @@ class AccountService extends AbstractCrudListService {
         } 
         return text; 
     }	
+
+    @ActiveDB('account')
+    def xaccount;
+
+    @ProxyMethod
+    public def getSubAccounts(o) {
+    	println o;
+    	return xaccount.getSubaccounts( o );
+    }
+    
+
+
 }
