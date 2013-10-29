@@ -39,7 +39,9 @@ WHERE r.objid = $P{objid}
 [getRuleConditions]
 SELECT rc.*,  
 	f.title AS fact_title, 
-	f.factclass AS fact_factclass
+	f.factclass AS fact_factclass,
+	f.dynamicfieldname AS fact_dynamicfieldname,
+	f.builtinconstraints AS fact_builtinconstraints
 FROM sys_rule_condition rc
 INNER JOIN sys_rule_fact f ON f.objid=rc.fact_objid
 WHERE rc.parentid=$P{objid} 
@@ -145,3 +147,16 @@ DELETE FROM sys_rule_action_param WHERE parentid IN  ( SELECT objid FROM sys_rul
 
 [removeAllRuleActions]
 DELETE FROM sys_rule_action WHERE parentid=$P{objid} 
+
+
+[removeActionDefParams]
+DELETE FROM sys_rule_actiondef_param WHERE parentid=$P{objid}
+
+[removeActionDef]
+DELETE FROM sys_rule_actiondef WHERE objid=$P{objid}
+
+[removeFactFields]
+DELETE FROM sys_rule_fact_field WHERE parentid=$P{objid}
+
+[removeFact]
+DELETE FROM sys_rule_fact WHERE objid=$P{objid}

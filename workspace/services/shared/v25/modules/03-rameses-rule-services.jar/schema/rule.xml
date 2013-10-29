@@ -23,6 +23,9 @@
 		<field name="fact_objid" required="true"/>
 		<field name="varname" />
 		<field name="pos" required="true"/>
+		<field name="dynamic_datatype" />
+		<field name="dynamic_key" />
+		<field name="dynamic_value" />
 	</element>	
 
 	<element name="constraint" tablename="sys_rule_condition_constraint">
@@ -43,10 +46,6 @@
 		<field name="stringvalue" />
 		<complex name="listvalue" type="list" serializer="default" required="false"/>
 		<field name="pos" required="true"/>
-
-		<field name="dynamicvar_objid" />
-		<field name="dynamicvar_name" />
-		<field name="dynamicvar_datatype" />
 	</element>	
 
 	<element name="var" tablename="sys_rule_condition_var">
@@ -82,7 +81,6 @@
 		<field name="lov" />
 	</element>	
 
-
 	<element name="fact" tablename="sys_rule_fact">
 		<field name="objid" primary="true"/>
 		<field name="name" required="true"/>
@@ -92,6 +90,13 @@
 		<field name="sortorder" required="true"/>
 		<field name="handler" />
 		<field name="defaultvarname" />
+		<field name="dynamic" />
+		<field name="lookuphandler" />
+		<field name="lookupkey" />
+		<field name="lookupvalue" />
+		<field name="lookupdatatype" />
+		<field name="dynamicfieldname" />
+		<field name="builtinconstraints" />
 	</element>	
 
 	<element name="fact_field" tablename="sys_rule_fact_field">
@@ -101,7 +106,7 @@
 		<field name="title" required="true"/>
 		<field name="datatype" />
 		<field name="sortorder" />
-		<field name="handler" required="true"/>
+		<field name="handler" />
 		<field name="lookuphandler" />
 		<field name="lookupkey" />
 		<field name="lookupvalue" />
