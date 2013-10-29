@@ -16,6 +16,8 @@
 		<field name="user_name" required="true"/>
 	</element>	
 
+
+
 	<element name="condition" tablename="sys_rule_condition">
 		<field name="objid" primary="true"/>
 		<field name="parentid" required="true"/>
@@ -57,6 +59,8 @@
 		<field name="pos" required="true"/>
 	</element>	
 
+	
+		
 	<element name="action" tablename="sys_rule_action">
 		<field name="objid" primary="true"/>
 		<field name="parentid" required="true"/>
@@ -80,6 +84,22 @@
 		<complex name="listvalue" type="list" required="false" serializer="default" />
 		<field name="lov" />
 	</element>	
+
+	<element name="ruleset" tablename="sys_ruleset">
+		<field name="name" primary="true"/>
+		<field name="title" />
+		<field name="packagename" />
+		<field name="domain" />
+		<field name="role" />
+		<field name="permission" />
+	</element>	
+
+	<element name="rulegroup" tablename="sys_rulegroup">
+		<field name="name" primary="true"/>
+		<field name="ruleset" />
+		<field name="title" />
+		<field name="sortorder" />
+	</element>
 
 	<element name="fact" tablename="sys_rule_fact">
 		<field name="objid" primary="true"/>
