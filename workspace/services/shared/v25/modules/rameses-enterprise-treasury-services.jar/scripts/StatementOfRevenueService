@@ -1,11 +1,15 @@
 import com.rameses.annotations.*;
 import com.rameses.util.*;
 import java.rmi.server.*;
-import com.rameses.common.*
-import com.rameses.services.extended.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*;
+
 
 class StatementOfRevenueService  
 {
+
+	@ActiveDB('statementofrevenue')
+	def db 
 
 	@PersistenceContext("main")
 	def em; 
@@ -24,73 +28,132 @@ class StatementOfRevenueService
 		util.required('Chart Type', params.charttype)	//charttype values: ngas, sre
 		util.required('Year', params.year)
 		util.required('Qtr', params.qtr)				//values : 1,2,3,4
+		//
+		// parameters month and day are optional
+		//
 
-		def result = []
-		params.idx = -1
 		buildDateFilter(params)
-
-		def revenue = getRevenueAccount(params.charttype)
-		buildAccount(result, revenue, params)
+		def items = getSummarizedRevenueItems(params)
+		def reportdata = buildChartOfAccountFormat(params, items)
+		if (params.hidezeroamount) {
+			reportdata.removeAll(reportdata.findAll{it.amount <= 0.0 })
+		}
 
 		return [
 			title 		: 'STATEMENT OF REVENUE',
 			period 		: util.buildPeriod(params),
-			reportdata  : result,
+			reportdata  : reportdata,
 		]
 	}
 
-	void buildAccount(result, account, params){
-		params.idx += 1
-		def padding = ''.padLeft(params.idx * PADDING_SIZE,' ')
-		account.title = padding + account.title
-		account.amount = 0.0
-		account.level = params.idx 
-		result << account
-		params.accountid = account.objid 
-		account.amount = getAmountByAccountId(params)
-		getAccountsByParent(account, params).each{
-			buildAccount(result, it, params)
-		}
-		
-		params.idx -= 1
 
-		/*
-		//insert summary
-		if ( account.type == 'group'){ 
-			def idx = params.idx-2
-			padding = ''.padLeft(idx * PADDING_SIZE,' ')
-			def subitems = result.findAll{it.parentid == account.objid}
-			def subtotal = subitems.sum{ 
-				def total = (it.amount != null ? it.amount : 0.0)
-				total += (it.subtotal != null ? it.subtotal : 0.0)
+	def padTitle(title, idx){
+		return ('    ' * idx) + title
+	}
+
+
+	def buildChartOfAccountFormat(params, items){
+		def data = []
+		def idx = -1
+		db.getRootAccounts().each{ 
+			if (params.type.equalsIgnoreCase('standard')) {
+				doBuildStandardFormat(params, data, items, idx, it)
 			}
-			def parentid = (account.parentid ? account.parentid : account.objid)
-			result << [title:padding + account.title + ' TOTAL:',amount:0.0, subtotal:subtotal, parentid:parentid, type:'summary', level:idx ]
+			else if (params.type.equalsIgnoreCase('extended')){
+				doBuildExtendedFormat(params, data, items, idx, it)
+			}
 		}
-		*/
+		calculateExtendedGroupTotals(data)
+		return data 
 	}
 
-	/*params:  fromdate, todate, accountid */
-	def getAmountByAccountId(params){
-		def data = em.sqlContext.createNamedQuery('statementofrevenue:getAmountByAccountId')
-							.setParameters(params).singleResult
-		if (data.amount && data.amount > 0.0)
-			return data.amount 
-		return 0.0
+
+	void calculateExtendedGroupTotals(data){
+		def maxlevel = data.level.max() 
+		for(int i = maxlevel - 1; i > 0; i--){
+			['detail','group'].each{ type -> 
+				def groupaccts = data.findAll{it.level == i && it.type == type }
+				groupaccts.each{ grpacct ->
+					def colls = data.findAll{it.parentid == grpacct.objid}
+					def amt = colls.amount.sum()
+					if (amt > 0.0 && grpacct.amount == 0){
+						grpacct.amount = amt
+					}
+					else if (amt > 0.0 && grpacct.amount != 0){
+						def idx = data.indexOf(grpacct) + colls.size() + 1
+						def otheracct = [objid:'O'+ grpacct.objid, parentid:grpacct.objid, title:'    ' + grpacct.title + ' (OTHERS)', amount:grpacct.amount, leaf:1, type:'subaccount', level:grpacct.level+1]
+						data.add(idx, otheracct)
+						grpacct.amount += amt
+						grpacct.leaf = null
+					}
+				}
+			}
+		}
+
+		//update rootgroups
+		data.findAll{it.level == 0 }.each{ rgrp ->
+			def amt = data.findAll{it.parentid == rgrp.objid}.amount.sum();
+			if (amt > 0.0){
+				rgrp.amount = amt 
+			}
+		}
+
 	}
 
-	def getAccountsByParent(parent, params){
-		return em.sqlContext.createNamedQuery('statementofrevenue:getAccountsByParentId' + params.charttype.toUpperCase())
-						.setParameter('parentid', parent.objid)
-						.resultList
+
+	void doBuildStandardFormat(params, data, items, idx, acct){
+		idx += 1
+		acct.title = padTitle(acct.title, idx)
+		acct.amount = 0.0
+		acct.level = idx 
+		def collections = items.findAll{it.accountid == acct.objid}
+		if (collections){
+			acct.amount = collections.amount.sum()
+			acct.leaf = 1
+		}
+		data << acct 
+
+		db.getStandardSubAccounts([parentid:acct.objid]).each{
+			doBuildStandardFormat(params, data, items, idx, it )
+		}
 	}
 
-	def getRevenueAccount(charttype){
-		def revenue = em.sqlContext.createNamedQuery('statementofrevenue:getRevenueAccount' + charttype.toUpperCase())
-						.singleResult
-		if (!revenue) throw new Exception(charttype.toUpperCase() + ' Revenue Account is not defined.')
-		return revenue 
+
+	void doBuildExtendedFormat(params, data, items, idx, acct){
+		idx += 1
+		acct.title = padTitle(acct.title, idx)
+		acct.amount = 0.0
+		acct.level = idx 
+		def collections = items.findAll{it.accountid == acct.objid}
+		if (collections){
+			acct.amount = collections.amount.sum()
+			acct.leaf = 1
+		}
+		data << acct 
+		
+		db.getExtendedSubAccounts([parentid:acct.objid]).each{
+			doBuildExtendedFormat(params, data, items, idx, it )
+		}
 	}
+
+
+	def getSummarizedRevenueItems(params){
+		if (params.charttype.equalsIgnoreCase('ngas')){
+			if (params.type.equalsIgnoreCase('standard')) {
+				return db.getNgasStandardRevenueItemSummaries(params)
+			}
+			else if (params.type.equalsIgnoreCase('extended')) {
+				return db.getNgasExtendedRevenueItemSummaries(params)
+			}
+			else if (params.type.equalsIgnoreCase('detailed')) {
+				return db.getNgasDetailedRevenueItemSummaries(params)
+			}
+			else {
+				throw new Exception('Report type ' + params.type + ' is not supported.')
+			}
+		}
+	}
+
 
 	void buildDateFilter(params){
 		if (params.qtr != null && params.month != null) {
