@@ -39,6 +39,12 @@ class StatementOfRevenueService
 			reportdata.removeAll(reportdata.findAll{it.amount <= 0.0 })
 		}
 
+		//generate group totals 
+		reportdata.findAll{it.leaf == null}.each{
+			it.total = ( it.firstparent == 1 ? it.amount  : 0.0)
+			it.amount = 0.0
+		}
+		
 		return [
 			title 		: 'STATEMENT OF REVENUE',
 			period 		: util.buildPeriod(params),
