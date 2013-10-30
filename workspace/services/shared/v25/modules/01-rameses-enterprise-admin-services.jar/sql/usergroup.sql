@@ -1,3 +1,7 @@
+[getLookup]
+SELECT * FROM sys_usergroup 
+WHERE objid LIKE $P{searchtext}
+
 [getRootNodes]
 SELECT DISTINCT
 	ug.domain as caption, ug.domain as domain, '' as usergroupid, 'domain' as filetype 
@@ -16,6 +20,10 @@ FROM sys_usergroup ug
 WHERE 
 	ug.domain=$P{domain} AND 
 	(uga.user_objid=$P{userid} OR 'root'=$P{userid} OR 'sa'=$P{userid}) 
+
+
+
+
 
 [getList]
 SELECT DISTINCT

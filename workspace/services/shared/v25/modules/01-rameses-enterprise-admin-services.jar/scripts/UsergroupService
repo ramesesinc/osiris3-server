@@ -6,9 +6,9 @@ import com.rameses.io.*;
 import com.rameses.services.extended.*;
 
 
-class UsergroupService extends AbstractCrudListService {
+class UsergroupService extends ActiveCrudListService {
 
-	@PersistenceContext("admin")
+	@ActiveDB(value="usergroup", em="admin")
 	def	em; 
 
 	@Env
@@ -25,8 +25,11 @@ class UsergroupService extends AbstractCrudListService {
 		o.usergroupfilter = "";
 		if (o.usergroupid) o.domain = o.usergroupid;
 
-		def sql = 'usergroup:' + (o.root? 'getRootNodes': 'getChildNodes');
-		def list = em.sqlContext.createNamedQuery(sql).setParameters(o).setVars(o).resultList;		
+		def list;
+		if( o.root )
+			list = em.getRootNodes(o);
+		else
+			list = em.getChildNodes(o);
 		list.each { 
 			if (o.root) it.folder = true;
 			if (it.filetype == 'usergroup-folder') {
@@ -62,12 +65,13 @@ class UsergroupService extends AbstractCrudListService {
 	public void updatePermission(def params) {
 		if (!params.objid) throw new Exception('Please specify objid'); 
 
-		def info = em.read('usergroup:member', params);  
+		def info = em.read(params, 'member');  
 		if (!info) throw new Exception("'"+params.objid+"' usergroup member record not found"); 
 		
 		info.exclude = params.exclude; 
-		em.update('usergroup:member', info); 
+		em.update(info, "member"); 
 	} 
+
 
 	public void approve ( data ) {} 	
 }
