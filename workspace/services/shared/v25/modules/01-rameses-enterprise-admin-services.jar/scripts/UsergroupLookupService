@@ -20,14 +20,6 @@ class UsergroupLookupService extends ActiveListService {
 		] 
 	}
 
-	void beforeList(o) {
-		if(!o.searchtext) 
-			o.searchtext = '%';
-		else	
-			o.searchtext = "%" + o.searchtext + "%";
-	}
-
-
 }
 
 
