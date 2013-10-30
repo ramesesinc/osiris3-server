@@ -9,9 +9,7 @@ FROM fund a
 WHERE a.parentid=$P{objid} and a.type='group'
 
 [getList]
-SELECT *,'fund' AS filetype 
-FROM fund 
-# -- WHERE parentid=$P{objid}
+SELECT * FROM fund WHERE parentid=$P{objid} ORDER BY code
 
-[changeState-approved]
+[approve]
 UPDATE fund SET state='APPROVED' WHERE objid=$P{objid} 
