@@ -71,3 +71,18 @@ FROM bankdeposit_liquidation bdl
 WHERE bdl.bankdepositid = $P{objid}
 ) a 
 GROUP BY a.fund_objid, a.fund_title
+
+[getPostedLiquidations]
+SELECT  lcf.objid, 
+	l.txnno as liquidationno,
+	l.dtposted as liquidationdate,
+	lcf.fund_objid,
+	lcf.fund_title,
+	l.liquidatingofficer_objid, 
+	l.liquidatingofficer_name, 	
+	l.liquidatingofficer_title, 
+	lcf.amount
+FROM bankdeposit_liquidation bdl 
+INNER join liquidation_cashier_fund lcf on lcf.objid = bdl.objid 
+INNER JOIN liquidation l ON lcf.liquidationid=l.objid
+WHERE bdl.bankdepositid=$P{objid}

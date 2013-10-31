@@ -126,6 +126,8 @@ class BankDepositService  {
 				.setParameters(deposit).resultList
 		deposit.deposits = em.sqlContext.createNamedQuery('bankdeposit:getDepositSummaries')
 				.setParameters(deposit).resultList
+		deposit.liquidations = em.sqlContext.createNamedQuery('bankdeposit:getPostedLiquidations')
+				.setParameters(deposit).resultList
 		return deposit
 	}
 
