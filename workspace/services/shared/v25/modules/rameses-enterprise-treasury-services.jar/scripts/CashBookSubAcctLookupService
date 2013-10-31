@@ -18,10 +18,6 @@ class CashBookSubAcctLookupService extends ActiveListService {
 		];	
 	}	
 
-	void beforeList(params){
-		if (!params.searchtext) params.searchtext = ''
-		params.searchtext += '%'
-	}
 	
 	public void afterList(def p, def list) {
 		list.each {

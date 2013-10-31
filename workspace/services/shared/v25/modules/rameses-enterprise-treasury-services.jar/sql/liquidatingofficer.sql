@@ -1,22 +1,25 @@
 [getList]
 SELECT 
-user_objid as objid, 
-user_username as username, 
-user_lastname as lastname,
-user_firstname as firstname,
-jobtitle as title
-FROM sys_usergroup_member WHERE usergroupid = 'LIQUIDATING_OFFICER'
+ugm.user_objid as objid, 
+ugm.user_username as username, 
+ugm.user_lastname as lastname,
+ugm.user_firstname as firstname,
+ugm.jobtitle as title
+FROM sys_usergroup_member ugm
+INNER JOIN sys_usergroup ug ON ug.objid=ugm.usergroupid
+WHERE ug.role = 'LIQUIDATING_OFFICER'
 
 
 [getUserTxnCode]
-SELECT ug.usertxncode 
-FROM sys_usergroup_member ug 
-WHERE ug.user_objid = $P{userid}
-AND usergroupid = 'LIQUIDATING_OFFICER'
-
+SELECT ugm.usertxncode 
+FROM sys_usergroup_member ugm 
+INNER JOIN sys_usergroup ug ON ug.objid=ugm.usergroupid
+WHERE ugm.user_objid = $P{userid}
+AND ug.role = 'LIQUIDATING_OFFICER'
 
 [findUserTxnCode]
-SELECT ug.usertxncode 
-FROM sys_usergroup_member ug 
-WHERE ug.user_objid = $P{userid}
-AND usergroupid = 'LIQUIDATING_OFFICER'
+SELECT ugm.usertxncode 
+FROM sys_usergroup_member ugm 
+WHERE ugm.user_objid = $P{userid}
+INNER JOIN sys_usergroup ug ON ug.objid=ugm.usergroupid
+AND ug.role = 'LIQUIDATING_OFFICER'
