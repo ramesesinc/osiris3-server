@@ -20,7 +20,7 @@ class StatementOfRevenueService
 	@Service('DateService')
 	def dtSvc 
 
-	def PADDING_SIZE = 6
+	def PADDING_SIZE = 10
 
 
 	@ProxyMethod
@@ -40,10 +40,12 @@ class StatementOfRevenueService
 		}
 
 		//generate group totals 
+		/*
 		reportdata.findAll{it.leaf == null}.each{
-			it.total = ( it.firstparent == 1 ? it.amount  : 0.0)
+			it."total${it.level}" = it.amount
 			it.amount = 0.0
 		}
+		*/
 		
 		return [
 			title 		: 'STATEMENT OF REVENUE',
@@ -117,7 +119,7 @@ class StatementOfRevenueService
 					}
 					else if (amt > 0.0 && grpacct.amount != 0){
 						def idx = data.indexOf(grpacct) + colls.size() + 1
-						def otheracct = [objid:'O'+ grpacct.objid, parentid:grpacct.objid, title:'    ' + grpacct.title + ' (OTHERS)', amount:grpacct.amount, leaf:1, type:'subaccount', level:grpacct.level+1]
+						def otheracct = [objid:'O'+ grpacct.objid, parentid:grpacct.objid, title:(' '*PADDING_SIZE) + grpacct.title + ' (OTHERS)', amount:grpacct.amount, leaf:1, type:'subaccount', level:grpacct.level+1]
 						data.add(idx, otheracct)
 						grpacct.amount += amt
 						grpacct.leaf = null
