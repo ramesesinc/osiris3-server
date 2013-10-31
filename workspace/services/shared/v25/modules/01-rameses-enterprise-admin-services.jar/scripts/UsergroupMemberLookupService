@@ -27,6 +27,12 @@ class UsergroupMemberLookupService extends ActiveListService {
 		p._pagingKeys = "u.objid";
 	}
 
+	public void afterList( o, list ) {
+		list.each {
+			it.name = o.firstname+" "+o.lastname;
+		}
+	}
+
 	@ProxyMethod
 	public def find( params ) {
 		if (!params.usergroupid) throw new Exception('Please specify usergroupid'); 
