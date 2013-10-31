@@ -15,5 +15,5 @@ SELECT * FROM sys_rule_fact_field WHERE parentid = $P{objid}
 SELECT * FROM sys_rule_actiondef WHERE ruleset = $P{ruleset}
 
 [getRuleActionDefParams]
-SELECT * FROM sys_rule_actiondef_param WHERE objid = $P{objid}
+SELECT * FROM sys_rule_actiondef_param WHERE parentid = $P{objid}
 
