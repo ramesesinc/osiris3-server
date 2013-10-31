@@ -17,9 +17,13 @@ INNER JOIN sys_usergroup ug ON ug.objid=ugm.usergroupid
 WHERE ugm.user_objid = $P{userid}
 AND ug.role = 'LIQUIDATING_OFFICER'
 
+################################################################################
+# NOTE:
+#This is being used during posting in liquidation. Must need to refactor this.
+################################################################################
 [findUserTxnCode]
 SELECT ugm.usertxncode 
 FROM sys_usergroup_member ugm 
-WHERE ugm.user_objid = $P{userid}
 INNER JOIN sys_usergroup ug ON ug.objid=ugm.usergroupid
+WHERE ugm.user_objid = $P{userid}
 AND ug.role = 'LIQUIDATING_OFFICER'
