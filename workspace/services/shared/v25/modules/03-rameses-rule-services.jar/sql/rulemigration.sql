@@ -1,4 +1,4 @@
-[getRulesets]
+[findRuleset]
 SELECT * FROM sys_ruleset WHERE name = $P{ruleset}
 
 [getRulegroups]
