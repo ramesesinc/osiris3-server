@@ -132,6 +132,9 @@ end
 		param.listvalue.eachWithIndex{ entry, j-> %>
 	
 rule "${action.actiondef.name}_${i}_${j}"
+	agenda-group "${rule.rulegroup}"
+	salience ${rule.salience}
+	no-loop
 	when
 		rv: RangeEntry( id=="${rule.name}", ${dtype}value > ${entry.from} <%if(entry.to){%>, ${dtype}value <= ${entry.to} <%}%>)
 	then
