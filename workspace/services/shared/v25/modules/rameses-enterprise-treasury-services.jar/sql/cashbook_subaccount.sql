@@ -1,12 +1,13 @@
 [getList]
 SELECT 
-user_objid as objid, 
-user_username as username, 
-user_lastname as lastname,
-user_firstname as firstname,
-usergroupid as subaccttype,
-org_name,
-jobtitle as title
-FROM sys_usergroup_member 
-WHERE user_lastname LIKE $P{searchtext}
-  AND usergroupid IN ('COLLECTOR', 'LIQUIDATING_OFFICER', 'CASHIER')
+ugm.user_objid as objid, 
+ugm.user_username as username, 
+ugm.user_lastname as lastname,
+ugm.user_firstname as firstname,
+ug.role as subaccttype,
+ugm.org_name,
+ugm.jobtitle as title
+FROM sys_usergroup_member ugm
+INNER JOIN sys_usergroup ug ON ug.objid=ugm.usergroupid
+WHERE ugm.user_lastname LIKE $P{searchtext}
+AND ug.role IN ('COLLECTOR', 'LIQUIDATING_OFFICER', 'CASHIER')
