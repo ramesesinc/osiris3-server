@@ -30,6 +30,12 @@ class FundService extends ActiveCrudNodeService {
 		];
 	}
 	
+	public void beforeList(o) {
+		if(o._tag == "lookup") {
+			o._listMethod = "getLookup"
+		}
+	}
+
 	public void afterList(o,list) {
 		list.each{
 			it._filetype = it.type;
