@@ -5,6 +5,7 @@ SELECT
 	u.firstname, 
 	u.middlename, 
 	u.jobtitle, 
+	u.jobtitle AS title, 
 	ug.role,
 	ugm.objid as usergroupmemberid, 
 	ugm.usergroupid  
