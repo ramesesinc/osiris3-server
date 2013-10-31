@@ -29,7 +29,7 @@ class UsergroupMemberLookupService extends ActiveListService {
 
 	public void afterList( o, list ) {
 		list.each {
-			it.name = o.firstname+" "+o.lastname;
+			it.name = it.firstname+" "+it.lastname;
 		}
 	}
 
