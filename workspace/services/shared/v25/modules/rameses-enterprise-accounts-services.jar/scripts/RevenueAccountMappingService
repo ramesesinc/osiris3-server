@@ -22,9 +22,11 @@ class RevenueAccountMappingService  {
 			[name:'title', caption:'Item Title', width:200 ],
 		];
 		em.getAccountColumns().each {
-			list << [name: it.name, caption:it.title, width:150, editable:true,
+			list << [name: it.name, caption:it.title, width:150, editable:true, depends:it.depends, 
+					lookuphandler: it.lookuphandler,
 					type:'lookup', handler:'lookupSegment', expression:'#{item.' + it.name + '.code}- #{item.' + it.name + '.title}']
 		}
+
 		return list;
 	}
 	
@@ -33,9 +35,11 @@ class RevenueAccountMappingService  {
 		def colBuilder = new StringBuilder();
 		def sourceBuilder = new StringBuilder();
 		def cols = em.getAccountColumns().each {
-			colBuilder.append("," + it.name + ".code AS " + it.name + "_code, " + it.name + ".title AS " + it.name + "_title");
+			colBuilder.append("," + it.name + ".code AS " + it.name + "_code ");
+			colBuilder.append("," + it.name + ".title AS " + it.name + "_title" );
+			colBuilder.append("," + it.name + ".objid AS " + it.name + "_objid" );
 			sourceBuilder.append( ' LEFT JOIN revenueitem_' + it.name + ' ON r.objid=revenueitem_' + it.name + ".objid " );
-			sourceBuilder.append( ' LEFT JOIN ' + it.source + ' ' + it.name + ' ON revenueitem_' + it.name + '.acctid=' + it.source + ".objid " );
+			sourceBuilder.append( ' LEFT JOIN ' + it.source + ' ' + it.name + ' ON revenueitem_' + it.name + '.acctid=' + it.name + ".objid " );
 		}
 		m.columns = colBuilder.toString();
 		m.sources = sourceBuilder.toString();
@@ -46,6 +50,13 @@ class RevenueAccountMappingService  {
 	public def addSegment(o) {
 		o.objectname = "revenueitem";
 		segmentSvc.addSegment(o);
+		if(o.dependencies) {
+			o.dependencies.each {
+				segmentSvc.removeSegment( [segment: it, objectname: o.objectname, objid: o.objid] );
+			}
+		}
 	}
+
+	
 
 }

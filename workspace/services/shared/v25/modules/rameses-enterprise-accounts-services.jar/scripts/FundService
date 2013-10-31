@@ -4,29 +4,21 @@ import java.rmi.server.*;
 import com.rameses.common.*
 import com.rameses.services.extended.*;
 
-class FundService extends ActiveCrudListService {
+class FundService extends ActiveCrudNodeService {
 
 	@ActiveDB("fund")
 	def em;
 	
-	@ProxyMethod
-	public def getNodes( def p ) {
-		def list;
-		if(p.root) {
-			list = [ [caption:'Funds', folder:true]];
+	public void afterNode( def selectedNode, def list ) {
+		list.each { 
+			it.caption = it.code + " (" + it.title + ") ";
+			it.filetype = "fund";
+			it.children = [  
+				[caption:'Subfund', filetype: 'subfund']
+			]
 		}
-		else {
-			if(!p.objid) {
-				list = em.getRootNodes(p);
-			}
-			else {
-				list = em.getChildNodes(p);
-			}
-			list.each {  it.caption = it.code + "(" + it.title + ") "; }
-		}
-		return list;
-	}	
-	
+	}
+
 	@ProxyMethod
 	public def getColumns( def o ) {
 		return[
@@ -34,9 +26,14 @@ class FundService extends ActiveCrudListService {
 			[name:'code', caption:'Acct Code' ],
 			[name:'title', caption:'Acct Title' ],
 			[name:'type', caption:'Type' ],
-			[name:'filetype', caption:'Filetype' ],
+			[name:'_filetype', caption:'Filetype' ],
 		];
 	}
 	
-	
+	public void afterList(o,list) {
+		list.each{
+			it._filetype = it.type;
+		}
+	}
+
 }

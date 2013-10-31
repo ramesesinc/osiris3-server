@@ -26,6 +26,15 @@ class CashBookService extends ActiveCrudListService {
 	void beforeList(o) {
 		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
 	}
+
+	def getList(o) {
+		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
+		def list = em.getList(o)
+		if(!list) em.getListBySubacctname(o)
+
+		return list;
+
+	}
 	
 	public void beforeCreate( def o ) {
 		o.beginbalance = 0;

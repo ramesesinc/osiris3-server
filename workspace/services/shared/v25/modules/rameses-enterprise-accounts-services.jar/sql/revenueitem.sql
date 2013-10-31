@@ -1,13 +1,8 @@
 [getList]
-SELECT r.* 
-FROM revenueitem r 
-WHERE r.title LIKE $P{searchtext} 
-ORDER BY r.title
-
-[getListByCode]
-SELECT r.* 
-FROM revenueitem r 
-WHERE r.code LIKE $P{searchtext} 
+SELECT r.* FROM 
+(SELECT * FROM revenueitem  WHERE title LIKE $P{searchtext} 
+UNION 
+SELECT * FROM revenueitem WHERE code LIKE $P{searchtext}) r
 ORDER BY r.code
  
 [changeState-approved]
@@ -27,7 +22,7 @@ SELECT r.objid, r.code, r.title, r.fund_objid, r.fund_code, r.fund_title
 FROM revenueitem r WHERE objid=$P{objid}
 
 [getAccountColumns]
-SELECT name, title, source from account_segment 
+SELECT name, title, source, depends, lookuphandler from account_segment 
 WHERE objectname = 'revenueitem' 
 ORDER BY sortorder 
 

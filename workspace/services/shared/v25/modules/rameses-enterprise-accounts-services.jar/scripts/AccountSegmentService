@@ -39,4 +39,12 @@ class AccountSegmentService {
 		if(p.acctid) em.addSegment( p );
 	}
 	
+	@ProxyMethod
+	public def removeSegment(def p) {
+		if(!p.objectname) throw new Exception("Please indicate objectname in AccountSegment.addSegment");
+		if(!p.segment) throw new Exception("Please indicate segment in AccountSegment.addSegment");
+		if(!p.objid) throw new Exception("Please indicate objid in AccountSegment.addSegment");
+		em.removeSegment(p);
+	}
+
 }

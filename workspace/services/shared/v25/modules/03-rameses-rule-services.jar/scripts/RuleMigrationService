@@ -1,0 +1,77 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*;
+import com.rameses.io.*;
+
+class RuleMigrationService  {
+
+	@ActiveDB("rulemigration")
+	def em;
+	
+	@ActiveDB("rule")
+	def target;
+
+	@ProxyMethod
+	public void export( def o ) {
+		def dest = o.target;
+		if(!dest) 
+			throw new Exception("target (filename) must be provided");
+		def ruleset = o.ruleset;
+		if(!ruleset) 
+			throw new Exception("Please provide a ruleset");
+
+		def m = [:];
+		m.rulesets = em.getRulesets(o);
+		m.rulegroups = em.getRulegroups(o);
+		m.facts = em.getRuleFacts(o);
+		m.actiondefs = em.getRuleActionDefs(o);
+		m.facts.each {
+			it.fields = em.getRuleFactFields(it);
+		}		
+		m.actiondefs.each {
+			it.params = em.getRuleActionDefParams(it);
+
+		}		
+		try {
+			File file = new File(dest);
+			println "file is " + file;
+			FileUtil.writeObject( file, m );		
+		}
+		catch(e) {
+			e.printStackTrace();
+		}
+	}
+	
+
+	@ProxyMethod
+	public void load( def f ) {
+		def src = f.source;
+		if(!src)
+			throw new Exception("source must be provided");
+
+		File file = new File(src);
+		def o = FileUtil.readObject( file );
+		o.rulesets.each {
+			target.save( it, "ruleset" );
+		}
+		o.rulegroups.each {
+			target.save( it, "rulegroup" );
+		}
+		o.facts.each {
+			target.save( it, "fact" );
+			it.fields.each {x->
+				target.save( x, "fact_field" );
+			}
+		}
+		
+		for(y in o.actiondefs ) {
+			target.save( y, "actiondef" );
+			for( x in y.params ){
+				target.save( x, "actiondef_param" );
+			}
+		}
+	}
+
+}

@@ -25,13 +25,5 @@ class RevenueItemAccountService extends ActiveCrudListService {
 		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'
 	}
 
-	def getList(o) {
-		o.searchtext = (o.searchtext ? o.searchtext : '') +'%'	
-		def list = em.getList(o)
-		if(!list) 
-			list = em.getListByCode(o)
-		return list;
-	}
-	
 	
 }

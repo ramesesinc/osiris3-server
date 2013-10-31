@@ -62,5 +62,17 @@ class RuleDeveloperService  {
 		return a;
 	}
 
+	@ProxyMethod
+	public void removeFact(o) {
+		em.removeFactFields(o);
+		em.removeFact(o);
+	}
+
+	@ProxyMethod
+	public void removeActionDef(o) {
+		em.removeActionDefParams(o);
+		em.removeActionDef(o);
+	}
+
 
 }

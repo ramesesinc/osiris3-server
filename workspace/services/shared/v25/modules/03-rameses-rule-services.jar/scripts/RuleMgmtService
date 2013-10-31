@@ -138,8 +138,7 @@ class RuleMgmtService extends ActiveCrudListService {
 	private void saveConstraintVariable(o, cond) {
 		if( o.varname ) {
 			def dtype = o.field.vardatatype;
-			if( o.dynamicvar?.datatype ) dtype = o.dynamicvar.datatype;
-
+			
 			def z = [
 				objid: o.objid,
 				parentid: cond.objid,

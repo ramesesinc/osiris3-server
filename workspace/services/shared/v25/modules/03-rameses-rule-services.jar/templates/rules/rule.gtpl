@@ -17,8 +17,18 @@
 	}
 
 	def prn_cond = { c->
+		//if cond is dynamic, add dynamic var name
+		int j = 0;
+		if(c.dynamic?.key) {
+			out.print ( c.fact.dynamicfieldname + "==\""+ c.dynamic.key +"\" ");
+			j++;
+		}
+		if( c.fact.builtinconstraints ) {
+			out.print ( c.fact.builtinconstraints );
+			j++;
+		}
 		c.constraints.eachWithIndex { ct,i->
-			if(i>0) out.print(",");
+			if((i+j)>0) out.print(",");
 			def h = ct.field.handler;
 			if( ct.operator?.symbol?.contains("null")) h = "null";
 			out.print( templateSvc.get( "rules/rule_constraint_"+h, [constraint:ct] ));
@@ -80,7 +90,7 @@ rule "${rule.name}"
 	when
 		<%prn_date(rule)%>
 		<%rule.conditions.each { cond-> %>
-		${ (cond.varname)?cond.varname + ':': '' } ${cond.fact.factclass} ( <%prn_cond(cond)%> )
+		${ (cond.varname)?cond.varname + ':': '' } ${cond.fact.factclass} (  <%prn_cond(cond)%> )
 		<%}%>
 	then
 		Map bindings = new HashMap();
