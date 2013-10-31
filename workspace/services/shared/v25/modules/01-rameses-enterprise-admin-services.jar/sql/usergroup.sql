@@ -10,7 +10,6 @@ FROM sys_usergroup ug
 WHERE 
 	(uga.user_objid=$P{userid} OR 'root'=$P{userid} OR 'sa'=$P{userid}) 
 
-
 [getChildNodes]
 SELECT DISTINCT
 	ug.title as caption, ug.domain as domain, ug.objid as usergroupid, 
@@ -22,10 +21,20 @@ WHERE
 	(uga.user_objid=$P{userid} OR 'root'=$P{userid} OR 'sa'=$P{userid}) 
 
 
-
-
-
 [getList]
+SELECT DISTINCT
+	ugm.objid, ugm.user_username, ugm.user_lastname, ugm.user_firstname, 
+	ugm.org_name, sg.name AS securitygroup 
+FROM sys_usergroup ug 
+	INNER JOIN sys_usergroup_member ugm ON ug.objid=ugm.usergroupid ${usergroupfilter} 
+	LEFT JOIN sys_securitygroup sg ON ugm.securitygroupid=sg.objid 
+WHERE 
+	ug.domain=$P{domain} 
+ORDER BY 
+	ugm.user_lastname, ugm.user_firstname 
+
+
+[getList1]
 SELECT DISTINCT
 	ugm.objid, ugm.user_username, ugm.user_lastname, ugm.user_firstname, 
 	ugm.org_name, sg.name AS securitygroup 
