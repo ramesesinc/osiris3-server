@@ -1,12 +1,24 @@
-[lookup]
+[getList]
 SELECT 
-	u.objid, u.lastname, u.firstname, u.middlename, u.jobtitle, 
-	ugm.objid as usergroupmemberid, ugm.usergroupid  
+	u.objid, 
+	u.lastname, 
+	u.firstname, 
+	u.middlename, 
+	u.jobtitle, 
+	u.jobtitle AS title, 
+	ug.role,
+	ugm.objid as usergroupmemberid, 
+	ugm.usergroupid  
 FROM sys_usergroup_member ugm 
-	INNER JOIN sys_user u ON ugm.user_objid=u.objid 
-WHERE ugm.usergroupid=$P{usergroupid} ${filter} 
-ORDER BY ugm.user_lastname 
+INNER JOIN sys_user u ON ugm.user_objid=u.objid 
+INNER JOIN sys_usergroup ug ON ug.objid=ugm.usergroupid 
+WHERE ug.role IN (${roles})  
+AND u.lastname LIKE $P{searchtext}
+ORDER BY u.lastname 
 
-[find]
-SELECT * FROM sys_usergroup_member 
-WHERE usergroupid=$P{usergroupid} and user_objid=$P{userid}  
+[findMember]
+SELECT 
+ug.* 
+FROM sys_usergroup_member ugm
+INNER JOIN sys_usergroup ug ON ug.objid=ugm.usergroupid 
+WHERE ug.role=$P{usergroupid} and ugm.user_objid=$P{userid}  

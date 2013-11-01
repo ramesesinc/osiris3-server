@@ -1,45 +1,50 @@
 [getList]
 SELECT 
-user_objid as objid, 
-user_username as username, 
-user_lastname as lastname,
-user_firstname as firstname,
-jobtitle as title,
-jobtitle 
-FROM sys_usergroup_member WHERE usergroupid = 'COLLECTOR'
+ugm.user_objid as objid, 
+ugm.user_username as username, 
+ugm.user_lastname as lastname,
+ugm.user_firstname as firstname,
+ugm.jobtitle as title,
+ugm.jobtitle 
+FROM sys_usergroup_member ugm 
+INNER JOIN sys_usergroup ug ON ugm.usergroupid=ug.objid
+WHERE ug.role = 'COLLECTOR'
 
 
 [getUserTxnCode]
-SELECT ug.usertxncode 
-FROM sys_usergroup_member ug 
-WHERE ug.user_objid = $P{userid}
-AND usergroupid = 'COLLECTOR'
+SELECT ugm.usertxncode 
+FROM sys_usergroup_member ugm 
+INNER JOIN sys_usergroup ug ON ugm.usergroupid=ug.objid
+WHERE ugm.user_objid = $P{userid}
+AND ug.role = 'COLLECTOR'
 
 [findUserTxnCode]
-SELECT ug.usertxncode 
-FROM sys_usergroup_member ug 
-WHERE ug.user_objid = $P{userid}
-AND usergroupid = 'COLLECTOR'
-
+SELECT ugm.usertxncode 
+FROM sys_usergroup_member ugm 
+INNER JOIN sys_usergroup ug ON ugm.usergroupid=ug.objid
+WHERE ugm.user_objid = $P{userid}
+AND ug.role = 'COLLECTOR'
 
 [findCollector]
 SELECT 
-user_objid as objid, 
-user_username as username, 
-user_lastname as lastname,
-user_firstname as firstname,
-jobtitle as title
-FROM sys_usergroup_member 
-WHERE user_objid = $P{userid}
-AND usergroupid = 'COLLECTOR' 
+ugm.user_objid as objid, 
+ugm.user_username as username, 
+ugm.user_lastname as lastname,
+ugm.user_firstname as firstname,
+ugm.jobtitle as title
+FROM sys_usergroup_member ugm
+INNER JOIN sys_usergroup ug ON ugm.usergroupid=ug.objid
+WHERE ugm.user_objid = $P{userid}
+AND ug.role = 'COLLECTOR'
 
 [findSubCollector]
 SELECT 
-user_objid as objid, 
-user_username as username, 
-user_lastname as lastname,
-user_firstname as firstname,
-jobtitle as title
-FROM sys_usergroup_member 
-WHERE user_objid = $P{userid}
-AND usergroupid = 'SUBCOLLECTOR' 
+ugm.user_objid as objid, 
+ugm.user_username as username, 
+ugm.user_lastname as lastname,
+ugm.user_firstname as firstname,
+ugm.jobtitle as title
+FROM sys_usergroup_member ugm
+INNER JOIN sys_usergroup ug ON ugm.usergroupid=ug.objid
+WHERE ugm.user_objid = $P{userid}
+AND ug.role = 'SUBCOLLECTOR' 

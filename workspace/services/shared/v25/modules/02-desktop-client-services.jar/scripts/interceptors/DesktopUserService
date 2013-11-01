@@ -1,8 +1,8 @@
 import com.rameses.annotations.*;
 import com.rameses.util.*;
 
-class DesktopUserService
-{
+class DesktopUserService {
+
 	@Service('DesktopBasicUserService')
 	def svc;
 
@@ -59,9 +59,10 @@ class DesktopUserService
 		result.env.ORGNAME = orginfo?.name; 
 
 		def permissions = svc.getPermissions([userid: info.objid, orgname:env.CLIENTCODE]); 
+
 		if (env.CLIENTCODE != null && permissions.isEmpty()) 
 			throw new Exception("You don't have enough permissions for client code "+env.CLIENTCODE+". Please verify.");  
-
+		
 		permissions?.each {
 			def key = it.domain+'.'+it.role; 
 			def lst = [];
@@ -72,6 +73,7 @@ class DesktopUserService
 			else 
 				result.env.ROLES[key] = null; 
 		} 
+		
 		return result;
 	}	
 }  
