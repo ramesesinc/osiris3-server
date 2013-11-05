@@ -27,8 +27,7 @@ class StockIssueService extends ActiveCrudService {
 		o.state = "CLOSED";
 	}
 	
-	void afterCreate( o ) {
-		println o.objid;
+	void afterCreate( o ) { 
 		o.items.each {
 			it.objid = "STKISSITEM"+new UID();
 			it.parentid = o.objid;
