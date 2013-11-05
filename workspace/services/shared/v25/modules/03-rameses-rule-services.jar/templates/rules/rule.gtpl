@@ -128,16 +128,20 @@ end
 	action.params.findAll{ it.exprtype == 'range' }.eachWithIndex { param, i-> 
 		def dtype = rule.vars.find{ it.objid == param.var.objid}.datatype ;
 		if(dtype=="integer") dtype = "int";
+
 		param.listvalue.eachWithIndex{ entry, j-> %>
 	
 rule "${action.actiondef.name}_${i}_${j}"
+	agenda-group "${rule.rulegroup}"
+	salience ${rule.salience}
+	no-loop
 	when
 		rv: RangeEntry( id=="${rule.name}", ${dtype}value > ${entry.from} <%if(entry.to){%>, ${dtype}value <= ${entry.to} <%}%>)
 	then
 		Map bindings = rv.getBindings();
 		Map params = rv.getParams();
-		params.put( "amount", (new ActionExpression("${entry.value}", bindings)).getDecimalValue() );	
-		String actionName = action.actiondef.actionname 
+		params.put( "amount", (new ActionExpression("${entry.value}", bindings)) );	
+		<%String actionName = action.actiondef.actionname%> 
 		action.execute( "${actionName}",params, drools);
 end
 
