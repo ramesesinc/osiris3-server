@@ -9,6 +9,7 @@
 		<field name="title" required="true"/>
 		<field name="type" />
 		<field name="acctgroup" />
+		<field name="target" />
 	</element>
 
 </schema>

@@ -26,7 +26,8 @@ class AccountService extends ActiveCrudNodeService {
 		def cols = [
 			[name:'code', caption:'Acct Code' ],
 			[name:'title', caption:'Acct Title' ],
-			[name:'type', caption:'Type' ] 
+			[name:'type', caption:'Type' ],
+			[name:'target', caption:'Target' ],
 		];
 		return cols;
 	}
