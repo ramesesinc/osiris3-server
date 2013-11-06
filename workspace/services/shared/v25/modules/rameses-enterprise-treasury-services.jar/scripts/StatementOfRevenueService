@@ -62,6 +62,7 @@ class StatementOfRevenueService
 
 	def buildChartOfAccountFormat(params, items){
 		def data = []
+		data += items.findAll{it.objid == 'unmapped'}.each{ it.leaf = 1}
 		def idx = -1
 		db.getRootAccounts().each{ 
 			if (params.type.equalsIgnoreCase('standard')) {
