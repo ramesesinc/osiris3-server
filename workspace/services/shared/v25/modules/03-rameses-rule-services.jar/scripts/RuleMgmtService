@@ -21,6 +21,9 @@ class RuleMgmtService extends ActiveCrudListService {
 	@Env
 	def env;
 
+	@Context
+	def appContext;
+
 	@ProxyMethod
 	public def getColumns( def o ) {
 		return[
@@ -261,7 +264,7 @@ class RuleMgmtService extends ActiveCrudListService {
 	public def deploy( o ) {
 		o = open(o);
 		if(o.state=='DEPLOYED') 
-			throw new Exception("Rule is already approved");
+			throw new Exception("Rule is already deployed");
 
 		//if(o.state!='APPROVED') 
 		//	throw new Exception("Rule must be in approved state")
@@ -292,6 +295,33 @@ class RuleMgmtService extends ActiveCrudListService {
 		o.state = 'APPROVED';
 		em.update(o);
 		return o;
+	}
+
+
+	@ProxyMethod
+	public void reload( def ruleset ) {
+		println "RELOADING RULESET " + ruleset;
+		ruleSvc.removeRuleContext( ruleset );
+		def readers = [];
+		//reload the rules again.
+		def loadrules = { m->
+			try {
+				readers << new InputStreamReader(m.url.openStream());
+			}
+			catch(e) {println "error load " + e.message; }
+		} as ScanFileFilter;
+		appContext.scanFiles( "rulesets/"+ruleset+"/facts", loadrules, ".*\\.drl");
+		appContext.scanFiles( "rulesets/"+ruleset+"/rules", loadrules, ".*\\.drl");
+		em.getRulesForDeployment( [ruleset:ruleset] ).each{ r->
+			try {
+				String s = r.ruletext;
+				readers << new java.io.StringReader( s );
+			}
+			catch(e) {
+				e.printStackTrace();
+			}
+		}
+		ruleSvc.buildRuleContext(ruleset, readers);
 	}
 
 

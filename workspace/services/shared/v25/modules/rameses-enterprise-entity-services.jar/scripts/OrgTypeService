@@ -11,6 +11,6 @@ class OrgTypeService {
 
 	@ProxyMethod
 	public def getList() {		
-		return lovSvc.getKeyValues('BUSINESS_ORG_TYPES')
+		return lovSvc.getKeyValues('ORG_TYPES')
 	} 
 } 
