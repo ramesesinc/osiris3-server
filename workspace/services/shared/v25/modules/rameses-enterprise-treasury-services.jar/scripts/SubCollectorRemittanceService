@@ -23,6 +23,12 @@ class SubCollectorRemittanceService  {
 		return em.getCollectors( subcollectorid: env.USERID );
 	}
 
+	@ProxyMethod 
+	public def getItems(entity) {
+		return em.getItemsRemittance(entity)	
+	}
+
+
 	@ProxyMethod
 	public def getUremittedCollections(def p) {
 		p.subcollector = [objid:env.USERID, name:env.USER];
@@ -38,6 +44,17 @@ class SubCollectorRemittanceService  {
 			p.amount = p.checksum.amount;
 		}
 		return p;
+	}
+
+	@ProxyMethod 
+	public def getCheckPaymentsByRemittanceid(params) {
+		return em.getCheckPaymentByRemittanceId( params );
+	}
+
+	@ProxyMethod 
+	public def getCheckPaymentsBySubcollector(params ) {
+		params.subcollectorid = env.USERID 
+		return em.getCheckPaymentBySubcollector( params )
 	}
 
 
