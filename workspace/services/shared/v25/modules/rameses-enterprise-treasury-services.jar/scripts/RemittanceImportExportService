@@ -1,0 +1,90 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import java.rmi.server.*;
+import com.rameses.common.*
+import com.rameses.services.extended.*
+import com.rameses.util.*
+
+class RemittanceExportService  
+{
+
+	@ActiveDB("remittance_import_export")
+	def adb
+
+	@Service('RemittanceService')
+	def remSvc 
+
+
+
+	@ProxyMethod
+	public def exportRemittance(objid) {
+		def rem = [remittanceid:objid]
+
+		def data = [:]
+		data.entity = adb.findRemittanceByid(rem)
+		data.rem_afserials = adb.getRemittanceAfSerials(rem)
+		data.rem_cashreceipts = adb.getRemittanceCashReceipts(rem)
+		data.rem_cashtickets = adb.getRemittanceCashTickets(rem)
+		data.rem_checks = adb.getRemittanceCheckPayments(rem)
+		data.rem_funds = adb.getRemittanceFunds(rem)
+
+		//afserialcontrols
+		data.afserialcontrols = [] 
+		data.afserialinventories = [] 
+		data.afserialinvdetails = []
+		adb.getUniqueAfSerialControls(rem).each{ afc -> 
+			afc.remittanceid = rem.remittanceid 
+			data.afserialcontrols << adb.findAfSerialControl(afc)
+			data.afserialinventories << adb.findAFSerialInventory(afc)
+			data.afserialinvdetails += adb.getAFSerialInventoryDetails(afc)
+		}
+
+		//cashreceipts
+		data.cashreceipts = adb.getCashReceipts(rem)
+		data.cashreceiptitems = adb.getCashReceiptItems(rem)
+		data.checkpayments = adb.getCashReceiptCheckPayments(rem)
+		data.voidedreceipts = adb.getVoidedReceipts(rem)
+
+		return data 
+	}
+
+
+
+	@ProxyMethod
+	public void importRemittance(data){
+		checkDuplicatePosting(data.entity)
+
+		adb.insertRemittance(EntityUtil.mapToField(data.entity))
+		data.rem_afserials.each{ 
+			if ( !adb.findRemittanceAfSerial(it) ) {
+				adb.insertRemittanceAfSerial(EntityUtil.mapToField(it)) 
+			}
+		}
+		data.rem_cashreceipts.each{  adb.insertRemittanceCashReceipt(EntityUtil.mapToField(it)) }
+		data.rem_cashtickets.each{  adb.insertRemittanceCashTicket(EntityUtil.mapToField(it)) }
+		data.rem_checks.each{  adb.insertRemittanceCheck(EntityUtil.mapToField(it)) }
+		data.rem_funds.each{  adb.insertRemittanceFund(EntityUtil.mapToField(it)) }
+
+		//afserialcontrols
+		data.afserialcontrols.each{  
+			it.txnmode = 'REMOTE'
+			adb.updateAFSerialControl(EntityUtil.mapToField(it)) 
+		}
+		data.afserialinventories.each{  adb.updateAfSerialInventory(EntityUtil.mapToField(it)) }
+		data.afserialinvdetails.each{  adb.insertAfSerialInventoryDetail(EntityUtil.mapToField(it)) }
+		
+		//cashreceipts
+		data.cashreceipts.each{  adb.insertCashReceipt(EntityUtil.mapToField(it)) }
+		data.cashreceiptitems.each{  adb.insertCashReceiptItem(EntityUtil.mapToField(it)) }
+		data.checkpayments.each{  adb.insertCheckPayment(EntityUtil.mapToField(it)) }
+		data.voidedreceipts.each{  adb.insertVoidReceipt(EntityUtil.mapToField(it)) }
+	}
+
+	void checkDuplicatePosting(rem){
+		if ( adb.findRemittanceByid([remittanceid:rem.objid])){
+			throw new Exception('Remittance has already been posted.')
+		}
+	}
+
+}
+
