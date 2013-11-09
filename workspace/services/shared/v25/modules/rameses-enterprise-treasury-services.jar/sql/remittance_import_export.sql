@@ -11,7 +11,7 @@ SELECT * FROM remittance_afserial WHERE remittanceid = $P{remittanceid}
 SELECT * FROM remittance_cashreceipt WHERE remittanceid = $P{remittanceid}
 
 [getRemittanceCashTickets]
-SELECT * FROM remittance_cashticket WHERE remittanceid = $P{remittanceid}
+SELECT * FROM remittance_cashticket WHERE remittanceid =  $P{remittanceid}
 
 [getRemittanceCheckPayments]
 SELECT * FROM remittance_checkpayment WHERE remittanceid = $P{remittanceid}
@@ -21,8 +21,8 @@ SELECT * FROM remittance_fund WHERE remittanceid = $P{remittanceid}
 
 
 
-[getUniqueAfSerialControls]
-SELECT DISTINCT cr.controlid
+[getUniqueAfControls]
+SELECT DISTINCT cr.controlid, cr.formtype
 FROM remittance_cashreceipt remcr
 	INNER JOIN cashreceipt cr ON remcr.objid = cr.objid 
 WHERE remcr.remittanceid = $P{remittanceid}	
@@ -65,6 +65,16 @@ SELECT cv.*
 FROM remittance_cashreceipt remcr  
 	INNER JOIN cashreceipt_void cv ON remcr.objid = cv.receiptid
 WHERE remcr.remittanceid = $P{remittanceid}	
+
+
+[findCashTicketInventory]
+SELECT * FROM cashticket_inventory WHERE objid = $P{controlid}
+
+[findCashTicketControl]
+SELECT * FROM cashticket_control WHERE controlid = $P{controlid}
+
+[getCashtTicketInventoryDetails]
+SELECT * FROM cashticket_inventory_detail WHERE controlid = $P{controlid} AND refid = $P{remittanceid}
 
 
 
@@ -392,3 +402,58 @@ VALUES (
 
 
 
+
+
+[updateCashTicketInventory]
+UPDATE cashticket_inventory SET 
+       qtyout = $P{qtyout}
+      ,qtycancelled = $P{qtycancelled}
+      ,qtybalance = $P{qtybalance}
+      ,currentlineno = $P{currentlineno}
+ WHERE objid = $P{objid}
+
+
+[updateCashTicketControl]
+UPDATE cashticket_control SET 
+      qtyissued = $P{qtyissued}
+      ,qtybalance = $P{qtybalance}
+ WHERE objid = $P{objid}
+
+
+[insertCashTicketInventoryDetail]
+INSERT INTO cashticket_inventory_detail (
+   objid
+  ,controlid
+  ,[lineno]
+  ,refid
+  ,refno
+  ,reftype
+  ,refdate
+  ,txndate
+  ,txntype
+  ,qtyreceived
+  ,qtybegin
+  ,qtyissued
+  ,qtyending
+  ,qtycancelled
+  ,remarks
+  ,remittanceid
+)
+VALUES (
+  $P{objid}
+  ,$P{controlid}
+  ,$P{lineno}
+  ,$P{refid}
+  ,$P{refno}
+  ,$P{reftype}
+  ,$P{refdate}
+  ,$P{txndate}
+  ,$P{txntype}
+  ,$P{qtyreceived}
+  ,$P{qtybegin}
+  ,$P{qtyissued}
+  ,$P{qtyending}
+  ,$P{qtycancelled}
+  ,$P{remarks}
+  ,$P{remittanceid}
+)
