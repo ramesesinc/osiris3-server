@@ -13,7 +13,8 @@ SELECT
 FROM remittance r
 LEFT JOIN liquidation_remittance lr ON r.objid=lr.objid
 WHERE r.liquidatingofficer_objid  = $P{liquidatingofficerid}
-AND lr.objid IS NULL 
+	and r.state = 'OPEN'
+ 	AND lr.objid IS NULL 
 
 [getUnliquidatedChecks]
 SELECT pc.objid, pc.checkno, pc.checkdate, pc.particulars,
@@ -25,7 +26,8 @@ INNER JOIN remittance r ON rcp.remittanceid=r.objid
 LEFT JOIN cashreceipt_void cv ON cv.receiptid=pc.receiptid
 LEFT JOIN liquidation_remittance lr ON r.objid=lr.objid
 WHERE r.liquidatingofficer_objid  = $P{liquidatingofficerid}
-AND lr.objid IS NULL
+	and r.state = 'OPEN'
+	AND lr.objid IS NULL
 
 
 [getUnliquidatedFundSummary]
@@ -42,6 +44,7 @@ LEFT JOIN liquidation_remittance lr ON r.objid=lr.objid
 INNER JOIN cashbook_entry cbe ON cbe.refid=r.objid
 INNER JOIN cashbook cb ON cb.objid = cbe.parentid 
 WHERE r.liquidatingofficer_objid  =  $P{liquidatingofficerid}
+	and r.state = 'OPEN'
 AND lr.objid IS NULL) a
 GROUP BY a.fund_objid, a.fund_code, a.fund_title 
 
