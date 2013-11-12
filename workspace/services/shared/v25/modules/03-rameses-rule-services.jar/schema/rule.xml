@@ -46,6 +46,8 @@
 		<field name="decimalvalue" />
 		<field name="intvalue" />
 		<field name="stringvalue" />
+		<field name="datevalue" />
+
 		<complex name="listvalue" type="list" serializer="default" required="false"/>
 		<field name="pos" required="true"/>
 	</element>	
@@ -96,7 +98,7 @@
 
 	<element name="rulegroup" tablename="sys_rulegroup">
 		<field name="name" primary="true"/>
-		<field name="ruleset" />
+		<field name="ruleset" primary="true"/>
 		<field name="title" />
 		<field name="sortorder" />
 	</element>

@@ -16,10 +16,12 @@ ORDER BY c.formno, c.receiptno
 [getCashReceiptInfo]
 SELECT c.*, 
 CASE WHEN v.receiptid IS NULL THEN 0 ELSE 1 END AS voided,  
-CASE WHEN r.objid IS NULL THEN 0 ELSE 1 END AS remitted  
+CASE WHEN r.objid IS NULL THEN 0 ELSE 1 END AS remitted,
+ct.handler AS collectiontype_handler  
 FROM cashreceipt c 
 LEFT JOIN remittance_cashreceipt r ON c.objid=r.objid
 LEFT JOIN cashreceipt_void v ON c.objid=v.receiptid
+LEFT JOIN collectiontype ct ON ct.objid=c.collectiontype_objid
 WHERE c.objid = $P{objid}
 
 [getItems]

@@ -35,8 +35,6 @@ class RuleMigrationService  {
 	
 	@ProxyMethod
 	public void uploadDef( def o ) {
-		println o.ruleset;
-		println o.actiondefs.size();
 		target.save( o.ruleset, "ruleset" );
 		for ( x in o.rulegroups ) {
 			target.save( x, "rulegroup" );
