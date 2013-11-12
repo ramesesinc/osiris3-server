@@ -18,7 +18,7 @@ class RevenueAccountMappingService  {
 	@ProxyMethod
 	public def getColumns( def o ) {
 		def list = [
-			[name:'code', caption:'Item Code', width:100, resizable:false ],
+			[name:'code', caption:'Item Code', width:100, resizable:false, editable:true ],
 			[name:'title', caption:'Item Title', width:200 ],
 		];
 		em.getAccountColumns().each {
@@ -43,6 +43,9 @@ class RevenueAccountMappingService  {
 		}
 		m.columns = colBuilder.toString();
 		m.sources = sourceBuilder.toString();
+
+		m.code = m.searchtext ? m.searchtext + "%" : '%'
+		m.title = m.searchtext ? m.searchtext + "%" : ''
 		return em.getAccountList(m);
 	}
 	
@@ -57,6 +60,10 @@ class RevenueAccountMappingService  {
 		}
 	}
 
-	
+	@ProxyMethod 
+	public void updateRevenueItemCode( o ){
+		em.updateCode( o)
+	}
+
 
 }

@@ -11,6 +11,9 @@ UPDATE revenueitem SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT'
 [approve]
 UPDATE revenueitem SET state='APPROVED' WHERE objid=$P{objid} AND state='DRAFT'
 
+[updateCode]
+UPDATE revenueitem SET code=$P{code} WHERE objid=$P{objid} 
+
 [getLookup]
 SELECT r.* FROM revenueitem r 
 WHERE  (r.title LIKE $P{title}  OR r.code LIKE $P{code} ) 
@@ -31,4 +34,6 @@ SELECT r.objid, r.code, r.title
 ${columns}
 FROM revenueitem r
 ${sources}
-ORDER BY r.title
+where (r.title LIKE $P{title}  or r.code LIKE $P{code} ) 
+	and r.state  = 'APPROVED'
+ORDER BY r.code
