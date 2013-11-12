@@ -42,6 +42,11 @@ class CollectionTypeService extends ActiveCrudListService {
 	}
 
 	@ProxyMethod
+	public def getFormTypesCashticket() { 
+		return em.getFormTypesCashticket(); 
+	}
+
+	@ProxyMethod
 	public def getFormTypesForBatch() { 
 		return em.getFormTypesForBatch(); 
 	}
