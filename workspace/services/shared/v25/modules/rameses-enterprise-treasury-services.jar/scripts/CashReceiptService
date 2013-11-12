@@ -139,5 +139,10 @@ class CashReceiptService  {
 		return formatReport(x);
 	}	
 
+	@ProxyMethod 
+	public void updateState(def o) {
+		em.sqlContext.createNamedExecutor("cashreceipt:updateState").setParameters( o).execute() 		
+	}
+
 		
 }
