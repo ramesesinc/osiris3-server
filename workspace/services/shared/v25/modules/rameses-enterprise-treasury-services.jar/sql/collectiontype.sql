@@ -34,3 +34,6 @@ ORDER BY c.name
 
 [getFormTypesSerial]
 select * from afserial 
+
+[getFormTypesCashticket]
+select * from cashticket

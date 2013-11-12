@@ -32,3 +32,7 @@ WHERE ci.receiptid=$P{objid}
 
 [getCheckPayments]
 SELECT * FROM cashreceiptpayment_check WHERE receiptid=$P{objid}
+
+[updateState]
+update cashreceipt set state=$P{state} where objid=$P{objid}
+
