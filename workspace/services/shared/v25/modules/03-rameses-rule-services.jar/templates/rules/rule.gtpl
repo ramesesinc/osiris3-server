@@ -103,7 +103,7 @@ rule "${rule.name}"
 			rangeEntries.eachWithIndex { param, j-> 
 				def rname = "re${i}";
 				def dtype = rule.vars.find{ it.objid == param.var.objid}.datatype ;
-				def method = (dtype=='decimal')? "Decimalvalue" : "intvalue";
+				def method = (dtype=='decimal')? "Decimalvalue" : "Intvalue";
 				out.println( "RangeEntry ${rname} = new RangeEntry(\"${rule.name}\");");
 				out.println( "${rname}.setBindings(bindings);");
 				out.println( "${rname}.set${method}(${param.var.name});");
