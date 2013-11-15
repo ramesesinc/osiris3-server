@@ -14,8 +14,8 @@ SELECT  lcf.objid,
 FROM liquidation_cashier_fund lcf
 INNER JOIN liquidation l ON lcf.liquidationid=l.objid
 LEFT JOIN bankdeposit_liquidation bdl ON bdl.objid=lcf.objid
-WHERE 
-lcf.cashier_objid = $P{cashierid}
+WHERE lcf.cashier_objid = $P{cashierid}
+	and l.state = 'OPEN'
 AND bdl.objid IS NULL
 
 [getUndepositedByFund]
@@ -30,20 +30,22 @@ FROM
 FROM liquidation_cashier_fund lcf
 INNER JOIN liquidation l ON lcf.liquidationid=l.objid
 LEFT JOIN bankdeposit_liquidation bdl ON bdl.objid=lcf.objid
-WHERE 
-lcf.cashier_objid = $P{cashierid}
+WHERE l.state = 'OPEN'
+AND lcf.cashier_objid = $P{cashierid}
 AND bdl.objid IS NULL) a
 GROUP BY a.fund_objid, a.fund_title
 
 [getUndepositedChecks]
 SELECT DISTINCT
 crp.objid, crp.checkno, crp.particulars, crp.amount  
-FROM liquidation_remittance lr
+FROM liquidation_remittance lr 
 INNER JOIN liquidation_cashier_fund lcf ON lr.liquidationid=lr.liquidationid
+INNER JOIN liquidation l ON lcf.liquidationid=l.objid 
 INNER JOIN liquidation_checkpayment lc ON lc.liquidationid=lr.liquidationid
 INNER JOIN cashreceiptpayment_check crp ON crp.objid=lc.objid
 LEFT JOIN cashreceipt_void cv ON crp.receiptid = cv.receiptid 
 WHERE lcf.cashier_objid=$P{cashierid}
+	AND state = 'OPEN'
 AND cv.objid IS NULL 
 
 [getDepositSummaries]
