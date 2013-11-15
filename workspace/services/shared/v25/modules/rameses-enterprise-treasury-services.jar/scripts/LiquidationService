@@ -38,6 +38,12 @@ class LiquidationService  {
 		//get fund summary
 		o.fundsummary =  em.getUnliquidatedFundSummary( [liquidatingofficerid: env.USERID] );		
 		o.checks = em.getUnliquidatedChecks( [liquidatingofficerid: env.USERID] );	
+
+		//initial values
+		o.liquidatingofficer = [objid:env.USERID, name:env.FULLNAME, title: env.JOBTITLE ];	
+		o.state = "OPEN";
+		o.dtposted = dateSvc.serverDate;
+
 		return o;
 	}
 
@@ -46,17 +52,12 @@ class LiquidationService  {
 		if( o.fundsummary.find{ !it.cashier }   )
 			throw new Exception("There must be a cashier associated");
 
-		def z = liqOfficer.findUserTxnCode( [userid: env.USERID] );
 
-		o.liquidatingofficer = [objid:env.USERID, name:env.FULLNAME, title: env.JOBTITLE ];	
-
+		def z = liqOfficer.findUserTxnCode( [userid: o.liquidatingofficer.objid ] );
 		def txncode = "LIQ";	
 		if(z?.usertxncode) txncode = z.usertxncode; 	
 		o.txnno = txncode + seqSvc.getNextFormattedSeries(txncode);
-		println o.txnno;
 
-		o.state = "OPEN";
-		o.dtposted = dateSvc.serverDate;
 		em.create( o );
 
 		def ids = "'" + o.remittances*.objid.join("','") + "'";
@@ -67,6 +68,7 @@ class LiquidationService  {
 
 		//update cashbook to add new entry
 		o.fundsummary.each {
+				println  "it-> " + it
 				it.objid = "LIQFUND"+new UID();
 				it.liquidationid = o.objid;
 				em.create( it, "cashier_fund");
