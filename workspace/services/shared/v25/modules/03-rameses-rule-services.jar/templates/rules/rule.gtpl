@@ -136,7 +136,15 @@ rule "${action.actiondef.name}_${i}_${j}"
 	salience ${rule.salience}
 	no-loop
 	when
-		rv: RangeEntry( id=="${rule.name}", ${dtype}value > ${entry.from} <%if(entry.to){%>, ${dtype}value <= ${entry.to} <%}%>)
+		<%if( entry.from && entry.to ){%>
+		rv: RangeEntry( id=="${rule.name}", ${dtype}value > ${entry.from}, ${dtype}value <= ${entry.to} )
+		<%}%>
+		<%if( entry.from && !entry.to ){%>
+		rv: RangeEntry( id=="${rule.name}", ${dtype}value > ${entry.from} )
+		<%}%>
+		<%if( !entry.from && entry.to ){%>
+		rv: RangeEntry( id=="${rule.name}", ${dtype}value <= ${entry.to} )
+		<%}%>
 	then
 		Map bindings = rv.getBindings();
 		Map params = rv.getParams();
