@@ -82,14 +82,16 @@ WHERE rc.remittanceid = $P{remittanceid}
 AND cash.state = 'POSTED'
 
 [getRemittedFundTotals]
-SELECT cb.fund_objid, cb.fund_title, SUM(( cbe.dr - cbe.cr )) AS amount
+SELECT ri.fund_objid, ri.fund_title, SUM(chi.amount) AS amount
 FROM remittance_cashreceipt c
+INNER JOIN cashreceipt ch on c.objid = ch.objid 
+INNER JOIN cashreceiptitem chi on chi.receiptid = ch.objid
+INNER JOIN revenueitem ri on ri.objid = chi.item_objid
 LEFT JOIN cashreceipt_void cv ON c.objid = cv.receiptid 
-INNER JOIN cashbook_entry cbe ON cbe.refid = c.objid
-INNER JOIN cashbook cb ON cb.objid = cbe.parentid
-WHERE remittanceid = $P{remittanceid}
+WHERE c.remittanceid = $P{remittanceid}
 AND cv.objid IS NULL
-GROUP BY cb.fund_objid, cb.fund_title
+GROUP BY c.remittanceid, ri.fund_objid, ri.fund_title
+
 
 [getRemittedChecks]
 SELECT 
