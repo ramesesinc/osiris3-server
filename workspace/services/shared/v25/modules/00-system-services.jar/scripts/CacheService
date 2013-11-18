@@ -1,7 +1,0 @@
-import com.rameses.annotations.*;
-import com.rameses.util.*;
-
-class CacheService 
-{		
-	
-}
