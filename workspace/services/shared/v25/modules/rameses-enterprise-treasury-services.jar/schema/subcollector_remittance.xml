@@ -14,6 +14,7 @@
 		<field name="totalcash" required="true"/>
 		<field name="totalnoncash" required="true"/>
 		<complex name="cashbreakdown" required="false" serializer="default" />
+		<complex name="collectionsummaries" required="false" serializer="default" type="list"/>
 	</element>
 
 	

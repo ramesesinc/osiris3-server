@@ -84,7 +84,7 @@ class SubCollectorRemittanceService  {
 		p.txndate = dateSvc.serverDate;	
 		p.dtposted = dateSvc.serverDate;	
 		p.state = "OPEN";
-
+		p.collectionsummaries = getCollectionSummaries(params)
 		em.create(p);	
 		em.collectReceipts(params);
 		em.updateCashReceiptState(params);
@@ -93,16 +93,32 @@ class SubCollectorRemittanceService  {
 
 
 	@ProxyMethod
-	public def getCollectionSummaries( remittanceid ) {
-		return em.getCollectionSummaries([remittanceid:remittanceid])	
+	public def getCollectionSummaries( params ) {
+		return em.getCollectionSummaries(params).each{
+			//calculate qtys
+			it.qtyreceived = (it.receivedendseries - it.receivedstartseries + 1) + ''
+			if (it.issuedstartseries != null){
+				it.qtyissued = (it.issuedendseries - it.issuedstartseries + 1) + ''
+			}
+			it.qtyending = (it.endingendseries - it.endingstartseries + 1) + ''
+		}	
 	}
 
 	@ProxyMethod
 	public def generateDCR(objid) {
 		def entity = open([objid:objid])
-		entity.collectionsummaries = getCollectionSummaries(objid)
 		entity.cashbreakdown.each{
 			it.qty = it.qty.toString()
+		}
+		entity.collectionsummaries.each{
+			it.receivedstartseries = it.receivedstartseries.toString()
+			it.receivedendseries = it.receivedendseries.toString()
+
+			it.issuedstartseries = ( it.issuedstartseries == null ? null : it.issuedstartseries.toString() )
+			it.issuedendseries = ( it.issuedendseries == null ? null : it.issuedendseries.toString() )
+
+			it.endingstartseries = it.endingstartseries.toString()
+			it.endingendseries = it.endingendseries.toString()
 		}
 		return entity 
 	}
