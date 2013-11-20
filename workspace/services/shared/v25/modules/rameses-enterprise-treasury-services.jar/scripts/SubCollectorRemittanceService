@@ -28,6 +28,13 @@ class SubCollectorRemittanceService  {
 		return em.getItemsRemittance(entity)	
 	}
 
+	@ProxyMethod
+	public def open( entity ) {
+		entity = em.read(entity)	
+		entity.items = getItems(entity)
+		return entity 
+	}
+
 
 	@ProxyMethod
 	public def getUremittedCollections(def p) {
@@ -41,7 +48,9 @@ class SubCollectorRemittanceService  {
 			def params = [collectorid:p.collector.objid, subcollectorid:p.subcollector.objid ];
 			p.items = em.getUremittedCollectionSummary( params );
 			p.checksum = em.findSummaryTotals( params );
-			p.amount = p.checksum.amount;
+			p.amount = (p.checksum.amount == null ? 0.0 : p.checksum.amount);
+			p.totalnoncash = (p.checksum.totalnoncash == null ? 0.0 : p.checksum.totalnoncash);
+			p.totalcash = p.amount - p.totalnoncash
 		}
 		return p;
 	}
@@ -80,6 +89,22 @@ class SubCollectorRemittanceService  {
 		em.collectReceipts(params);
 		em.updateCashReceiptState(params);
 		return p;
+	}
+
+
+	@ProxyMethod
+	public def getCollectionSummaries( remittanceid ) {
+		return em.getCollectionSummaries([remittanceid:remittanceid])	
+	}
+
+	@ProxyMethod
+	public def generateDCR(objid) {
+		def entity = open([objid:objid])
+		entity.collectionsummaries = getCollectionSummaries(objid)
+		entity.cashbreakdown.each{
+			it.qty = it.qty.toString()
+		}
+		return entity 
 	}
 
 }

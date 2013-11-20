@@ -11,6 +11,9 @@
 		<field name="subcollector_name" required="true"/>
 		<field name="subcollector_title" />
 		<field name="amount" required="true"/>
+		<field name="totalcash" required="true"/>
+		<field name="totalnoncash" required="true"/>
+		<complex name="cashbreakdown" required="false" serializer="default" />
 	</element>
 
 	

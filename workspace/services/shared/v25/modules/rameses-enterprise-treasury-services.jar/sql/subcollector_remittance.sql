@@ -42,9 +42,11 @@ GROUP BY cr.stub
 [findSummaryTotals]
 SELECT 
    COUNT(*) AS itemcount,
-   SUM( CASE WHEN cv.objid IS NULL THEN cr.amount ELSE 0 END ) AS amount
+   SUM( CASE WHEN cv.objid IS NULL THEN cr.amount ELSE 0 END ) AS amount,
+   SUM( CASE WHEN p.objid IS NULL THEN 0 ELSE p.amount END) AS totalnoncash
 FROM cashreceipt cr
 LEFT JOIN cashreceipt_void cv ON cr.objid=cv.objid
+LEFT JOIN cashreceiptpayment_check p ON cr.objid = p.receiptid 
 WHERE cr.state = 'DELEGATED'
 AND cr.collector_objid = $P{collectorid}
 AND cr.subcollector_objid=$P{subcollectorid}
@@ -82,3 +84,19 @@ where c.state='DELEGATED'
    and c.collector_objid=$P{collectorid}
    and c.subcollector_objid = $P{subcollectorid} 
     and cv.objid is null 
+
+
+[getCollectionSummaries]    
+SELECT 
+  cr.formno,
+  MIN(cr.receiptno) AS fromseries,
+  MAX(cr.receiptno) AS toseries,
+  SUM(cr.amount) AS amount
+FROM subcollector_remittance r
+  INNER JOIN subcollector_remittance_cashreceipt rc ON r.objid = rc.remittanceid
+  INNER JOIN cashreceipt cr ON rc.objid = cr.objid 
+  LEFT JOIN cashreceipt_void cv ON cr.objid = cv.receiptid
+WHERE  r.objid = $P{remittanceid}
+  AND cv.objid IS NULL  
+GROUP BY cr.formno 
+ORDER BY cr.formno, fromseries  
