@@ -21,11 +21,19 @@ SELECT * FROM remittance_fund WHERE remittanceid = $P{remittanceid}
 
 
 
-[getUniqueAfControls]
-SELECT DISTINCT cr.controlid, cr.formtype
-FROM remittance_cashreceipt remcr
-	INNER JOIN cashreceipt cr ON remcr.objid = cr.objid 
-WHERE remcr.remittanceid = $P{remittanceid}	
+[getUniqueAfSerialControls]
+SELECT DISTINCT aid.controlid, raf.remittanceid
+FROM remittance_afserial raf 
+  INNER JOIN afserial_inventory_detail aid ON raf.objid = aid.objid 
+WHERE raf.remittanceid = $P{remittanceid} 
+
+
+[getUniqueCashTicketControls]
+SELECT DISTINCT cid.controlid, rct.remittanceid 
+FROM remittance_cashticket rct
+  INNER JOIN cashticket_inventory_detail cid ON rct.objid = cid.objid 
+WHERE rct.remittanceid = $P{remittanceid} 
+
 
 [findAfSerialControl]
 SELECT * FROM afserial_control WHERE controlid = $P{controlid}
@@ -34,7 +42,7 @@ SELECT * FROM afserial_control WHERE controlid = $P{controlid}
 SELECT * FROM afserial_inventory WHERE objid = $P{controlid}
 
 [getAFSerialInventoryDetails]
-SELECT * FROM afserial_inventory_detail WHERE controlid = $P{controlid} AND refid = $P{remittanceid}
+SELECT * FROM afserial_inventory_detail WHERE objid = $P{objid}
 
 
 
@@ -73,8 +81,8 @@ SELECT * FROM cashticket_inventory WHERE objid = $P{controlid}
 [findCashTicketControl]
 SELECT * FROM cashticket_control WHERE controlid = $P{controlid}
 
-[getCashtTicketInventoryDetails]
-SELECT * FROM cashticket_inventory_detail WHERE controlid = $P{controlid} AND refid = $P{remittanceid}
+[getCashTicketInventoryDetails]
+SELECT * FROM cashticket_inventory_detail WHERE objid = $P{objid} 
 
 
 
