@@ -80,7 +80,7 @@ span.hint-hover { color: lightgrey; }
     border-top-left-radius:0px; border-top-right-radius:0px; 
 } 
 .ui-widget { font-family:inherit; }
-.ui-widget-overlay { background: #fff; }
+.ui-widget-overlay { background: #fff; position: fixed; z-index:2; }
 .ui-widget-header {} 
 .ui-widget input, .ui-widget select, .ui-widget textarea {font-family:inherit;} 
 
@@ -101,6 +101,12 @@ span.hint-hover { color: lightgrey; }
 
 
 .rui-popupopener {z-index:1000;}
+.rui-alert-dialog .rui-alert-dialog-titlebar { 
+    background: transparent; color:#505050; 
+}
+.rui-alert-dialog .rui-alert-dialog-titlebar .ui-dialog-title {
+    font-size: 1.01em; font-weight:600;
+}
 
 /* begin: dropdown styles */
 .dropdownmenu {
